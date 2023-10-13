@@ -1,0 +1,10 @@
+{
+    "moduleManage": [
+        {
+            "id": 1,
+            "name": "權限管理",
+            "status": true,
+            "file": 35
+        }
+    ]
+}
