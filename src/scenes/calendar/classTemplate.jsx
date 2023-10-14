@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip } from '@mui/material';
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
 import { getWeekInfoForDate, dataTransformTable, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor } from './getMonday';
@@ -19,6 +19,22 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SelectTemplate from './selectTemplate';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
+function TeacherColor ({data}){
+  return(
+    <Box display={"flex"} gap={"20px"} flexWrap={"wrap"}  m={"19px 0 0"}>
+      {
+          data.map((item)=>{
+            return(
+                <Box display={"flex"} gap={"5px"} alignItems={"center"} >
+                  <span style={{lineHeight:0}}>{item.name}</span>
+                  <div style={{backgroundColor:`${item.t_color}`,width:"13px",height:"13px",borderRadius:"50%",marginBottom:"2px"}}></div>
+                </Box>
+            )
+        })
+      }
+    </Box>
+  )
+}
 
 const CalendarTop = ({ id }) => {
   const theme = useTheme();
@@ -63,6 +79,7 @@ const CalendarTop = ({ id }) => {
    }, [accessData])
 
 
+
   return (
     <Box m={"25px 0"} sx={
       {
@@ -70,7 +87,7 @@ const CalendarTop = ({ id }) => {
         width: "100%",
         "& .title": {
           display: "flex",
-          justifyContent: "flex-end",
+          justifyContent: "space-between",
           position: "relative",
           "& > button": {
             padding: "5px 16px",
@@ -100,7 +117,11 @@ const CalendarTop = ({ id }) => {
         <>
           <Box className='title' display={"flex"} width={"100%"} justifyContent={"space-between"} gap={"15px"} alignItems={"center"} flexWrap={"wrap"}>
 
-            <Box display={"flex"} justifyContent={"space-between"} gap={"15px"}>
+            {
+                // 老師顏色列表
+                teacherAll && <TeacherColor data={teacherAll}/>
+            }
+            <Box className='tool_box' display={"flex"} justifyContent={"space-between"} gap={"15px"}>
               <Box className="scroll-button" display={isMobile ? "none" : "flex"} justifyContent={"space-between"} alignItems={"center"} sx={
                 {
                   gap: "10px",
@@ -153,11 +174,14 @@ const CalendarTop = ({ id }) => {
                   <ArrowForwardIcon />
                 </div>
               </Box>
-              {authorityRange.p_insert &&  <LessonPopUp type={"insert"} ct_list_id={id} studentAll={studentAll} teacherAll={teacherAll} tableData={tableData} setTableData={setTableData} />}
-          
+              { 
+                // 新增按鈕
+                authorityRange.p_insert &&  <LessonPopUp type={"insert"} ct_list_id={id} studentAll={studentAll} teacherAll={teacherAll} tableData={tableData} setTableData={setTableData} authorityRange={authorityRange} />
+              }
             </Box>
 
           </Box>
+          
           <Calendar ref={scrollRef} tableData={tableData} studentAll={studentAll} teacherAll={teacherAll} setTableData={setTableData} ct_list_id={id} authorityRange={authorityRange}/>
         </>
         : <IsLoading />
@@ -167,6 +191,16 @@ const CalendarTop = ({ id }) => {
   )
 }
 
+
+/**
+ * 日曆表格
+ * @param tableData 有課程的日曆資料
+ * @param currentDate 外部所選的日期資料
+ * @param studentAll 所有學生
+ * @param teacherAll 所有老師
+ * @param ct_list_id 模板ID
+ * @param authorityRange 權限
+ */
 const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, ct_list_id ,authorityRange}, ref) => {
   const theme = useTheme();
 
@@ -196,6 +230,8 @@ const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, 
   ]
 
   const lessonTime = [
+    { start: "06:00", end: "07:00" },
+    { start: "07:00", end: "08:00" },
     { start: "08:00", end: "09:00" },
     { start: "09:00", end: "10:00" },
     { start: "10:00", end: "11:00" },
@@ -212,8 +248,6 @@ const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, 
     { start: "21:00", end: "22:00" },
     { start: "22:00", end: "23:00" },
   ]
-
-
 
 
 
@@ -413,7 +447,20 @@ const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, 
   )
 })
 
-const LessonUnit = ({ data, count, teacherAll, studentAll, tableData, setTableData, ct_list_id,authorityRange }) => {
+
+/**
+ * 課程單元
+ * @param data 課程資料
+ * @param count 計算相差的 15 分鐘數量
+ * @param teacherAll 所有學生
+ * @param studentAll 所有老師
+ * @param tableData 課程資料
+ * @param setTableData 課程資料
+ * @param ct_list_id 模板ID
+ * @param authorityRange 權限
+ * @returns 顯示課程在日曆上
+ */
+const LessonUnit = ({ data, count, teacherAll, studentAll, tableData, setTableData, ct_list_id, authorityRange }) => {
   let gap;
   if (data) {
     const start = data.StartTime;
@@ -423,12 +470,30 @@ const LessonUnit = ({ data, count, teacherAll, studentAll, tableData, setTableDa
 
   return (
     <Box key={data && data.Tb_index} flexBasis="25%" width={"100%"}  >
-      {count > 0 ? <LessonPopUp  authorityRange={authorityRange} ct_list_id={ct_list_id} teacherAll={teacherAll} studentAll={studentAll} id={data?.Tb_index} name={data?.c_name} gap={gap} bg={data?.t_color} type={"update"} tableData={tableData} setTableData={setTableData} /> : null}
+      {count > 0 ? <LessonPopUp unitData={data} authorityRange={authorityRange} ct_list_id={ct_list_id} teacherAll={teacherAll} studentAll={studentAll} id={data?.Tb_index} name={data?.c_name} gap={gap} bg={data?.t_color} type={"update"} tableData={tableData} setTableData={setTableData} /> : null}
     </Box>
   )
 }
 
-const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll, tableData, setTableData, ct_list_id,authorityRange }) => {
+
+
+/**
+ * 課程單元+開啟編輯視窗
+ * @param unitData 該筆課程資料
+ * @param id 課程ID
+ * @param name 課程名稱
+ * @param gap 課程所佔日曆格子數
+ * @param bg 課程被景色
+ * @param type 新增修改刪除分類
+ * @param teacherAll 所有學生
+ * @param studentAll 所有老師
+ * @param tableData 課程資料
+ * @param setTableData 課程資料
+ * @param ct_list_id 模板ID
+ * @param authorityRange 權限
+ * @returns 
+ */
+const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll, tableData, setTableData, ct_list_id, authorityRange }) => {
 
   const [open, setOpen] = useState(false)
   const [data, setData] = useState({})
@@ -484,15 +549,35 @@ const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll, tableDat
     return (
       <>
         {type === "update" ?
-          <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} onClick={(e) => {
-            e.stopPropagation()
-            templateApi.get_course_template_one(id, (data) => {
-              setData(data.data.data[0])
-              setOpen(true)
-            })
-          }}>
-            <p style={{ margin: 0, color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>{name}</p>
-          </Box> :
+          <Tooltip title={
+            <React.Fragment>
+              <h2 style={{margin:0, fontSize:'18px'}}>{name}</h2>
+              <p style={{margin:0, fontSize:'15px'}}>上課教室：{unitData.room_name}</p>
+              <p style={{margin:0, fontSize:'15px'}}>上課日期：星期{unitData.c_week}</p>
+              <p style={{margin:0, fontSize:'15px'}}>上課時間：{unitData.StartTime}</p>
+              <p style={{margin:0, fontSize:'15px'}}>下課時間：{unitData.EndTime}</p>
+            </React.Fragment>
+          } arrow placement="top">
+            <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} onClick={(e) => {
+              e.stopPropagation()
+              templateApi.get_course_template_one(id, (data) => {
+                setData(data.data.data[0])
+                setOpen(true)
+              })
+            }}>
+              <p style={{ margin: 0, color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
+                { 
+                  // 課程顯示學生名
+                  unitData.student.map((item)=>{
+                      return (
+                        <p style={{margin: 0,}}>{item.name}</p>
+                      )
+                  })
+                }
+              </p>
+            </Box> 
+          </Tooltip>
+          :
           <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {
             e.stopPropagation()
             setOpen(true)
@@ -715,7 +800,7 @@ const SelectTemplateContainer = ({ tableData, data, setData, initDay = "一" }) 
 export default function ClassTemplate({ id }) {
 
   return (
-    <div style={{ width: '95%', margin: '0 auto' }}>
+    <div style={{ width: '95%', margin: '2vw auto' }}>
       <Header title="公版課表" subtitle="儲存後可以匯入每周課表" />
       <CalendarTop id={id} />
     </div>

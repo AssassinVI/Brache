@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip } from '@mui/material';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
@@ -210,7 +210,6 @@ function TeacherColor ({data}){
         })
       }
     </Box>
-  
   )
 }
 
@@ -239,12 +238,12 @@ const CalendarTop = () => {
     const startDate = initDate.year + "-" + initDate.month + "-" + initDate.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     calendarApi.getAll(startDate, endDate).then((data) => {
-      console.log(data.data)
+      //console.log(data.data)
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
   }, [])
   useEffect(()=>{
-    console.log(teacherAll)
+    //console.log(teacherAll)
   },[teacherAll])
 
     //權限
@@ -351,7 +350,7 @@ const CalendarTop = () => {
                   <ArrowForwardIcon sx={{ transform: "rotateY(180deg)" }} />
                 </div>
                 <div className="right" onClick={(e) => {
-                  console.log(scrollRef)
+                  //console.log(scrollRef)
                   if (scrollNum < (3640 - scrollRef.current.clientWidth) / 520) {
                     scrollNum = scrollNum + 1
                   }
@@ -372,7 +371,6 @@ const CalendarTop = () => {
               {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
           
             </Box>
-
           </Box>
           {teacherAll && <TeacherColor data={teacherAll}/>}
           <Calendar ref={scrollRef} tableData={tableData} currentDate={currentDate} studentAll={studentAll} teacherAll={teacherAll} />
@@ -384,7 +382,16 @@ const CalendarTop = () => {
   )
 }
 
+
+/**
+ * 日曆表格
+ * @param tableData 有課程的日曆資料
+ * @param currentDate 外部所選的日期資料
+ * @param studentAll 所有學生
+ * @param teacherAll 所有老師
+ */
 const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll }, ref) => {
+
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
@@ -399,6 +406,8 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll },
     "備"
   ]
   const lessonTime = [
+    { start: "06:00", end: "07:00" },
+    { start: "07:00", end: "08:00" },
     { start: "08:00", end: "09:00" },
     { start: "09:00", end: "10:00" },
     { start: "10:00", end: "11:00" },
@@ -613,9 +622,19 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll },
   )
 })
 
+
+/**
+ * 課程單元
+ * @param data 課程資料
+ * @param count 計算相差的 15 分鐘數量
+ * @param teacherAll 所有學生
+ * @param studentAll 所有老師
+ * @returns 顯示課程在日曆上
+ */
 const LessonUnit = ({ data, count, teacherAll, studentAll }) => {
   let gap;
   let classTimeStamp;
+  let bg_color;
   if (data) {
     const start = data.StartTime;
     const end = data.EndTime;
@@ -624,18 +643,39 @@ const LessonUnit = ({ data, count, teacherAll, studentAll }) => {
     const EndTime = new Date(data.c_date +"T"+ end);
 
     // 获取时间戳
-     classTimeStamp = EndTime.getTime();
+    classTimeStamp = EndTime.getTime();
 
+    //-- 判斷課程背景色 --
+    if((Date.now() < classTimeStamp)||(data.signin_time && data.signout_time)){
+      bg_color=data.t_color;
+    } 
+    //-- 超過上課時間視為遲到變紅色 --
+    else{
+      bg_color="#FF0000";
+    }
   }
 
   return (
     <Box key={data && data.Tb_index} flexBasis="25%" width={"100%"}  >
-      {(data && count > 0) ? <LessonPopUp teacherAll={teacherAll} studentAll={studentAll} id={data.Tb_index} name={data.c_name} gap={gap} bg={(Date.now() < classTimeStamp)||(data.signin_time && data.signout_time) ? data.t_color : "#FF0000"} type={"update"} /> : null}
+      {(data && count > 0) ? <LessonPopUp unitData={data} teacherAll={teacherAll} studentAll={studentAll} id={data.Tb_index} name={data.c_name} gap={gap} bg={bg_color} type={"update"} /> : null}
     </Box>
   )
 }
 
-const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll }) => {
+
+/**
+ * 課程單元+開啟編輯視窗
+ * @param unitData 該筆課程資料
+ * @param id 課程ID
+ * @param name 課程名稱
+ * @param gap 課程所佔日曆格子數
+ * @param bg 課程被景色
+ * @param type 新增修改刪除分類
+ * @param teacherAll 所有學生
+ * @param studentAll 所有老師
+ * @returns 
+ */
+const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll }) => {
   const [open, setOpen] = useState(false)
   const [data, setData] = useState({})
   const [currentDate, setCurrentDate] = useState(null)
@@ -644,14 +684,15 @@ const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll }) => {
 
   const dispatch = useDispatch(null)
   const currentDateRedux = useSelector(state => state.calendarReducer.currentDate)
+  
+  //-- 關閉視窗 --
   const handleCancel = () => {
     setOpen(false)
     setData({})
   }
 
+  //-- 視窗送出資料 --
   const handleSubmit = () => {
-
-
     const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     if (type === "update") {
@@ -675,11 +716,10 @@ const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll }) => {
         }
       })
     }
-
-
     setOpen(false)
   }
 
+  //-- 視窗刪除課程 --
   const handleDelete = () => {
     if (window.confirm("確定要刪除此課程嗎?")) {
       const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
@@ -696,6 +736,8 @@ const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll }) => {
     }
   }
 
+  
+
 
   useEffect(() => {
     if (currentDate) {
@@ -703,6 +745,7 @@ const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll }) => {
         setTableData(dataTransformTable(data.data));
       })
     }
+    // console.log(unitData);
   }, [currentDate])
 
    //權限
@@ -722,11 +765,19 @@ const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll }) => {
 
    
 
-
   if (bg || type === "insert") {
     return (
       <>
         {type === "update" ?
+          <Tooltip title={
+            <React.Fragment>
+              <h2 style={{margin:0, fontSize:'18px'}}>{name}</h2>
+              <p style={{margin:0, fontSize:'15px'}}>上課教室：{unitData.room_name}</p>
+              <p style={{margin:0, fontSize:'15px'}}>上課日期：{unitData.c_date}</p>
+              <p style={{margin:0, fontSize:'15px'}}>上課時間：{unitData.StartTime}</p>
+              <p style={{margin:0, fontSize:'15px'}}>下課時間：{unitData.EndTime}</p>
+            </React.Fragment>
+          } arrow placement="top">
           <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} onClick={(e) => {
             e.stopPropagation()
             calendarApi.getOne(id, (data) => {
@@ -734,15 +785,27 @@ const LessonPopUp = ({ id, name, gap, bg, type, teacherAll, studentAll }) => {
               setOpen(true)
             })
           }}>
-            <p style={{ margin: 0, color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>{name}</p>
-          </Box> :
-          <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {
-            e.stopPropagation()
-            setOpen(true)
-          }}>
-            <EditIcon />
-            新增
-          </Button >
+            
+            <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
+              { 
+                // 課程顯示學生名
+                unitData.student.map((item)=>{
+                    return (
+                       <p style={{margin: 0,}}>{item.name}</p>
+                    )
+                })
+              }
+            </div>
+          </Box> 
+          </Tooltip>
+          :
+            <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {
+              e.stopPropagation()
+              setOpen(true)
+            }}>
+              <EditIcon />
+              新增
+            </Button >
         }
         <Dialog open={open} onClose={handleCancel} sx={{
           "& .MuiPaper-root": { padding: " 10px 25px" },

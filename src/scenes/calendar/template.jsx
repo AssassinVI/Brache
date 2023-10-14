@@ -211,12 +211,10 @@ function TemplateReNew({ id}) {
 
                 setOpen(true);
 
-
-
             }}>    <DateRangeIcon />
                 模板更改
             </Button>
-            <Dialog open={open} onClose={handleCancel} sx={{
+            <Dialog open={open}  sx={{
                 "& .MuiPaper-root": { padding: " 10px 0" },
                 "& label": {
                     fontSize: "16px"
@@ -410,7 +408,7 @@ export default function Template() {
         })
     };
 
-       //權限
+   //權限
    const { accessData, accessDetect } = useAuthorityRange()
    const [authorityRange, setAuthorityRange] = useState({})
  
@@ -424,7 +422,9 @@ export default function Template() {
                p_update: result.p_update === "1" ? true : false,
            })
        }
-   }, [accessData])
+       
+   }, [accessData]);
+   
 
     return (
         <div style={{ width: '95%', margin: '20px auto 0', display: "flex", flexDirection: "column" }}>
