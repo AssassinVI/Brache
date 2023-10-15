@@ -2,9 +2,11 @@
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
 import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip } from '@mui/material';
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DateCalendar } from '@mui/x-date-pickers';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
 import { getWeekInfoForDate, getWeekDates, formatDateBack, convertToChineseNumber, dataTransformTable, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor } from './getMonday';
@@ -62,9 +64,12 @@ function FirstComponent() {
   }, [open])
   return (
     <>
-      <DateRangeIcon onClick={() => {
+      <Button sx={{backgroundColor:'#1d7dc9'}} variant="contained" startIcon={<DateRangeIcon />} onClick={() => {
         setOpen(true);
-      }} />
+      }}>
+        選擇日期
+      </Button>
+
       <Dialog open={open} onClose={handleCancel} >
         <Box display={"flex"} justifyContent={"center"} alignItems={"center"} position={"relative"} zIndex={10} width={"100%"} height={"100%"} left={0} top={0}
           onClick={handleCancel}
@@ -79,7 +84,7 @@ function FirstComponent() {
               e.stopPropagation()
             }}
           >
-            <LocalizationProvider dateAdapter={AdapterMoment}>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
               <DateCalendar onChange={handleChange} />
               <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
                 <Button onClick={handleSubmit}>OK</Button>
@@ -364,12 +369,13 @@ const CalendarTop = () => {
                   <ArrowForwardIcon />
                 </div>
               </Box>
-              <div className="nav">
-                <span>選擇日期</span>
+              <Box sx={{display:'flex', alignItems:'center', gap: "10px",}}>
+                {/* <span>選擇日期</span> */}
                 <FirstComponent currentDate={currentDate} />
-              </div>
-              {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
-          
+                {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
+              </Box>
+              
+              
             </Box>
           </Box>
           {teacherAll && <TeacherColor data={teacherAll}/>}
@@ -799,7 +805,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
           </Box> 
           </Tooltip>
           :
-            <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {
+            <Button  variant="contained" sx={{ backgroundColor: "#6DC4C5", gap: "10px" }} onClick={(e) => {
               e.stopPropagation()
               setOpen(true)
             }}>
@@ -1019,7 +1025,7 @@ export const TimeSelect = ({ setCurrentDate }) => {
               e.stopPropagation()
             }}
           >
-            <LocalizationProvider dateAdapter={AdapterMoment}>
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
               <DateCalendar onChange={handleChange} />
               <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
                 <Button onClick={handleSubmit}>OK</Button>

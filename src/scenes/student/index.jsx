@@ -1,5 +1,10 @@
 import { Box, Typography, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { DatePicker, LocalizationProvider } from '@mui/x-date-pickers'
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
 import EditIcon from '@mui/icons-material/Edit';
@@ -149,20 +154,19 @@ function UpdatedStudentData({ id, sx, handleButtonClick }) {
                         />
                     </DialogContent>
                     <DialogContent>
-                        <FormControl fullWidth>
-                        <TextField
-                            id="date"
-                            label="生日"
-                            type="date"
-                            InputLabelProps={{
-                            shrink: true,
-                            }}
-                            value={age}
-                            onChange={(e)=>{
-                                setAge(e.target.value)
-                            }}
-                        />
-                        </FormControl>
+                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                            <DemoContainer components={['DatePicker']}>
+                                <DatePicker 
+                                    label="出生日期" 
+                                    maxDate={dayjs()}
+                                    format="YYYY/MM/DD"
+                                    value={dayjs(age)}
+                                    onChange={(newDate)=>{
+                                        setAge(newDate)
+                                    }}
+                                />
+                            </DemoContainer>
+                        </LocalizationProvider>
                     </DialogContent>
                     <DialogContent>
                         <RadioGroup

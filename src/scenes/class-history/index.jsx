@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import Header from '../../components/Header'
-import { DateCalendar, DateRangeIcon, LocalizationProvider } from '@mui/x-date-pickers'
-import { Box, Button, Dialog, FormControl, InputLabel, MenuItem, Select, TextField, useMediaQuery } from '@mui/material'
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { Box, Button, Dialog, FormControl, InputLabel, MenuItem, Select, TextField, useMediaQuery, Autocomplete } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
-import { convertToChineseNumber, getWeekInfoForDate } from '../calendar/getMonday'
 import { get_student_course_history_one } from '../../axios-api/studentData'
 import { useTheme } from '@emotion/react'
 import { tokens } from '../../theme'
@@ -17,6 +19,7 @@ import CloseIcon from '@mui/icons-material/Close';
 function FunctionBar({date,setDate,student,setStudent}){
     const accessRange = useSelector(store => store.accessRangeReducer)
     const [studentAll,setStudentAll] = useState(null)
+    const [studentOne,setStudentOne] = useState(null)
     const dates = new Date()
     const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
     const todayArr = today.split("-")
@@ -27,64 +30,65 @@ function FunctionBar({date,setDate,student,setStudent}){
     })
     useEffect(()=>{
        getAll().then((data) => {
-            setStudentAll(data.data);
+            setStudentAll({
+                options: data.data,
+                getOptionLabel: (option) => option.name,
+            });
+            console.log(data.data);
           });
+       
     },[])
     return(
        <Box display={"flex"} gap={"25px"} flexWrap={"wrap"}>
           {accessRange?.inform?.name !== "學生" && studentAll &&
-                <FormControl>
-                    <InputLabel id="demo-simple-select-label">學生</InputLabel>
-                    <Select onChange={(e) => {
-                        setStudent(e.target.value)
-                    }}
-                        value={student || ""}
-                        labelId="demo-simple-select-label"
-                        id="demo-simple-select"
-                        label="學生"
-                        defaultValue={1} sx={{ width: "120px" }}
-
-                    >
-                        {studentAll && studentAll.map((item) => {
-                            return (
-                                <MenuItem key={item.Tb_index} value={item.Tb_index} style={{ paddingLeft: "8px" }}>
-                                    {item.name}
-                                </MenuItem>
-                            )
-                        })}
-                    </Select>
-                </FormControl>
+                
+                <Autocomplete
+                {...studentAll}
+                id="controlled-demo"
+                disableClearable
+                onChange={(event, newValue) => {
+                    setStudent(newValue.Tb_index);
+                }}
+                renderInput={(params) => (
+                    <TextField {...params} label="學生" variant="standard" />
+                )}
+                sx={{width:'150px'}}
+                />
+                
             }
-        <TextField
-        id="date"
-        label="開始日期"
-        type="date"
-        InputLabelProps={{
-        shrink: true,
-        }}
-        value={date?.StartDate ? date.StartDate : todayArr.join("-")}
-        onChange={(e)=>{
-            setDate({
-                ...date,
-                StartDate:e.target.value
-            })
-        }}
-        />
-         <TextField
-            id="date"
-            label="結束日期"
-            type="date"
-            InputLabelProps={{
-            shrink: true,
-            }}
-            value={date?.EndDate ? date.EndDate : todayArr.join("-")}
-            onChange={(e)=>{
-                setDate({
-                    ...date,
-                    EndDate:e.target.value
-                })
-            }}
-        />
+
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+            <DemoContainer components={['DatePicker']}>
+                <DatePicker 
+                    label="開始日期" 
+                    format="YYYY/MM/DD"
+                    value={dayjs(date?.StartDate ? date.StartDate : todayArr.join("-"))}
+                    onChange={(newDate)=>{
+                        setDate({
+                            ...date,
+                            StartDate:newDate
+                        })
+                    }}
+                />
+            </DemoContainer>
+            </LocalizationProvider>
+
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+            <DemoContainer components={['DatePicker']}>
+                <DatePicker 
+                    label="結束日期" 
+                    format="YYYY/MM/DD"
+                    value={dayjs(date?.EndDate ? date.EndDate : todayArr.join("-"))}
+                    onChange={(newDate)=>{
+                        setDate({
+                            ...date,
+                            EndDate:newDate
+                        })
+                    }}
+                />
+            </DemoContainer>
+            </LocalizationProvider>
+
        </Box>
     )
 }

@@ -1,8 +1,10 @@
 import React, { useState } from 'react'
 import Header from '../../components/Header'
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar, DateRangeIcon, LocalizationProvider } from '@mui/x-date-pickers'
 import { Box, Button, Dialog, useMediaQuery } from '@mui/material'
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import { DataGrid } from '@mui/x-data-grid'
 import { convertToChineseNumber, getWeekInfoForDate } from '../calendar/getMonday'
 import * as recordListApi from "../../axios-api/recordList"
@@ -54,7 +56,7 @@ function DateSelector({setDate}) {
                 e.stopPropagation()
               }}
             >
-              <LocalizationProvider dateAdapter={AdapterMoment}>
+              <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
                 <DateCalendar onChange={handleChange} />
                 <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
                   <Button onClick={handleSubmit}>OK</Button>

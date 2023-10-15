@@ -1,6 +1,11 @@
 import { Box, FormControl, InputLabel, MenuItem, Select, TextField, Typography, useMediaQuery } from "@mui/material";
 import React from "react";
 import { IsLoading } from "../../components/loading";
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DataGrid } from "@mui/x-data-grid";
 import { useTheme } from "@emotion/react";
 import { tokens } from "../../theme";
@@ -54,7 +59,40 @@ function FunctionBar({date,setDate,teacher,setTeacher}){
                     </Select>
                 </FormControl>
             }
-        <TextField
+
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+            <DemoContainer components={['DatePicker']}>
+                <DatePicker 
+                    label="開始日期" 
+                    format="YYYY/MM/DD"
+                    value={dayjs(date?.StartDate ? date.StartDate : todayArr.join("-"))}
+                    onChange={(newDate)=>{
+                        setDate({
+                            ...date,
+                            StartDate:newDate
+                        })
+                    }}
+                />
+            </DemoContainer>
+            </LocalizationProvider>
+
+            <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+            <DemoContainer components={['DatePicker']}>
+                <DatePicker 
+                    label="結束日期" 
+                    format="YYYY/MM/DD"
+                    value={dayjs(date?.EndDate ? date.EndDate : todayArr.join("-"))}
+                    onChange={(newDate)=>{
+                        setDate({
+                            ...date,
+                            EndDate:newDate
+                        })
+                    }}
+                />
+            </DemoContainer>
+            </LocalizationProvider>
+
+        {/* <TextField
         id="date"
         label="開始日期"
         type="date"
@@ -83,7 +121,7 @@ function FunctionBar({date,setDate,teacher,setTeacher}){
                     EndDate:e.target.value
                 })
             }}
-        />
+        /> */}
        </Box>
     )
 }
