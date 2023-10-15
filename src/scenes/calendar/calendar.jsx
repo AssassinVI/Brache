@@ -7,6 +7,7 @@ import 'dayjs/locale/zh-cn';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
 import { getWeekInfoForDate, getWeekDates, formatDateBack, convertToChineseNumber, dataTransformTable, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor } from './getMonday';
@@ -30,7 +31,7 @@ function FirstComponent() {
   const [open, setOpen] = useState(false)
   const dispatch = useDispatch(null)
   const handleChange = (e) => {
-    const monday_weekNumber = getWeekInfoForDate(e._d);
+    const monday_weekNumber = getWeekInfoForDate(e.$d);
     const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     setData({
