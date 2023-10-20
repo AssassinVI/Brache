@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery } from "@mui/material";
+import { Box, Typography, useTheme, Button, TextField, FormControlLabel, FormControl, FormLabel, useMediaQuery, Grid } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
@@ -34,6 +34,14 @@ function UpdatedStudentData({ id, sx, handleButtonClick }) {
     const [data, setData] = useState(null)
     const [address, setAddress] = useState("")
     const [phone, setPhone] = useState("")
+
+    const [school, setSchool] = useState("")
+    const [schoolYear, setSchoolYear] = useState("")
+    const [music, setMusic] = useState("")
+    const [telephone, setTelephone] = useState("")
+    const [email, setEmail] = useState("")
+    const [sRemark, setSRemark] = useState("")
+
     const dispatch = useDispatch(null)
     const handleCancel = () => {
         setOpen(false);
@@ -41,7 +49,11 @@ function UpdatedStudentData({ id, sx, handleButtonClick }) {
         setGender("")
         setAge(1)
         setPhone("")
-        setPhone("")
+        setSchool("")
+        setSchoolYear("")
+        setMusic("")
+        setTelephone("")
+        setEmail("")
         setTimeout(() => {
             setData(null)
         }, 100)
@@ -55,7 +67,14 @@ function UpdatedStudentData({ id, sx, handleButtonClick }) {
                 s_birthday: age,
                 Tb_index: id,
                 s_adds: address,
-                s_phone: phone
+                s_phone: phone,
+                s_school: school,
+                s_school_year: schoolYear,
+                s_music: music,
+                s_telephone: telephone,
+                s_email: email,
+                s_remark: sRemark,
+
             }, (data) => {
                 if (data.data.success) {
                     handleButtonClick()
@@ -72,13 +91,21 @@ function UpdatedStudentData({ id, sx, handleButtonClick }) {
 
     }
     useEffect(() => {
+        
         if (data) {
-            console.log(data)
+             console.log(data)
             setName(data.name)
             setAge(data.s_birthday)
             setGender(data.s_sex)
             setAddress(data.s_adds)
             setPhone(data.s_phone)
+
+            setSchool(data.s_school)
+            setSchoolYear(data.s_school_year)
+            setMusic(data.s_music)
+            setTelephone(data.s_telephone)
+            setEmail(data.s_email)
+            setSRemark(data.s_remark)
         }
     }, [data])
 
@@ -107,83 +134,165 @@ function UpdatedStudentData({ id, sx, handleButtonClick }) {
                 },
             }}>
                 <DialogTitle sx={{ fontSize: "20px" }}>學生資料編輯</DialogTitle>
-                {data ? <>
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="name"
-                            label="名稱"
-                            type="text"
-                            fullWidth
-                            variant="standard"
-                            onChange={(e) => {
-                                setName(e.target.value)
-                            }}
-                            value={name}
-                        />
-                    </DialogContent>
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="address"
-                            label="地址"
-                            type="text"
-                            fullWidth
-                            variant="standard"
-                            onChange={(e) => {
-                                setAddress(e.target.value)
-                            }}
-                            value={address}
-                        />
-                    </DialogContent>
-                    <DialogContent>
-                        <TextField
-                            autoFocus
-                            margin="dense"
-                            id="phone"
-                            label="電話"
-                            type="text"
-                            fullWidth
-                            variant="standard"
-                            onChange={(e) => {
-                                setPhone(e.target.value)
-                            }}
-                            value={phone}
-                        />
-                    </DialogContent>
-                    <DialogContent>
-                        <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
-                            <DemoContainer components={['DatePicker']}>
-                                <DatePicker 
-                                    label="出生日期" 
-                                    maxDate={dayjs()}
-                                    format="YYYY/MM/DD"
-                                    value={dayjs(age)}
-                                    onChange={(newDate)=>{
-                                        setAge(newDate)
+                {data ? 
+                <>
+
+                <Grid container spacing={2}>
+                            <Grid item xs={6}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="school"
+                                    label="就讀學校"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setSchool(e.target.value)
                                     }}
+                                    value={school}
                                 />
-                            </DemoContainer>
-                        </LocalizationProvider>
-                    </DialogContent>
-                    <DialogContent>
-                        <RadioGroup
-                            row
-                            aria-labelledby="demo-row-radio-buttons-group-label"
-                            name="row-radio-buttons-group"
-                            onChange={(e) => {
-                                setGender(e.target.value)
-                            }}
-                            value={gender}
-                        >
-                            <FormControlLabel value="1" control={<Radio />} label="男" />
-                            <FormControlLabel value="0" control={<Radio />} label="女" />
-
-                        </RadioGroup>
-                    </DialogContent>
-
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="school_yaer"
+                                    label="年級"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setSchoolYear(e.target.value)
+                                    }}
+                                    value={schoolYear}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                                <DemoContainer components={['DatePicker']}>
+                                    <DatePicker 
+                                        label="生日" 
+                                        format="YYYY/MM/DD"
+                                        value={dayjs(age)}
+                                        onChange={(newDate)=>{
+                                            let formatDate=`${newDate.$y}-${parseInt(newDate.$M)+1}-${newDate.$D}`;
+                                            setAge(formatDate)
+                                        }}
+                                    />
+                                </DemoContainer>
+                                </LocalizationProvider>
+                            </Grid>
+                            <Grid item xs={3}>
+                                <FormControl>
+                                <FormLabel id="demo-row-radio-buttons-group-label">性別</FormLabel>
+                                <RadioGroup
+                                    row
+                                    aria-labelledby="demo-row-radio-buttons-group-label"
+                                    name="row-radio-buttons-group"
+                                    onChange={(e) => {
+                                        setGender(e.target.value)
+                                    }}
+                                    value={gender}
+                                >
+                                    <FormControlLabel value="1" control={<Radio />} label="男" />
+                                    <FormControlLabel value="0" control={<Radio />} label="女" />
+                                </RadioGroup>
+                                </FormControl>
+                                
+                            </Grid>
+                            <Grid item xs={3}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="phone"
+                                    label="樂器"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setMusic(e.target.value)
+                                    }}
+                                    value={music}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="phone"
+                                    label="電話(室話)"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setTelephone(e.target.value)
+                                    }}
+                                    value={telephone}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="phone"
+                                    label="電話(行動)"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setPhone(e.target.value)
+                                    }}
+                                    value={phone}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="address"
+                                    label="E-mail"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setEmail(e.target.value)
+                                    }}
+                                    value={email}
+                                />
+                            </Grid>
+                            <Grid item xs={6}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="address"
+                                    label="通訊地址"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setAddress(e.target.value)
+                                    }}
+                                    value={address}
+                                />
+                            </Grid>
+                            <Grid item xs={12}>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="address"
+                                    label="備註"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                       setSRemark(e.target.value)
+                                    }}
+                                    value={sRemark}
+                                />
+                            </Grid>
+                    </Grid>
+                    
 
                 </> :
                     <IsLoading />}
@@ -265,8 +374,8 @@ const StudentDataList = () => {
             hide: isMobile
         },
         {
-            field: "s_year",
-            headerName: "年齡",
+            field: "s_birthday",
+            headerName: "生日",
             flex: 1,
         },
         {
@@ -277,7 +386,6 @@ const StudentDataList = () => {
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"5px"} width="100%">
                         <Qrcode value={rows.row.Tb_index} />
-
                     </Box>
 
                 )

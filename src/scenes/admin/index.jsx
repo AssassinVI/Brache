@@ -1,4 +1,9 @@
-import { Box, Typography, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery } from "@mui/material";
+import { Box, Typography, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery, Grid, FormLabel } from "@mui/material";
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
@@ -27,27 +32,38 @@ import useAuthorityRange from "../../custom-hook/useAuthorityRange";
 
 function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
     const [open, setOpen] = useState(false);
+
+    //-- 帳號流水號 --
+    const date=new Date();
+    const accountAutoId= `user${date.getFullYear()}${date.getMonth()+1}${date.getDate()}${date.getHours()}${date.getMinutes()}${date.getSeconds()}`;
+
     const [userData, setUserData] = useState({
         name: "",
         online: true,
-        account: "",
+        account: accountAutoId,
         radio: "",
         password: "",
         authority: "",
         gender: "",
-        age: "",
+        s_birthday: "",
         t_skill: "",
         t_color: "",
         s_adds: "",
-        s_phone: ""
+        s_phone: "",
+
+        s_school: "",
+        s_school_year: "",
+        s_music: "",
+        s_telephone: "",
+        s_email: "",
+        s_education: "",
+        s_remark:""
     })
 
+
     const [formPage, setFormPage] = useState(1)
-
     const [data, setData] = useState(null)
-
     const { authorityData } = authorityApi.useGetAll()
-
     const dispatch = useDispatch(null)
 
 
@@ -57,22 +73,32 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
         setUserData({
             name: "",
             online: true,
-            account: "",
+            account: accountAutoId,
             radio: "",
             password: "",
             authority: "",
             gender: "",
-            age: "",
+            s_birthday: "",
             t_skill: "",
             t_color: "",
             s_adds: "",
-            s_phone: ""
+            s_phone: "",
+
+            s_school: "",
+            s_school_year: "",
+            s_music: "",
+            s_telephone: "",
+            s_email: "",
+            s_education: "",
+            s_remark:""
         })
         setTimeout(() => {
             setFormPage(1)
             setData(null)
         }, 100)
     };
+
+    //-- 更新 --
     const updateData = () => {
         adminApi.updateOne({
             name: userData.name,
@@ -89,10 +115,11 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
             } else {
                 dispatch(snackBarOpenAction(true, `${data.data.msg}-${userData.name}`, "error"))
             }
-
         })
         handleCancel()
     }
+
+    //-- 新增 --
     const insertData = () => {
 
         adminApi.insertOne({
@@ -107,7 +134,15 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
             t_skill: userData.t_skill,
             t_color: userData.t_color,
             s_adds: userData.s_adds,
-            s_phone: userData.s_phone
+            s_phone: userData.s_phone,
+
+            s_school: userData.s_school,
+            s_school_year: userData.s_school_year,
+            s_music: userData.s_music,
+            s_telephone: userData.s_telephone,
+            s_email: userData.s_email,
+            s_education: userData.s_education,
+            s_remark:userData.s_remark
         }, (data) => {
             if (data.data.success) {
                 handleButtonClick()
@@ -116,9 +151,10 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
             } else {
                 dispatch(snackBarOpenAction(true, `${data.data.msg}`, "error"))
             }
-
         })
     }
+
+    
     const handleSubmit = () => {
         if (userData.name && userData.account && userData.authority && userData.radio) {
 
@@ -169,6 +205,7 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
 
     return (
         <>
+           
             <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", ...sx }} onClick={(e) => {
                 e.stopPropagation()
                 if (type === "update") {
@@ -187,7 +224,8 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
                 <EditIcon />
                 {type === "update" ? "修改" : "新增"}
             </Button>
-            <Dialog open={open} onClose={handleCancel} sx={{
+            
+            <Dialog  open={open}  sx={{
                 "& .MuiPaper-root": { padding: " 10px 25px" },
                 "& label": {
                     fontSize: "16px"
@@ -228,7 +266,389 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
     );
 }
 
+/**
+ * 學生欄位
+ * @param userData 資料 
+ * @returns 
+ */
+const StudentForm= ({ userData, setUserData})=>{
+  return (
+    <Grid container spacing={2}>
+            <Grid item xs={6}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="school"
+                    label="就讀學校"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_school: e.target.value,
+                        })
+                    }}
+                    value={userData.s_school}
+                />
+            </Grid>
+            <Grid item xs={6}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="school_yaer"
+                    label="年級"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_school_year: e.target.value,
+                        })
+                    }}
+                    value={userData.s_school_year}
+                />
+            </Grid>
+            <Grid item xs={6}>
+                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                <DemoContainer components={['DatePicker']}>
+                    <DatePicker 
+                        label="生日" 
+                        format="YYYY/MM/DD"
+                        value={dayjs(userData.s_birthday)}
+                        onChange={(newDate)=>{
+                            let formatDate=`${newDate.$y}-${parseInt(newDate.$M)+1}-${newDate.$D}`;
+                            setUserData({
+                                ...userData,
+                                s_birthday: formatDate,
+                            })
+                        }}
+                    />
+                </DemoContainer>
+                </LocalizationProvider>
+            </Grid>
+            <Grid item xs={3}>
+              <FormControl>
+                 <FormLabel id="demo-row-radio-buttons-group-label">性別</FormLabel>
+                 <RadioGroup
+                    row
+                    aria-labelledby="demo-row-radio-buttons-group-label"
+                    name="row-radio-buttons-group"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            gender: e.target.value,
+                        })
+                    }}
+                    value={userData.gender}
+
+                >
+                    <FormControlLabel value="1" control={<Radio />} label="男" />
+                    <FormControlLabel value="0" control={<Radio />} label="女" />
+                </RadioGroup>
+              </FormControl>
+                
+            </Grid>
+            <Grid item xs={3}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="phone"
+                    label="樂器"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_music: e.target.value,
+                        })
+                    }}
+                    value={userData.s_music}
+                />
+            </Grid>
+            <Grid item xs={6}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="phone"
+                    label="電話(室話)"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_telephone: e.target.value,
+                        })
+                    }}
+                    value={userData.s_telephone}
+                />
+            </Grid>
+            <Grid item xs={6}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="phone"
+                    label="電話(行動)"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_phone: e.target.value,
+                        })
+                    }}
+                    value={userData.s_phone}
+                />
+            </Grid>
+            <Grid item xs={6}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="address"
+                    label="E-mail"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_email: e.target.value,
+                        })
+                    }}
+                    value={userData.s_email}
+                />
+            </Grid>
+            <Grid item xs={6}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="address"
+                    label="通訊地址"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_adds: e.target.value,
+                        })
+                    }}
+                    value={userData.s_adds}
+                />
+            </Grid>
+            <Grid item xs={12}>
+                  <TextField
+                      autoFocus
+                      margin="dense"
+                      id="address"
+                      label="備註"
+                      type="text"
+                      fullWidth
+                      variant="standard"
+                      onChange={(e) => {
+                          setUserData({
+                              ...userData,
+                              s_remark: e.target.value,
+                          })
+                      }}
+                      value={userData.s_remark}
+                  />
+            </Grid>
+        </Grid>
+  );
+}
+
+
+/**
+ * 老師欄位
+ * @param userData 資料 
+ * @returns 
+ */
+const TeacherForm= ({ userData, setUserData })=>{
+    return (
+      <Grid container spacing={2}>
+
+             <Grid item xs={6}>
+                 <TextField
+                    autoFocus
+                    margin="dense"
+                    id="skill"
+                    label="專長"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            t_skill: e.target.value,
+                        })
+                    }}
+                    value={userData.t_skill}
+                />
+             </Grid>
+             <Grid item xs={6}>
+                 <TextField
+                    autoFocus
+                    margin="dense"
+                    id="skill"
+                    label="學歷"
+                    type="text"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            s_education: e.target.value,
+                        })
+                    }}
+                    value={userData.s_education}
+                />
+             </Grid>
+
+             <Grid item xs={6}>
+                  <TextField
+                      autoFocus
+                      margin="dense"
+                      id="address"
+                      label="E-mail"
+                      type="text"
+                      fullWidth
+                      variant="standard"
+                      onChange={(e) => {
+                          setUserData({
+                              ...userData,
+                              s_email: e.target.value,
+                          })
+                      }}
+                      value={userData.s_email}
+                  />
+              </Grid>
+             
+              <Grid item xs={6}>
+                <FormControl>
+                   <FormLabel id="demo-row-radio-buttons-group-label">性別</FormLabel>
+                   <RadioGroup
+                      row
+                      aria-labelledby="demo-row-radio-buttons-group-label"
+                      name="row-radio-buttons-group"
+                      onChange={(e) => {
+                          setUserData({
+                              ...userData,
+                              gender: e.target.value,
+                          })
+                      }}
+                      value={userData.gender}
+  
+                  >
+                      <FormControlLabel value="1" control={<Radio />} label="男" />
+                      <FormControlLabel value="0" control={<Radio />} label="女" />
+                  </RadioGroup>
+                </FormControl>
+                  
+              </Grid>
+              
+              <Grid item xs={6}>
+                  <TextField
+                      autoFocus
+                      margin="dense"
+                      id="phone"
+                      label="電話(室話)"
+                      type="text"
+                      fullWidth
+                      variant="standard"
+                      onChange={(e) => {
+                          setUserData({
+                              ...userData,
+                              s_telephone: e.target.value,
+                          })
+                      }}
+                      value={userData.s_telephone}
+                  />
+              </Grid>
+              <Grid item xs={6}>
+                  <TextField
+                      autoFocus
+                      margin="dense"
+                      id="phone"
+                      label="電話(行動)"
+                      type="text"
+                      fullWidth
+                      variant="standard"
+                      onChange={(e) => {
+                          setUserData({
+                              ...userData,
+                              s_phone: e.target.value,
+                          })
+                      }}
+                      value={userData.s_phone}
+                  />
+              </Grid>
+              
+              <Grid item xs={6}>
+                  <TextField
+                      autoFocus
+                      margin="dense"
+                      id="address"
+                      label="通訊地址"
+                      type="text"
+                      fullWidth
+                      variant="standard"
+                      onChange={(e) => {
+                          setUserData({
+                              ...userData,
+                              s_adds: e.target.value,
+                          })
+                      }}
+                      value={userData.s_adds}
+                  />
+              </Grid>
+              <Grid item xs={6}>
+                <TextField
+                    autoFocus
+                    margin="dense"
+                    id="color"
+                    label="代表色"
+                    type="color"
+                    fullWidth
+                    variant="standard"
+                    onChange={(e) => {
+                        setUserData({
+                            ...userData,
+                            t_color: e.target.value,
+                        })
+                    }}
+                    value={userData.t_color}
+                    sx={{ width: "60px" }}
+                />
+             </Grid>
+             <Grid item xs={12}>
+                  <TextField
+                      autoFocus
+                      margin="dense"
+                      id="address"
+                      label="備註"
+                      type="text"
+                      fullWidth
+                      variant="standard"
+                      onChange={(e) => {
+                          setUserData({
+                              ...userData,
+                              s_remark: e.target.value,
+                          })
+                      }}
+                      value={userData.s_remark}
+                  />
+            </Grid>
+    </Grid>
+    );
+}
+
 const FormPage = ({ userData, setUserData, authorityData, type, formPage }) => {
+
     return (
         <>
             <Box sx={{ opacity: formPage === 1 ? 1 : 0, pointerEvents: formPage === 1 ? "auto" : "none" }}>
@@ -256,10 +676,34 @@ const FormPage = ({ userData, setUserData, authorityData, type, formPage }) => {
                         aria-labelledby="demo-row-radio-buttons-group-label"
                         name="row-radio-buttons-group"
                         onChange={(e) => {
-                            setUserData({
-                                ...userData,
-                                radio: e.target.value,
-                            })
+                            // setUserData({
+                            //     ...userData,
+                            //     radio: e.target.value,
+                            // });
+
+                            switch (e.target.value) {
+                                case "2":
+                                    setUserData({
+                                        ...userData,
+                                        radio: e.target.value,
+                                        authority: 'group2023071815332755',
+                                    })
+                                    break;
+                                case "3":
+                                    setUserData({
+                                        ...userData,
+                                        radio: e.target.value,
+                                        authority: 'group2023071815335388',
+                                    })
+                                    break;
+                                default:
+                                    setUserData({
+                                        ...userData,
+                                        radio: e.target.value,
+                                        authority: '',
+                                    })
+                                    break;
+                            }
                         }}
                         value={userData.radio}
 
@@ -267,9 +711,8 @@ const FormPage = ({ userData, setUserData, authorityData, type, formPage }) => {
                         <FormControlLabel value="1" control={<Radio disabled={type === "insert" ? false : userData.radio === "1" ? false : true} />} label="管理員" />
                         <FormControlLabel value="2" control={<Radio disabled={type === "insert" ? false : userData.radio === "2" ? false : true} />} label="老師" />
                         <FormControlLabel value="3" control={<Radio disabled={type === "insert" ? false : userData.radio === "3" ? false : true} />} label="學生" />
-
-
                     </RadioGroup>
+
                     <p style={{ margin: 0, color: "#f35151" }}>(新增後無法再修改)</p>
                 </DialogContent>
                 <DialogContent>
@@ -333,123 +776,24 @@ const FormPage = ({ userData, setUserData, authorityData, type, formPage }) => {
                     />
                 </DialogContent>
             </Box>
-            <Box sx={{ opacity: formPage !== 1 ? 1 : 0, position: "absolute", top: "74px", left: "25px", pointerEvents: formPage !== 1 ? "auto" : "none" }}>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="address"
-                        label="地址"
-                        type="text"
-                        fullWidth
-                        variant="standard"
-                        onChange={(e) => {
-                            setUserData({
-                                ...userData,
-                                s_adds: e.target.value,
-                            })
-                        }}
-                        value={userData.s_adds}
-                    />
-                </DialogContent>
-                <DialogContent>
-                    <TextField
-                        autoFocus
-                        margin="dense"
-                        id="phone"
-                        label="電話"
-                        type="text"
-                        fullWidth
-                        variant="standard"
-                        onChange={(e) => {
-                            setUserData({
-                                ...userData,
-                                s_phone: e.target.value,
-                            })
-                        }}
-                        value={userData.s_phone}
-                    />
-                </DialogContent>
-                {userData.radio === "3" ?
+
+            <Box sx={{ opacity: formPage !== 1 ? 1 : 0, position: "absolute", top: "74px", left: "25px", width:'91%', pointerEvents: formPage !== 1 ? "auto" : "none" }}>
+                
+                
+
+                {
+                //-- 學生欄位 --
+                userData.radio === "3" ?
                     <DialogContent>
-                        <FormControl fullWidth>
-                        <TextField
-                            id="date"
-                            label="生日"
-                            type="date"
-                            InputLabelProps={{
-                            shrink: true,
-                            }}
-                            value={userData.s_birthday}
-                            onChange={(e)=>{
-                                setUserData({
-                                    ...userData,
-                                    s_birthday: e.target.value,
-                                })
-                            }}
-                        />
-                        </FormControl>
-                    </DialogContent> :
-                    <>
-                        <DialogContent>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                id="skill"
-                                label="專長"
-                                type="text"
-                                fullWidth
-                                variant="standard"
-                                onChange={(e) => {
-                                    setUserData({
-                                        ...userData,
-                                        t_skill: e.target.value,
-                                    })
-                                }}
-                                value={userData.t_skill}
-                            />
-                        </DialogContent>
-                        <DialogContent>
-                            <TextField
-                                autoFocus
-                                margin="dense"
-                                id="color"
-                                label="代表色"
-                                type="color"
-                                fullWidth
-                                variant="standard"
-                                onChange={(e) => {
-                                    setUserData({
-                                        ...userData,
-                                        t_color: e.target.value,
-                                    })
-                                }}
-                                value={userData.t_color}
-                                sx={{ width: "60px" }}
-                            />
-                        </DialogContent>
-                    </>
-
+                        <StudentForm userData={userData} setUserData={setUserData} />
+                    </DialogContent> 
+                    :
+                    //-- 老師欄位 --
+                    <DialogContent>
+                        <TeacherForm userData={userData} setUserData={setUserData} />
+                    </DialogContent>
                 }
-                <DialogContent>
-                    <RadioGroup
-                        row
-                        aria-labelledby="demo-row-radio-buttons-group-label"
-                        name="row-radio-buttons-group"
-                        onChange={(e) => {
-                            setUserData({
-                                ...userData,
-                                gender: e.target.value,
-                            })
-                        }}
-                        value={userData.gender}
-
-                    >
-                        <FormControlLabel value="1" control={<Radio />} label="男" />
-                        <FormControlLabel value="0" control={<Radio />} label="女" />
-                    </RadioGroup>
-                </DialogContent>
-
+                
             </Box>
         </>
 
@@ -479,11 +823,13 @@ const AdminManagement = () => {
             setAdminData(res.data)
         })
     }, [])
+
     const handleButtonClick = () => {
         adminApi.getAll().then((res) => {
             setAdminData(res.data)
         })
     };
+
     const dispatch = useDispatch(null)
     const columns = [
         {
@@ -538,7 +884,7 @@ const AdminManagement = () => {
             renderCell: (rows) => {
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"5px"} width="100%">
-                        {authorityRange.p_update && <UpdatedAdminData id={rows.row.Tb_index} type={"update"} handleButtonClick={handleButtonClick} sx={{ width: "66px" }} />}
+                        {authorityRange.p_update && <UpdatedAdminData id={rows.row.Tb_index} type={"update"} handleButtonClick={handleButtonClick} sx={{ width: "85px" }} />}
 
                         {(authorityRange.p_delete && rows.row.Tb_index !== userId.inform.Tb_index) &&
                             <Box
@@ -583,7 +929,7 @@ const AdminManagement = () => {
             {/* <Alert severity="success">This is a success alert — check it out!</Alert> */}
             <Box m="20px auto 0" width={"95%"} display={"flex"} flexDirection={"column"} >
                 <Header title="管理者管理" subtitle="本頁面條列所有使用者的權限以及基本資料" />
-                {authorityRange.p_insert && <UpdatedAdminData type={"insert"} handleButtonClick={handleButtonClick} sx={{ width: "80px", alignSelf: "flex-end" }} />}
+                {authorityRange.p_insert && <UpdatedAdminData type={"insert"} handleButtonClick={handleButtonClick} sx={{ width: "85px", alignSelf: "flex-end" }} />}
 
                 <Box
                     m="20px 0 0 0"

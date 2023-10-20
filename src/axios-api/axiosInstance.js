@@ -23,7 +23,7 @@ axiosInstance.interceptors.response.use(
         // 檢查response中的data.success屬性是否為false
         if (response.data && response.data.success === false) {
             // 執行您的操作，例如顯示錯誤訊息、重新導向到錯誤頁面等
-            // window.location.reload()//透過重新整理讓sideBar的useEffect重新跑一次跳轉頁面
+            window.location.reload()//透過重新整理讓sideBar的useEffect重新跑一次跳轉頁面
         }
         return response;
     },

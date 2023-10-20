@@ -124,16 +124,18 @@ function UpdataAuthorityData({ id, type, sx, handleButtonClick }) {
 
     return (
         <>
-            <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "66px", ...sx }} onClick={(e) => {
-                e.stopPropagation()
-                authorityApi.getOne(id, (data) => {
-                    setData(data.data.data)
-                    setOpen(true);
-                })
-            }}>
-                <EditIcon />
-                {type === "update" ? "修改" : "新增"}
-            </Button >
+
+            <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", ...sx }} onClick={(e) => {
+                    e.stopPropagation()
+                    authorityApi.getOne(id, (data) => {
+                        setData(data.data.data)
+                        setOpen(true);
+                    })
+                }}>
+                    <EditIcon />
+                    {type === "update" ? "修改" : "新增"}
+             </Button >
+            
             <Dialog open={open} onClose={handleCancel} sx={
                 {
                     "& .MuiDialog-container > .MuiPaper-root": {
@@ -446,7 +448,7 @@ const Authority = () => {
                                 backgroundColor="#F8AC59"
                                 justifyContent="center"
                                 alignItems="center"
-                                sx={{ cursor: "pointer" }}
+                                sx={{ cursor: "pointer", display: rows.row.Tb_index=='group2023071815332755' || rows.row.Tb_index=='group2023071815335388' || rows.row.Tb_index=='group2022092314594853' ? 'none':'inline' }}
                                 onClick={() => {
                                     getAll().then((res) => {
                                         let result = [];
@@ -476,7 +478,7 @@ const Authority = () => {
                                 }}
                             >
                                 <DeleteIcon sx={{ color: "#fff" }} />
-                                <Typography color={"#fff"} sx={{ ml: "5px" }}>
+                                <Typography color={"#fff"} sx={{ ml: "5px"}}>
                                     刪除
                                 </Typography>
 
@@ -495,7 +497,7 @@ const Authority = () => {
             {/* <Alert severity="success">This is a success alert — check it out!</Alert> */}
             <Box m="20px auto 0" width={"95%"} display={"flex"} flexDirection={"column"}>
                 <Header title="權限管理" subtitle="本頁面設定權限之範圍" />
-                {authorityRange.p_insert && <UpdataAuthorityData type={"insert"} sx={{ width: "80px", alignSelf: "flex-end" }} handleButtonClick={handleButtonClick} />}
+                {authorityRange.p_insert && <UpdataAuthorityData type={"insert"} sx={{ width: "85px", alignSelf: "flex-end" }} handleButtonClick={handleButtonClick} />}
 
                 <Box
                     m="20px 0 0 0"

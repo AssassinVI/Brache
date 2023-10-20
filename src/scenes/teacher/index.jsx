@@ -1,4 +1,4 @@
-import { Box, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery } from "@mui/material";
+import { Box, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery, Grid, FormLabel } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import Header from "../../components/Header";
@@ -30,6 +30,12 @@ function UpdatedTeacherData({ id, sx, handleButtonClick }) {
     const [data, setData] = useState(null)
     const [address, setAddress] = useState("")
     const [phone, setPhone] = useState("")
+
+    const [telephone, setTelephone] = useState("")
+    const [email, setEmail] = useState("")
+    const [education, setEducation] = useState("")
+    const [remark, setRemark] = useState("")
+
     const dispatch = useDispatch(null)
     const handleCancel = () => {
         setOpen(false);
@@ -39,6 +45,12 @@ function UpdatedTeacherData({ id, sx, handleButtonClick }) {
         setColor("")
         setAddress("")
         setPhone("")
+
+        setTelephone("")
+        setEmail("")
+        setEducation("")
+        setRemark("")
+
         setTimeout(() => {
             setData(null)
         }, 100)
@@ -53,7 +65,13 @@ function UpdatedTeacherData({ id, sx, handleButtonClick }) {
                 Tb_index: id,
                 t_color: color,
                 s_adds: address,
-                s_phone: phone
+                s_phone: phone,
+
+                s_telephone: telephone,
+                s_email: email,
+                s_education: education,
+                s_remark: remark,
+
             }, (data) => {
                 if (data.data.success) {
                     handleButtonClick()
@@ -77,6 +95,11 @@ function UpdatedTeacherData({ id, sx, handleButtonClick }) {
             setColor(data.t_color)
             setAddress(data.s_adds)
             setPhone(data.s_phone)
+
+            setTelephone(data.s_telephone)
+            setEmail(data.s_email)
+            setEducation(data.s_education)
+            setRemark(data.s_remark)
         }
     }, [data])
 
@@ -106,7 +129,153 @@ function UpdatedTeacherData({ id, sx, handleButtonClick }) {
             }}>
                 <DialogTitle sx={{ fontSize: "20px" }}>老師資料編輯</DialogTitle>
                 {data ? <>
-                    <DialogContent>
+
+                    
+                    <Grid container spacing={2}>
+                        <Grid item xs={6}>
+                            <TextField
+                                autoFocus
+                                margin="dense"
+                                id="skill"
+                                label="專長"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setSkill(e.target.value)
+                                }}
+                                value={skill}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                
+                                margin="dense"
+                                id="skill"
+                                label="學歷"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setEducation(e.target.value)
+                                }}
+                                value={education}
+                            />
+                        </Grid>
+                        
+                        <Grid item xs={6}>
+                            <FormControl>
+                            <FormLabel id="demo-row-radio-buttons-group-label">性別</FormLabel>
+                            <RadioGroup
+                                row
+                                aria-labelledby="demo-row-radio-buttons-group-label"
+                                name="row-radio-buttons-group"
+                                onChange={(e) => {
+                                    setGender(e.target.value)
+                                }}
+                                value={gender}
+            
+                            >
+                                <FormControlLabel value="1" control={<Radio />} label="男" />
+                                <FormControlLabel value="0" control={<Radio />} label="女" />
+                            </RadioGroup>
+                            </FormControl>
+                            
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                
+                                margin="dense"
+                                id="address"
+                                label="E-mail"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setEmail(e.target.value)
+                                }}
+                                value={email}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                
+                                margin="dense"
+                                id="telephone"
+                                label="電話(室話)"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setTelephone(e.target.value)
+                                }}
+                                value={telephone}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                
+                                margin="dense"
+                                id="phone"
+                                label="電話(行動)"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setPhone(e.target.value)
+                                }}
+                                value={phone}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                
+                                margin="dense"
+                                id="address"
+                                label="通訊地址"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setAddress(e.target.value)
+                                }}
+                                value={address}
+                            />
+                        </Grid>
+                        <Grid item xs={6}>
+                            <TextField
+                                
+                                margin="dense"
+                                id="color"
+                                label="代表色"
+                                type="color"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setColor(e.target.value)
+                                }}
+                                value={color}
+                                sx={{ width: "60px" }}
+                            />
+                        </Grid>
+                        <Grid item xs={12}>
+                            <TextField
+                                
+                                margin="dense"
+                                id="address"
+                                label="備註"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                onChange={(e) => {
+                                    setRemark(e.target.value)
+                                }}
+                                value={remark}
+                            />
+                        </Grid>
+                </Grid>
+
+                    {/* <DialogContent>
                         <TextField
                             autoFocus
                             margin="dense"
@@ -196,7 +365,7 @@ function UpdatedTeacherData({ id, sx, handleButtonClick }) {
                             <FormControlLabel value="0" control={<Radio />} label="女" />
 
                         </RadioGroup>
-                    </DialogContent>
+                    </DialogContent> */}
 
 
                 </> :
