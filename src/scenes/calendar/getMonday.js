@@ -30,6 +30,39 @@ export function getWeekDates(mondayStr) {
     return weekDates;
 }
 
+//-- 計算出第幾周的星期一日期 --
+// export function getDateOfMondayInWeek(todayDate) {
+//     const today = new Date(todayDate);
+//     const currentWeekDay = today.getDay(); // 当前日期是星期几 (0=星期日, 1=星期一, ..., 6=星期六)
+//     const daysUntilMonday = (currentWeekDay === 0) ? 6 : (currentWeekDay - 1); // 计算当前日期距离上一个星期一的天数
+  
+//     const daysToSubtract = (daysUntilMonday + 7); // 计算需要减去的天数
+//     const mondayDate = new Date(today);
+//     mondayDate.setDate(today.getDate() - daysToSubtract);
+
+    
+  
+//     return mondayDate;
+// }
+
+//-- 計算出第幾周的星期一日期 --
+export function getDateOfMondayInWeek(year, month, weekNumber) {
+    // 创建一个指定年份和月份的日期对象
+    const date = new Date(year, month - 1, 1);
+  
+    // 计算这个月的第一个星期一
+    while (date.getDay() !== 1) {
+      date.setDate(date.getDate() + 1);
+    }
+  
+    // 然后根据所需的周数，加上相应的天数
+    date.setDate(date.getDate() + (weekNumber - 1) * 7);
+  
+    const mondayDate=new Date(year, month - 1, date.getDate());
+    return mondayDate;
+}
+
+
 export function getWeekInfoForDate(today) {
     function getMondayOfCurrentWeek(today) {
         // 获取今天是一周中的第几天（0 表示周日，1 表示周一，依此类推）
@@ -206,4 +239,19 @@ export function getContrastColor(color) {
 
     // 根據亮度值選擇文字顏色
     return brightness > 128 ? '#000000' : '#FFFFFF';
+}
+
+//-- 以周一為準，算出某月有幾周 --
+export function countMondaysInMonth(year, month) {
+    let count = 0;
+    const date = new Date(year, month - 1, 1);
+  
+    while (date.getMonth() === month - 1) {
+      if (date.getDay() === 1) {
+        count++;
+      }
+      date.setDate(date.getDate() + 1);
+    }
+  
+    return count;
 }

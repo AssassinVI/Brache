@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -10,7 +10,16 @@ import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
-import { getWeekInfoForDate, getWeekDates, formatDateBack, convertToChineseNumber, dataTransformTable, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor } from './getMonday';
+import { getWeekInfoForDate, 
+         getWeekDates, 
+         formatDateBack, 
+         convertToChineseNumber, 
+         dataTransformTable, 
+         addMinutesToTime, 
+         calculateDifferenceIn15Minutes, 
+         getContrastColor, 
+         countMondaysInMonth, 
+         getDateOfMondayInWeek } from './getMonday';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import * as calendarApi from "../../axios-api/calendarData"
 import MultiSelect from '../../lib/multiSelect';
@@ -26,31 +35,45 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { get_course_template_list } from '../../axios-api/calendarTemplateData';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
-function FirstComponent() {
+//-- 日期選擇btn --
+function SelectDate() {
   const [data, setData] = useState({})
   const [open, setOpen] = useState(false)
   const dispatch = useDispatch(null)
+
+  //-- 選擇日期 --
   const handleChange = (e) => {
-    const monday_weekNumber = getWeekInfoForDate(e.$d);
-    const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day
-    const endDate = formatDateBack(getWeekDates(startDate)[6])
+    const selectDate=new Date(getDateOfMondayInWeek(e.$y, e.$M+1, 1));
+    const monday_weekNumber = getWeekInfoForDate(selectDate);
+    const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
+    const endDate = formatDateBack(getWeekDates(startDate)[6]);
     setData({
       monday_weekNumber: monday_weekNumber,
       startDate: startDate,
-      endDate: endDate
+      endDate: endDate,
     })
   }
+
   const handleCancel = () => {
     setOpen(false)
   }
+
+  //-- 確認日期 --
   const handleSubmit = () => {
 
+    //-- 送到redux calendarDateAction --
     dispatch(calendarDateAction(data.monday_weekNumber))
+
+    //-- 獲取期間課表資料送到redux calendarTableDataAction --
     calendarApi.getAll(data.startDate, data.endDate).then((data) => {
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
+
     handleCancel()
   }
+
+
+
   useEffect(() => {
     if (open) {
       const monday_weekNumber = getWeekInfoForDate(new Date())
@@ -86,7 +109,7 @@ function FirstComponent() {
             }}
           >
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
-              <DateCalendar onChange={handleChange} />
+              <DateCalendar onChange={handleChange} views={['month', 'year']} />
               <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
                 <Button onClick={handleSubmit}>OK</Button>
                 <Button onClick={handleCancel}>Cancel</Button>
@@ -227,9 +250,12 @@ const CalendarTop = () => {
   const tableData = useSelector(state => state.calendarReducer.tableData)
   const [studentAll, setStudentAll] = useState([]);
   const [teacherAll, setTeacherAll] = useState([]);
+  const [maxWeeks, setMaxWeeks]=useState(0);
   const scrollRef = useRef(null)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
   let scrollNum = 0;
+
+
   useEffect(() => {
     studentApi.getAll().then((data) => {
       setStudentAll(data.data);
@@ -238,6 +264,7 @@ const CalendarTop = () => {
       setTeacherAll(data.data);
     });
   }, [])
+
   useEffect(() => {
     const initDate = getWeekInfoForDate(new Date())
     dispatch(calendarDateAction(initDate))
@@ -248,6 +275,7 @@ const CalendarTop = () => {
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
   }, [])
+
   useEffect(()=>{
     //console.log(teacherAll)
   },[teacherAll])
@@ -267,6 +295,62 @@ const CalendarTop = () => {
             })
         }
     }, [accessData])
+
+
+    //-- 上一週 --
+    function prevWeek() {
+      if(currentDate.weekNumber!==1){
+        
+        const prevWeekMonday=getDateOfMondayInWeek(currentDate.year , currentDate.month , currentDate.weekNumber-1);
+        const monday_weekNumber={
+            year: prevWeekMonday.getFullYear(),
+            month: prevWeekMonday.getMonth()+1,
+            day: prevWeekMonday.getDate(),
+            weekNumber: currentDate.weekNumber-1
+        }
+
+        const prevStartDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
+        const prevEndDate = formatDateBack(getWeekDates(prevStartDate)[6]);
+
+         //-- 送到redux calendarDateAction --
+        dispatch(calendarDateAction(monday_weekNumber));
+
+        //-- 獲取期間課表資料送到redux calendarTableDataAction --
+        calendarApi.getAll(prevStartDate, prevEndDate).then((data) => {
+          dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+        })
+      }
+    }
+
+    //-- 下一週 --
+    function nextWeek() {
+
+      setMaxWeeks(countMondaysInMonth(currentDate.year, currentDate.month));
+
+      if(currentDate.weekNumber < maxWeeks){
+
+        const nextWeekMonday=getDateOfMondayInWeek(currentDate.year , currentDate.month , currentDate.weekNumber+1);
+        const monday_weekNumber={
+            year: nextWeekMonday.getFullYear(),
+            month: nextWeekMonday.getMonth()+1,
+            day: nextWeekMonday.getDate(),
+            weekNumber: currentDate.weekNumber+1
+        }
+
+        const nextStartDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
+        const nextEndDate = formatDateBack(getWeekDates(nextStartDate)[6]);
+
+         //-- 送到redux calendarDateAction --
+        dispatch(calendarDateAction(monday_weekNumber));
+
+        //-- 獲取期間課表資料送到redux calendarTableDataAction --
+        calendarApi.getAll(nextStartDate, nextEndDate).then((data) => {
+          dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+        })
+      }
+    }
+  
+  
 
   return (
     <Box m={"25px 0"} sx={
@@ -315,7 +399,25 @@ const CalendarTop = () => {
               }}>TODAY</Button>
               {authorityRange.p_update&&<ImportTemplate />}
             </Box>
-            <h4>{`${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週` + "學生課表"}</h4>
+            <Box display={"flex"} alignItems={"center"}>
+
+              <IconButton onClick={(e)=>{prevWeek();}} aria-label="上一週" sx={{ 
+                opacity: currentDate.weekNumber===1 ? 0: 1 ,
+                visibility: currentDate.weekNumber===1 ? 'hidden': 'visible' ,
+                backgroundColor:'#1d7dc9', 
+                color:'#fff', 
+                transform:'rotate(180deg)', 
+                "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
+              <h4 style={{margin:'0 8px'}}>{`${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週學生課表`}</h4>
+
+              <IconButton onClick={(e)=>{nextWeek();}} aria-label="下一週" sx={{
+                opacity: currentDate.weekNumber===maxWeeks ? 0: 1 ,
+                visibility: currentDate.weekNumber===maxWeeks ? 'hidden': 'visible' ,
+                backgroundColor:'#1d7dc9', 
+                color:'#fff', 
+                "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
+
+            </Box>
             <Box display={"flex"} justifyContent={"space-between"} gap={"15px"} m={isMobile ? "0 0 0 auto" : "0"}>
               <Box className="scroll-button" display={isMobile ? "none" : "flex"} justifyContent={"space-between"} alignItems={"center"} sx={
                 {
@@ -372,7 +474,7 @@ const CalendarTop = () => {
               </Box>
               <Box sx={{display:'flex', alignItems:'center', gap: "10px",}}>
                 {/* <span>選擇日期</span> */}
-                <FirstComponent currentDate={currentDate} />
+                <SelectDate currentDate={currentDate} />
                 {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
               </Box>
               
@@ -1038,13 +1140,11 @@ export const TimeSelect = ({ setCurrentDate }) => {
       </Dialog>
     </>
   )
-
 }
 
 
 
-
-const ClassOverView = () => {
+export default function ClassOverView() {
   return (
     <div style={{ width: '95%', margin: '20px auto 0' }}>
       <Header title="課表行事曆" subtitle="昨日之前的課表(含昨日)，不能做新增、修改、刪除的操作!" warm={true} />
@@ -1052,5 +1152,3 @@ const ClassOverView = () => {
     </div>
   );
 };
-
-export default ClassOverView;

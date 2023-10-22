@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, Button, TextField, FormControlLabel } from "@mui/material";
+import { Box, Typography, useTheme, Button, ButtonGroup, TextField, FormControlLabel } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import CheckIcon from '@mui/icons-material/Check';
@@ -436,55 +436,49 @@ const Authority = () => {
             flex: 1,
             renderCell: (rows) => {
                 return (
-                    <Box display={"flex"} flexWrap={"wrap"} gap={"5px"} width="100%">
-                        {authorityRange.p_update && <UpdataAuthorityData id={rows.row.Tb_index} type={"update"} handleButtonClick={handleButtonClick} />}
+                    
+                    <Box width="100%">
 
-                        {authorityRange.p_delete &&
-                            <Box
-                                width="fit-content"
-                                p="6px"
-                                display="flex"
-                                borderRadius="4px"
-                                backgroundColor="#F8AC59"
-                                justifyContent="center"
-                                alignItems="center"
-                                sx={{ cursor: "pointer", display: rows.row.Tb_index=='group2023071815332755' || rows.row.Tb_index=='group2023071815335388' || rows.row.Tb_index=='group2022092314594853' ? 'none':'inline' }}
-                                onClick={() => {
-                                    getAll().then((res) => {
-                                        let result = [];
-                                        res.data.forEach((item) => {
-                                            if (item.Group_name === rows.row.Group_name) {
-                                                result.push(item.name)
+
+                        <ButtonGroup variant="contained" aria-label="outlined primary button group">
+                           {authorityRange.p_update && <UpdataAuthorityData id={rows.row.Tb_index} type={"update"} handleButtonClick={handleButtonClick} />}
+                           {authorityRange.p_delete &&
+                                <Button variant="contained" startIcon={<DeleteIcon />}
+                                    sx={{backgroundColor: '#F8AC59', display: rows.row.Tb_index==='group2023071815332755' || rows.row.Tb_index==='group2023071815335388' || rows.row.Tb_index==='group2022092314594853' ? 'none':'inline-flex' }}
+                                    onClick={() => {
+                                        getAll().then((res) => {
+                                            let result = [];
+                                            res.data.forEach((item) => {
+                                                if (item.Group_name === rows.row.Group_name) {
+                                                    result.push(item.name)
+                                                }
+                                            })
+                                            if (result.length === 0) {
+                                                if (window.confirm(`確定要刪除權限:"${rows.row.Group_name}"嗎?`)) {
+                                                    authorityApi.deleteOne(rows.row.Tb_index, (data) => {
+                                                        if (data.data.success) {
+                                                            dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.Group_name}`))
+                                                        } else {
+                                                            dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.Group_name}`, "error"))
+                                                        }
+                                                        handleButtonClick()
+                                                    })
+                                                }
+                                            } else {
+                                                const str = result.join("\r");
+                                                window.alert(`無法刪除此權限，以下使用者正在套用中:\r${str}`)
                                             }
+    
                                         })
-                                        if (result.length === 0) {
-                                            if (window.confirm(`確定要刪除權限:"${rows.row.Group_name}"嗎?`)) {
-                                                authorityApi.deleteOne(rows.row.Tb_index, (data) => {
-                                                    if (data.data.success) {
-                                                        dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.Group_name}`))
-                                                    } else {
-                                                        dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.Group_name}`, "error"))
-                                                    }
-                                                    handleButtonClick()
-                                                })
-                                            }
-                                        } else {
-                                            const str = result.join("\r");
-                                            window.alert(`無法刪除此權限，以下使用者正在套用中:\r${str}`)
-                                        }
-
-                                    })
-
-                                }}
-                            >
-                                <DeleteIcon sx={{ color: "#fff" }} />
-                                <Typography color={"#fff"} sx={{ ml: "5px"}}>
-                                    刪除
-                                </Typography>
-
-                            </Box>
+    
+                                    }}
+                                >
+                                        刪除
+                                </Button>
                         }
-
+                        </ButtonGroup>
+                        
+                        
                     </Box>
 
                 )
