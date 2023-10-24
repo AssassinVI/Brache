@@ -306,7 +306,7 @@ function TemplateList({ templateData, setTemplateData, handleButtonClick,authori
                         {/* {authorityRange.p_update && <UpdatedTeacherData id={rows.row.Tb_index}  sx={{ width: "66px" }} />} */}
                         <TemplateReNew id={rows.row.Tb_index}/>
                         {authorityRange.p_update &&
-                           <CrudTemplateData id={rows.row.Tb_index} sx={{ width: "66px" }} type={"update"} handleButtonClick={handleButtonClick} />
+                           <CrudTemplateData id={rows.row.Tb_index} sx={{ width: "80px" }} type={"update"} handleButtonClick={handleButtonClick} />
                         }
                         {authorityRange.p_delete &&
                           <Box

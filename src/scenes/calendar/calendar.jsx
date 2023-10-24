@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -134,15 +134,21 @@ function ImportTemplate() {
   const currentDate = useSelector(state => state.calendarReducer.currentDate)
   const dispatch = useDispatch(null)
   const handleCancel = () => {
+    setCtTitle(null);
     setOpen(false)
   }
   const handleSubmit = () => {
-    const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day
-    const endDate = formatDateBack(getWeekDates(startDate)[6])
+    const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day;
+    const endDate = formatDateBack(getWeekDates(startDate)[6]);
 
-    if (window.confirm(`是否要在 '${startDate}~${endDate}' 的課表中\n匯入'${ct_title}'`)) {
+    if(ct_title===null){
+      dispatch(snackBarOpenAction(true, '請選擇公版課表', 'error'));
+    }
+    else if (window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月" 的課表中\n匯入'${ct_title}'`)) {
+      //-- 指定月的第一週星期一日期 --
+      const firstMonday=getDateOfMondayInWeek(currentDate.year, currentDate.month, 1);
       calendarApi.import_course({
-        StartDate: startDate,
+        StartDate: `${firstMonday.getFullYear()}-${firstMonday.getMonth()+1}-${firstMonday.getDate()}`,
         EndDate: endDate,
         ct_list_id: data.Tb_index
       }, (res) => {
@@ -186,12 +192,12 @@ function ImportTemplate() {
               e.stopPropagation()
             }}
           >
-            <DialogTitle sx={{ fontSize: "20px", paddingBottom: "2px" }}>{"模板匯入"}</DialogTitle>
-            <DialogTitle sx={{ fontSize: "12px", padding: "0 24px 10px 24px", color: "red" }}>{"匯入的模板無法覆蓋已登記的課表"}</DialogTitle>
+            <DialogTitle sx={{ fontSize: "20px", paddingBottom: "2px" }}>{"公版課表匯入"}</DialogTitle>
+            <DialogTitle sx={{ fontSize: "12px", padding: "0 24px 10px 24px", color: "red" }}>{"匯入的公版課表無法覆蓋已登記的課表"}</DialogTitle>
             <DialogContent sx={{ width: "100%", padding: "20px 24px !important" }} >
               {templateList &&
                 <FormControl fullWidth >
-                  <InputLabel id="demo-simple-select-label">模板</InputLabel>
+                  <InputLabel id="demo-simple-select-label">公版課表</InputLabel>
                   <Select onChange={(e) => {
                     const selectedTbIndex = e.target.value;
                     const selectedTemplate = templateList.find(item => item.Tb_index === selectedTbIndex);
@@ -742,26 +748,14 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll },
  */
 const LessonUnit = ({ data, count, teacherAll, studentAll }) => {
   let gap;
-  let classTimeStamp;
   let bg_color;
   if (data) {
     const start = data.StartTime;
     const end = data.EndTime;
     gap = calculateDifferenceIn15Minutes(start, end)
-    // 将日期时间字符串解析为Date对象
-    const EndTime = new Date(data.c_date +"T"+ end);
-
-    // 获取时间戳
-    classTimeStamp = EndTime.getTime();
-
-    //-- 判斷課程背景色 --
-    if((Date.now() < classTimeStamp)||(data.signin_time && data.signout_time)){
-      bg_color=data.t_color;
-    } 
-    //-- 超過上課時間視為遲到變紅色 --
-    else{
-      bg_color="#FF0000";
-    }
+   
+    bg_color=data.t_color;
+   
   }
 
   return (
@@ -845,8 +839,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
     }
   }
 
-  
-
 
   useEffect(() => {
     if (currentDate) {
@@ -875,6 +867,26 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
    
 
   if (bg || type === "insert") {
+
+    let isSign=false;
+    
+    if(unitData){
+
+      // 将日期时间字符串解析为Date对象
+      const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
+
+      // 获取时间戳
+      const classTimeStamp = EndTime.getTime();
+
+      //-- 判斷課程背景色 --
+      if((Date.now() < classTimeStamp)||(unitData.signin_time && unitData.signout_time)){
+      } 
+      //-- 超過上課時間視為遲到變紅色 --
+      else{
+        isSign=true;
+      }
+    }
+
     return (
       <>
         {type === "update" ?
@@ -887,25 +899,29 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
               <p style={{margin:0, fontSize:'15px'}}>下課時間：{unitData.EndTime}</p>
             </React.Fragment>
           } arrow placement="top">
-          <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} onClick={(e) => {
-            e.stopPropagation()
-            calendarApi.getOne(id, (data) => {
-              setData(data.data.data[0])
-              setOpen(true)
-            })
-          }}>
+
             
-            <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
-              { 
-                // 課程顯示學生名
-                unitData.student.map((item)=>{
-                    return (
-                       <p style={{margin: 0,}}>{item.name}</p>
-                    )
-                })
-              }
-            </div>
-          </Box> 
+                <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} onClick={(e) => {
+                  e.stopPropagation()
+                  calendarApi.getOne(id, (data) => {
+                    setData(data.data.data[0])
+                    setOpen(true)
+                  })
+                }}>
+                      <Chip label="未簽" size="small" color="error" sx={{position:'absolute', top:'-10px', right:'-3px', display: isSign ? 'inline-flex':'none'}}/>
+                      <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
+                        { 
+                          // 課程顯示學生名
+                          unitData.student.map((item)=>{
+                              return (
+                                <p style={{margin: 0,}}>{item.name}</p>
+                              )
+                          })
+                        }
+                      </div>
+
+
+                </Box> 
           </Tooltip>
           :
             <Button  variant="contained" sx={{ backgroundColor: "#6DC4C5", gap: "10px" }} onClick={(e) => {

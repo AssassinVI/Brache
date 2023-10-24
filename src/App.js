@@ -48,16 +48,16 @@ function App() {
 
 
 
-        <Snackbar open={snackbarOpen.flag} autoHideDuration={2000} onClose={handleClose} sx={{
-          top: "3vh !important",
-          bottom: "auto !important",
-          left: "0 !important",
-          right: "0 !important",
-          margin: "auto",
-          height: "70px",
-          width: "95%",
+        <Snackbar open={snackbarOpen.flag} autoHideDuration={2000} anchorOrigin={{vertical:'top', horizontal:'center'}} onClose={handleClose} sx={{
+          // top: "3vh !important",
+          // bottom: "auto !important",
+          // left: "0 !important",
+          // right: "0 !important",
+          // margin: "auto",
+          // height: "70px",
+          // width: "50%",
         }}>
-          <Alert severity={snackbarOpen.severity} sx={{ width: '100%' }}>
+          <Alert variant="filled" severity={snackbarOpen.severity} sx={{ width: '100%' }}>
             {snackbarOpen.message}
           </Alert>
         </Snackbar>

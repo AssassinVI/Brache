@@ -166,6 +166,43 @@ export function dataTransformTable(dataArr, type) {
     return formattedData;
 }
 
+
+//-- 轉換資料成表格形式(模板) --
+export function dataTransformTableTemplate(dataArr) {
+
+    const formattedData = dataArr.reduce((result, item) => {
+        const formattedDate = item.c_week_num; // 第幾周直接作為 key
+
+        // 將物件按第幾周分類，若第幾周還不存在，先建立一個物件
+        if (!result[formattedDate]) {
+            result[formattedDate] = {};
+        }
+
+        const week = item.c_week; // 取得星期
+        if (!result[formattedDate][week]) {
+            result[formattedDate][week] = {};
+        }
+
+        const roomName = item.room_name; // 取得 room name
+
+        // 將物件按 room name 分類，若 room name 還不存在，先建立一個物件
+        if (!result[formattedDate][week][roomName]) {
+            result[formattedDate][week][roomName] = {};
+        }
+
+        const startTime = item.StartTime; // 取得 start time
+
+        // 將物件按 start time 分類，若 start time 還不存在，直接放入該課程物件
+        if (!result[formattedDate][week][roomName][startTime]) {
+            result[formattedDate][week][roomName][startTime] = item;
+        }
+
+        return result;
+    }, {});
+    return formattedData;
+}
+
+
 export function addMinutesToTime(inputTime, minutesToAdd) {
     // 將時間字串轉換為 Date 物件
     const timeParts = inputTime.split(":");

@@ -1,10 +1,10 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
-import { getWeekInfoForDate, dataTransformTable, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor } from './getMonday';
+import { getWeekInfoForDate, dataTransformTable, dataTransformTableTemplate, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor } from './getMonday';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import * as templateApi from "../../axios-api/calendarTemplateData"
 import MultiSelect from '../../lib/multiSelect';
@@ -21,7 +21,7 @@ import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
 function TeacherColor ({data}){
   return(
-    <Box display={"flex"} gap={"20px"} flexWrap={"wrap"}  m={"19px 0 0"}>
+    <Box display={"flex"} gap={"20px"} flexWrap={"wrap"}  >
       {
           data.map((item)=>{
             return(
@@ -43,6 +43,10 @@ const CalendarTop = ({ id }) => {
   const [tableData, setTableData] = useState(null)
   const [studentAll, setStudentAll] = useState([]);
   const [teacherAll, setTeacherAll] = useState([]);
+  //-- 第幾周 --
+  const [weekNum, setWeekNum] = useState(1);
+  //-- 所有週課程資料 --
+  const [allWeekTableData, setAllWeekTableData] = useState(null);
   const scrollRef = useRef(null)
   let scrollNum = 0;
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
@@ -54,13 +58,32 @@ const CalendarTop = ({ id }) => {
       setTeacherAll(data.data);
     });
   }, [])
+
+
   useEffect(() => {
     const initDate = getWeekInfoForDate(new Date())
     dispatch(calendarDateAction(initDate))
     templateApi.get_course_template(id, (data) => {
-      setTableData(dataTransformTable(data.data.data, "template"))
+      
+      setAllWeekTableData(dataTransformTableTemplate(data.data.data));
+      
     })
   }, [])
+
+  useEffect(()=>{
+     if(allWeekTableData!==null){
+      // console.log(allWeekTableData[weekNum]);
+      setTableData(allWeekTableData[weekNum]);
+     }
+  }, [allWeekTableData])
+
+  useEffect(()=>{
+    if(allWeekTableData!==null){
+      // console.log(allWeekTableData[weekNum]);
+      setTableData(allWeekTableData[weekNum]);
+     }
+  }, [tableData])
+
 
    //權限
    const { accessData, accessDetect } = useAuthorityRange()
@@ -77,6 +100,35 @@ const CalendarTop = ({ id }) => {
            })
        }
    }, [accessData])
+
+
+   //-- 上一週 --
+   function prevWeek() {
+    if(weekNum!==1){
+        let newWeek=weekNum-1;
+        setWeekNum(newWeek);
+        if(allWeekTableData[newWeek]===undefined){
+          let newAllWeekTableData={};
+          newAllWeekTableData[newWeek]={};
+          setAllWeekTableData({...allWeekTableData, ...newAllWeekTableData});
+        }
+        setTableData(allWeekTableData[newWeek]);
+      }
+    }
+
+   //-- 上一週 --
+   function nextWeek() {
+    if(weekNum!==5){
+        let newWeek=weekNum+1;
+        setWeekNum(newWeek);
+        if(allWeekTableData[newWeek]===undefined){
+          let newAllWeekTableData={};
+          newAllWeekTableData[newWeek]={};
+          setAllWeekTableData({...allWeekTableData, ...newAllWeekTableData});
+        }
+        setTableData(allWeekTableData[newWeek]);
+      }
+    }
 
 
 
@@ -121,6 +173,22 @@ const CalendarTop = ({ id }) => {
                 // 老師顏色列表
                 teacherAll && <TeacherColor data={teacherAll}/>
             }
+            <Box className='selectWeek' sx={{display:"flex", alignItems: "center", gap: "10px"}}>
+              <IconButton onClick={(e)=>{prevWeek();}} aria-label="上一週" title='上一週' sx={{ 
+                opacity: weekNum===1 ? 0: 1 ,
+                visibility: weekNum===1 ? 'hidden': 'visible' ,
+                backgroundColor:'#1d7dc9', 
+                color:'#fff', 
+                transform:'rotate(180deg)', 
+                "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
+               <h2>第{weekNum}週</h2>
+               <IconButton onClick={(e)=>{nextWeek();}} aria-label="下一週" title='下一週' sx={{
+                opacity: weekNum===5 ? 0: 1 ,
+                visibility: weekNum===5 ? 'hidden': 'visible' ,
+                backgroundColor:'#1d7dc9', 
+                color:'#fff', 
+                "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
+            </Box>
             <Box className='tool_box' display={"flex"} justifyContent={"space-between"} gap={"15px"}>
               <Box className="scroll-button" display={isMobile ? "none" : "flex"} justifyContent={"space-between"} alignItems={"center"} sx={
                 {
@@ -176,13 +244,13 @@ const CalendarTop = ({ id }) => {
               </Box>
               { 
                 // 新增按鈕
-                authorityRange.p_insert &&  <LessonPopUp type={"insert"} ct_list_id={id} studentAll={studentAll} teacherAll={teacherAll} tableData={tableData} setTableData={setTableData} authorityRange={authorityRange} />
+                authorityRange.p_insert &&  <LessonPopUp type={"insert"} weekNum={weekNum} ct_list_id={id} studentAll={studentAll} teacherAll={teacherAll} tableData={tableData} setTableData={setTableData} setAllWeekTableData={setAllWeekTableData} authorityRange={authorityRange} />
               }
             </Box>
 
           </Box>
           
-          <Calendar ref={scrollRef} tableData={tableData} studentAll={studentAll} teacherAll={teacherAll} setTableData={setTableData} ct_list_id={id} authorityRange={authorityRange}/>
+          <Calendar ref={scrollRef} weekNum={weekNum} tableData={tableData} studentAll={studentAll} teacherAll={teacherAll} setTableData={setTableData} setAllWeekTableData={setAllWeekTableData} ct_list_id={id} authorityRange={authorityRange}/>
         </>
         : <IsLoading />
       }
@@ -201,7 +269,7 @@ const CalendarTop = ({ id }) => {
  * @param ct_list_id 模板ID
  * @param authorityRange 權限
  */
-const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, ct_list_id ,authorityRange}, ref) => {
+const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, setAllWeekTableData, weekNum, ct_list_id ,authorityRange}, ref) => {
   const theme = useTheme();
 
   const colors = tokens(theme.palette.mode);
@@ -425,7 +493,7 @@ const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, 
                                     }
                                   }
                                   return (
-                                    <LessonUnit  authorityRange={authorityRange} ct_list_id={ct_list_id} tableData={tableData} setTableData={setTableData} teacherAll={teacherAll} studentAll={studentAll} count={count} uniqueId={uniqueId} data={tableData?.[week]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
+                                    <LessonUnit  authorityRange={authorityRange} ct_list_id={ct_list_id} tableData={tableData} setTableData={setTableData} setAllWeekTableData={setAllWeekTableData} teacherAll={teacherAll} studentAll={studentAll} count={count} uniqueId={uniqueId} weekNum={weekNum} data={tableData?.[week]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
                                   )
                                 })
                               }
@@ -460,7 +528,7 @@ const Calendar = forwardRef(({ tableData, studentAll, teacherAll, setTableData, 
  * @param authorityRange 權限
  * @returns 顯示課程在日曆上
  */
-const LessonUnit = ({ data, count, teacherAll, studentAll, tableData, setTableData, ct_list_id, authorityRange }) => {
+const LessonUnit = ({ data, weekNum, count, teacherAll, studentAll, tableData, setTableData, setAllWeekTableData, ct_list_id, authorityRange }) => {
   let gap;
   if (data) {
     const start = data.StartTime;
@@ -470,7 +538,7 @@ const LessonUnit = ({ data, count, teacherAll, studentAll, tableData, setTableDa
 
   return (
     <Box key={data && data.Tb_index} flexBasis="25%" width={"100%"}  >
-      {count > 0 ? <LessonPopUp unitData={data} authorityRange={authorityRange} ct_list_id={ct_list_id} teacherAll={teacherAll} studentAll={studentAll} id={data?.Tb_index} name={data?.c_name} gap={gap} bg={data?.t_color} type={"update"} tableData={tableData} setTableData={setTableData} /> : null}
+      {count > 0 ? <LessonPopUp unitData={data} weekNum={weekNum} authorityRange={authorityRange} ct_list_id={ct_list_id} teacherAll={teacherAll} studentAll={studentAll} id={data?.Tb_index} name={data?.c_name} gap={gap} bg={data?.t_color} type={"update"} tableData={tableData} setTableData={setTableData} setAllWeekTableData={setAllWeekTableData} /> : null}
     </Box>
   )
 }
@@ -493,7 +561,7 @@ const LessonUnit = ({ data, count, teacherAll, studentAll, tableData, setTableDa
  * @param authorityRange 權限
  * @returns 
  */
-const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll, tableData, setTableData, ct_list_id, authorityRange }) => {
+const LessonPopUp = ({unitData, weekNum, id, name, gap, bg, type, teacherAll, studentAll, tableData, setTableData, setAllWeekTableData, ct_list_id, authorityRange }) => {
 
   const [open, setOpen] = useState(false)
   const [data, setData] = useState({})
@@ -502,7 +570,10 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
     setOpen(false)
     setData({})
   }
+  
+  //console.log(unitData);
 
+  //-- 送出資料(新增、修改) --
   const handleSubmit = () => {
     if (type === "update") {
       templateApi.update_course({ ...data, ct_list_id: ct_list_id }, (res) => {
@@ -510,23 +581,24 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
         dispatch(snackBarOpenAction(true, res.data.msg, status))
         if (res.data.success) {
           templateApi.get_course_template(ct_list_id, (data) => {
-            setTableData(dataTransformTable(data.data.data, "template"))
+            //setTableData(dataTransformTable(data.data.data, "template"))
+            setAllWeekTableData(dataTransformTableTemplate(data.data.data));
           })
         }
 
       })
     } else {
-      templateApi.insert_course({ ...data, ct_list_id: ct_list_id }, (res) => {
+      templateApi.insert_course({ ...data, ct_list_id: ct_list_id, c_week_num: weekNum }, (res) => {
         const status = res.data.success ? "success" : "error"
         dispatch(snackBarOpenAction(true, res.data.msg, status))
         if (res.data.success) {
           templateApi.get_course_template(ct_list_id, (data) => {
-            setTableData(dataTransformTable(data.data.data, "template"))
+            //setTableData(dataTransformTable(data.data.data, "template"))
+            setAllWeekTableData(dataTransformTableTemplate(data.data.data));
           })
         }
       })
     }
-
 
     setOpen(false)
   }
@@ -578,7 +650,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
             </Box> 
           </Tooltip>
           :
-          <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {
+          <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "100px", gap: "5px" }} onClick={(e) => {
             e.stopPropagation()
             setOpen(true)
           }}>

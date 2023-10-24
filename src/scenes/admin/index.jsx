@@ -170,9 +170,15 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
                 } else {
                     if (userData.password) {
                         if (formPage !== 1) {
-                            if ((userData.s_birthday || userData.radio === "2") && userData.gender && (userData.t_skill || userData.radio === "3")) {
-                                insertData()
-                            } else {
+                            //-- 老師 --
+                            if(userData.radio === "2" && userData.gender && userData.t_skill){
+                                insertData();
+                            }
+                            //-- 學生 --
+                            else if (userData.radio === "3" ) {
+                                insertData();
+                            } 
+                            else {
                                 window.alert("尚有欄位未填寫")
                             }
 
@@ -317,6 +323,12 @@ const StudentForm= ({ userData, setUserData})=>{
                         label="生日" 
                         format="YYYY/MM/DD"
                         value={dayjs(userData.s_birthday)}
+                        sx={{'& .Mui-error':{
+                                color: "#757575 !important"
+                            },
+                            '& .Mui-error fieldset':{
+                                borderColor: "#b9b9b9 !important",
+                            }}}
                         onChange={(newDate)=>{
                             let formatDate=`${newDate.$y}-${parseInt(newDate.$M)+1}-${newDate.$D}`;
                             setUserData({
