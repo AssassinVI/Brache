@@ -40,13 +40,13 @@ const CalendarTop = ({ id }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const dispatch = useDispatch(null)
-  const [tableData, setTableData] = useState(null)
+  const [tableData, setTableData] = useState([])
   const [studentAll, setStudentAll] = useState([]);
   const [teacherAll, setTeacherAll] = useState([]);
   //-- 第幾周 --
   const [weekNum, setWeekNum] = useState(1);
   //-- 所有週課程資料 --
-  const [allWeekTableData, setAllWeekTableData] = useState(null);
+  const [allWeekTableData, setAllWeekTableData] = useState([]);
   const scrollRef = useRef(null)
   let scrollNum = 0;
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
@@ -65,6 +65,7 @@ const CalendarTop = ({ id }) => {
     dispatch(calendarDateAction(initDate))
     templateApi.get_course_template(id, (data) => {
       
+
       setAllWeekTableData(dataTransformTableTemplate(data.data.data));
       
     })
@@ -77,12 +78,14 @@ const CalendarTop = ({ id }) => {
      }
   }, [allWeekTableData])
 
-  useEffect(()=>{
-    if(allWeekTableData!==null){
-      // console.log(allWeekTableData[weekNum]);
-      setTableData(allWeekTableData[weekNum]);
-     }
-  }, [tableData])
+  // useEffect(()=>{
+  //   if(allWeekTableData!==null){
+      
+  //     setTableData(allWeekTableData[weekNum]);
+
+  //     console.log(tableData);
+  //    }
+  // }, [tableData])
 
 
    //權限

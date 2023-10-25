@@ -31,6 +31,9 @@ export default function Login() {
         axios({
             method: 'post',
             url: "https://bratsche.web-board.tw/ajax/login_ajax.php",
+            headers:{
+                //Test:'test'
+            },
             data: {
                 type: "login",
                 admin_id: data.get("account"),

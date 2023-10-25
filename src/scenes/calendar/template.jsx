@@ -132,14 +132,14 @@ function CrudTemplateData({ id, type, sx, handleButtonClick }) {
 
                 },
             }}>
-                <DialogTitle sx={{ fontSize: "20px" }}>{type === "update" ? "模板編輯" : "新增模板"}</DialogTitle>
+                <DialogTitle sx={{ fontSize: "20px" }}>{type === "update" ? "公版課表編輯" : "新增公版課表"}</DialogTitle>
                 <Box>
                     <DialogContent>
                         <TextField
                             autoFocus
                             margin="dense"
                             id="name"
-                            label="模板名稱"
+                            label="公版課表名稱"
                             type="text"
                             fullWidth
                             variant="standard"
@@ -206,13 +206,13 @@ function TemplateReNew({ id}) {
 
     return (
         <>
-            <Button style={{ display: "flex", gap: "6px" }} variant="contained" sx={{ backgroundColor: "#a87b79", width: "90px" }} onClick={(e) => {
+            <Button style={{ display: "flex", gap: "6px" }} variant="contained" sx={{ backgroundColor: "#a87b79", width: "150px" }} onClick={(e) => {
                 e.stopPropagation()
 
                 setOpen(true);
 
             }}>    <DateRangeIcon />
-                模板更改
+                公版課表更改
             </Button>
             <Dialog open={open}  sx={{
                 "& .MuiPaper-root": { padding: " 10px 0" },
@@ -267,7 +267,7 @@ function TemplateList({ templateData, setTemplateData, handleButtonClick,authori
         },
         {
             field: "ct_title",
-            headerName: "模板名稱",
+            headerName: "公版課表名稱",
             flex: isMobile ? 0.5 : 1,
             cellClassName: "name-column--cell",
         },
@@ -428,7 +428,7 @@ export default function Template() {
 
     return (
         <div style={{ width: '95%', margin: '20px auto 0', display: "flex", flexDirection: "column" }}>
-            <Header title="公版課表" subtitle="以週為單位新增公版課表，模板可以用來匯入至正式課表做初步排課。" />
+            <Header title="公版課表" subtitle="以週為單位新增公版課表，公版課表可以用來匯入至正式課表做初步排課。" />
             {authorityRange.p_insert && <CrudTemplateData type={"insert"} sx={{ alignSelf: "flex-end" }} handleButtonClick={handleButtonClick} />}
           
             <TemplateList templateData={templateData} setTemplateData={setTemplateData} handleButtonClick={handleButtonClick} authorityRange={authorityRange}/>
