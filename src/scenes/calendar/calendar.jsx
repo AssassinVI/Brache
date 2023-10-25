@@ -1117,7 +1117,7 @@ export const TimeSelect = ({ setCurrentDate }) => {
     setOpen(false)
   }
   const handleChange = (e) => {
-    setDate(e._d)
+    setDate(e.$d)
   }
   const handleSubmit = () => {
     setCurrentDate(date)
