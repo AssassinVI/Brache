@@ -1,4 +1,4 @@
-import { snackbarOpen, menuIn, systemTree, adminType, clearType, calendarDateType, calednarTableDataType, informType } from "./type"
+import { snackbarOpen, menuIn, systemTree, adminType, clearType, calendarDateType, calednarTableDataType, informType, isTestType } from "./type"
 export const snackBarOpenAction = (bolean, str, severity) => {
     return {
         type: snackbarOpen,
@@ -55,5 +55,13 @@ export const calendarTableDataAction = (data) => {
     return {
         type: calednarTableDataType,
         tableData: data,
+    }
+}
+
+
+export const isTestTypeAction = (test) => {
+    return {
+        type: isTestType,
+        payload: test,
     }
 }

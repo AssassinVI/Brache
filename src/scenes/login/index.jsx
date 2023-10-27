@@ -32,7 +32,7 @@ export default function Login() {
             method: 'post',
             url: "https://bratsche.web-board.tw/ajax/login_ajax.php",
             headers:{
-                //Test:'test'
+                Test:'test'
             },
             data: {
                 type: "login",

@@ -40,7 +40,7 @@ const CalendarTop = ({ id }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
   const dispatch = useDispatch(null)
-  const [tableData, setTableData] = useState([])
+  const [tableData, setTableData] = useState({})
   const [studentAll, setStudentAll] = useState([]);
   const [teacherAll, setTeacherAll] = useState([]);
   //-- 第幾周 --
@@ -73,8 +73,15 @@ const CalendarTop = ({ id }) => {
 
   useEffect(()=>{
      if(allWeekTableData!==null){
-      // console.log(allWeekTableData[weekNum]);
-      setTableData(allWeekTableData[weekNum]);
+      
+      console.log(allWeekTableData);
+      if(allWeekTableData[weekNum]===undefined){
+        setTableData({});
+      }
+      else{
+        setTableData(allWeekTableData[weekNum]);
+      }
+      
      }
   }, [allWeekTableData])
 
@@ -119,7 +126,7 @@ const CalendarTop = ({ id }) => {
       }
     }
 
-   //-- 上一週 --
+   //-- 下一週 --
    function nextWeek() {
     if(weekNum!==5){
         let newWeek=weekNum+1;

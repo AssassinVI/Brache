@@ -4,6 +4,7 @@ import { menuInReducer } from "./reducer/menuIn";
 import { systemTreeReducer } from "./reducer/systemTree";
 import { accessRangeReducer } from "./reducer/accessRange";
 import { calendarReducer } from "./reducer/calendar";
+import { testReducer } from "./reducer/isTest";
 import { clearType } from "./type";
 const createStore = require('redux').createStore;
 const reducers = combineReducers({
@@ -11,7 +12,8 @@ const reducers = combineReducers({
     menuInReducer,
     systemTreeReducer,
     accessRangeReducer,
-    calendarReducer
+    calendarReducer,
+    testReducer
 })
 
 const rootReducer = (state, action) => {

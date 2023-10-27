@@ -277,7 +277,7 @@ const CalendarTop = () => {
     const startDate = initDate.year + "-" + initDate.month + "-" + initDate.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     calendarApi.getAll(startDate, endDate).then((data) => {
-      //console.log(data.data)
+      console.log(data)
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
   }, [])

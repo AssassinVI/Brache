@@ -7,6 +7,7 @@ const informType = "informData"
 const clearType = "clearAllRedux"
 const calendarDateType = "switchCalendarDate"
 const calednarTableDataType = "switchCalednarTableData"
+const isTestType = 'isTestType';
 // 這裡採node的方式做export/import
 module.exports = {
     snackbarOpen,
@@ -16,5 +17,6 @@ module.exports = {
     clearType,
     calendarDateType,
     calednarTableDataType,
-    informType
+    informType,
+    isTestType
 };
