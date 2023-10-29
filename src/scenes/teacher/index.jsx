@@ -448,6 +448,7 @@ const TeacherDataList = () => {
     useEffect(() => {
         teacherApi.getAll().then((res) => {
             setTeacherData(res.data)
+            // console.log(res.data);
         })
     }, [])
 
@@ -492,7 +493,7 @@ const TeacherDataList = () => {
             renderCell: (rows) => {
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"5px"} width="100%">
-                        <Qrcode value={rows.row.Tb_index} />
+                        <Qrcode value={rows.row.qrcodeUrl} />
                     </Box>
 
                 )

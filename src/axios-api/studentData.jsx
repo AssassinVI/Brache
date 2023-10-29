@@ -20,6 +20,7 @@ export const getAll = async () => {
                 s_sex: item.s_sex === "1" ? "男" : "女",
                 s_year: item.s_year,
                 s_birthday: item.s_birthday,
+                qrcodeUrl: item.qrcodeUrl,
                 index: i,
 
             };

@@ -93,7 +93,7 @@ function UpdatedStudentData({ id, sx, handleButtonClick }) {
     useEffect(() => {
         
         if (data) {
-             console.log(data)
+            //  console.log(data)
             setName(data.name)
             setAge(data.s_birthday)
             setGender(data.s_sex)
@@ -338,6 +338,7 @@ const StudentDataList = () => {
     useEffect(() => {
         studentApi.getAll().then((res) => {
             setStudentData(res.data)
+            // console.log(res);
         })
     }, [])
 
@@ -345,6 +346,7 @@ const StudentDataList = () => {
     const handleButtonClick = () => {
         studentApi.getAll().then((res) => {
             setStudentData(res.data)
+            
         })
     };
 
@@ -385,7 +387,7 @@ const StudentDataList = () => {
             renderCell: (rows) => {
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"5px"} width="100%">
-                        <Qrcode value={rows.row.Tb_index} />
+                        <Qrcode value={rows.row.qrcodeUrl} />
                     </Box>
 
                 )

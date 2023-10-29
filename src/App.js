@@ -20,6 +20,8 @@ import { SystemArchitecture } from "./scenes/system-architecture";
 import Authority from "./scenes/authority";
 import AdminManagement from "./scenes/admin";
 import Login from "./scenes/login";
+import Qrcode from "./scenes/qrcode";
+import Post from "./scenes/qrcode/post";
 import StudentDataList from "./scenes/student";
 import TeacherDataList from "./scenes/teacher";
 import ClassroomCalendar from "./scenes/calendar";
@@ -43,6 +45,9 @@ function App() {
 
         <Routes>
           <Route path="/" element={<Login />} />
+          <Route path="/qrcode" element={<Qrcode />} >
+            <Route path=":Tb_index" element={<Post />} />
+          </Route>
           <Route path="*" element={<Main setIsSidebar={setIsSidebar} isSidebar={isSidebar} />} />
         </Routes>
 
