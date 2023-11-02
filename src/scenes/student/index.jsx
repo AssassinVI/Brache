@@ -26,6 +26,9 @@ import RadioGroup from '@mui/material/RadioGroup';
 import useAuthorityRange from "../../custom-hook/useAuthorityRange";
 import { Qrcode } from "../teacher"
 
+//-- 關鍵字工具 --
+import KeywordTextField from '../../tool/keywordTextField'
+
 function UpdatedStudentData({ id, sx, handleButtonClick }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("")
@@ -322,6 +325,9 @@ const StudentDataList = () => {
     const { accessData, accessDetect } = useAuthorityRange()
     const [authorityRange, setAuthorityRange] = useState({})
 
+    //-- 關鍵字暫存所有資料用 --
+    const [keywordAdminData, setKeywordAdminData] = useState(null)
+
     //獲取權限範圍
     useEffect(() => {
         if (accessData) {
@@ -338,6 +344,7 @@ const StudentDataList = () => {
     useEffect(() => {
         studentApi.getAll().then((res) => {
             setStudentData(res.data)
+            setKeywordAdminData(res.data)
             // console.log(res);
         })
     }, [])
@@ -346,7 +353,7 @@ const StudentDataList = () => {
     const handleButtonClick = () => {
         studentApi.getAll().then((res) => {
             setStudentData(res.data)
-            
+            setKeywordAdminData(res.data)
         })
     };
 
@@ -412,6 +419,10 @@ const StudentDataList = () => {
             {/* <Alert severity="success">This is a success alert — check it out!</Alert> */}
             <Box m="20px auto 0" width={"95%"} display={"flex"} flexDirection={"column"} >
                 <Header title="學生資料管理" subtitle="本頁面條列所有學生的資料，供修改基本資料；如欲修改帳號、密碼、請到管理者管理。" />
+                <Box display={'flex'} justifyContent={'flex-end'}>
+                  {/* 關鍵字查詢 */}
+                  <KeywordTextField keywordAdminData={keywordAdminData} setAdminData={setStudentData} searchAttr={['name']} />
+                </Box>
                 <Box
                     m="20px 0 0 0"
                     width="100%"

@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery, Grid, FormLabel } from "@mui/material";
+import { Box, Typography, useTheme, Button, TextField, FormControlLabel, FormControl, useMediaQuery, Grid, FormLabel  } from "@mui/material";
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
@@ -30,7 +30,10 @@ import Radio from '@mui/material/Radio';
 import RadioGroup from '@mui/material/RadioGroup';
 import useAuthorityRange from "../../custom-hook/useAuthorityRange";
 
-function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
+//-- 關鍵字工具 --
+import KeywordTextField from '../../tool/keywordTextField'
+
+function UpdatedAdminData({ id, type, sx, authorityData, handleButtonClick }) {
     const [open, setOpen] = useState(false);
 
     //-- 帳號流水號 --
@@ -63,7 +66,7 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
 
     const [formPage, setFormPage] = useState(1)
     const [data, setData] = useState(null)
-    const { authorityData } = authorityApi.useGetAll()
+    //const { authorityData } = authorityApi.useGetAll()
     const dispatch = useDispatch(null)
 
 
@@ -204,8 +207,11 @@ function UpdatedAdminData({ id, type, sx, handleButtonClick }) {
                 name: data.name,
                 authority: data.admin_per,
                 account: data.admin_id,
+                password:data.admin_pwd,
+                pwd:data.admin_pwd,
                 radio: data.position_type,
             })
+            console.log(data);
         }
     }, [data])
 
@@ -681,6 +687,7 @@ const FormPage = ({ userData, setUserData, authorityData, type, formPage }) => {
                         }}
                         value={userData.name}
                     />
+                    
                 </DialogContent>
                 <DialogContent>
                     <RadioGroup
@@ -820,6 +827,12 @@ const AdminManagement = () => {
     const [authorityRange, setAuthorityRange] = useState({})
     const userId = useSelector(state => state.accessRangeReducer)
     const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
+    const { authorityData } = authorityApi.useGetAll()
+    const [adminType, setAdminType]=useState('all')
+    //-- 關鍵字暫存所有資料用 --
+    const [keywordAdminData, setKeywordAdminData] = useState(null)
+
+
     useEffect(() => {
         if (accessData) {
             const result = accessDetect(accessData, "管理者管理")
@@ -833,13 +846,27 @@ const AdminManagement = () => {
     useEffect(() => {
         adminApi.getAll().then((res) => {
             setAdminData(res.data)
+            setKeywordAdminData(res.data);
         })
     }, [])
+
+    useEffect(()=>{
+        console.log(authorityData);
+    }, [authorityData])
 
     const handleButtonClick = () => {
         adminApi.getAll().then((res) => {
             setAdminData(res.data)
         })
+    };
+
+    //-- 權限查詢 --
+    const changeAdminType= (e)=>{
+        setAdminType(e.target.value);
+        adminApi.getTypeAll(e.target.value).then((res)=>{
+            setAdminData(res.data);
+            setKeywordAdminData(res.data);
+        });
     };
 
     const dispatch = useDispatch(null)
@@ -896,7 +923,7 @@ const AdminManagement = () => {
             renderCell: (rows) => {
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"5px"} width="100%">
-                        {authorityRange.p_update && <UpdatedAdminData id={rows.row.Tb_index} type={"update"} handleButtonClick={handleButtonClick} sx={{ width: "85px" }} />}
+                        {authorityRange.p_update && <UpdatedAdminData id={rows.row.Tb_index} type={"update"} authorityData={authorityData} handleButtonClick={handleButtonClick} sx={{ width: "85px" }} />}
 
                         {(authorityRange.p_delete && rows.row.Tb_index !== userId.inform.Tb_index) &&
                             <Box
@@ -941,7 +968,36 @@ const AdminManagement = () => {
             {/* <Alert severity="success">This is a success alert — check it out!</Alert> */}
             <Box m="20px auto 0" width={"95%"} display={"flex"} flexDirection={"column"} >
                 <Header title="管理者管理" subtitle="本頁面條列所有使用者的權限以及基本資料" />
-                {authorityRange.p_insert && <UpdatedAdminData type={"insert"} handleButtonClick={handleButtonClick} sx={{ width: "85px", alignSelf: "flex-end" }} />}
+
+                <Box display={'flex'} justifyContent={'flex-end'}>
+
+                    {/* 關鍵字查詢 */}
+                    <KeywordTextField keywordAdminData={keywordAdminData} setAdminData={setAdminData} searchAttr={['name']} />
+                     
+                    <FormControl sx={{ m: 1, minWidth: 120, marginBottom:0}} size="small">
+                        <InputLabel id="demo-select-small-label">權限分類</InputLabel>
+                        <Select
+                            labelId="demo-select-small-label"
+                            id="demo-select-small"
+                            value={adminType}
+                            label="權限分類"
+                            onChange={changeAdminType}
+                        >
+                            <MenuItem value={'all'}>ALL</MenuItem>
+                            {authorityData && authorityData.data.map((item) => {
+                                return (
+                                    <MenuItem key={item.Tb_index} value={item.Tb_index}>{item.Group_name}</MenuItem>
+                                )
+                            })}
+                        </Select>
+                    </FormControl>
+
+                    {authorityRange.p_insert && <UpdatedAdminData type={"insert"} handleButtonClick={handleButtonClick} authorityData={authorityData} sx={{ width: "85px", alignSelf: "flex-end" }} />}
+
+                    
+                </Box>
+                
+                
 
                 <Box
                     m="20px 0 0 0"

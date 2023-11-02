@@ -2,8 +2,8 @@ import React, { useState, useEffect, useRef } from "react";
 
 import axios from "axios";
 import axiosInstance from "../../axios-api/axiosInstance";
-import {useParams} from 'react-router-dom'
-import { Box } from "@mui/material";
+import {useParams, Link} from 'react-router-dom'
+import { Box, Button } from "@mui/material";
 export default function Post() {
 
     const [course, setCourse]=useState({});
@@ -51,6 +51,7 @@ export default function Post() {
 
     useEffect(()=>{
         setDt(course.data);
+        console.log(course);
     }, [course]);
 
     return (
@@ -65,6 +66,16 @@ export default function Post() {
             {titleName}
             </h2>
             <h3 style={msg_style}>{course.msg}</h3>
+            <Button component={Link} variant="contained" to={"/"} sx={
+                {
+                    backgroundColor: '#009688',
+                    fontSize: '16px',
+                    letterSpacing: '0.1em',
+                    fontWeight: 600,
+                    marginTop: '15px',
+                    display: course.data?.type=='2' && !course?.success ? 'block':'none'
+                }
+            }>登入系統 </Button>
             <p style={dt_style}>
                 課程：{dt?.c_name} <br />
                 上課時間：{dt?.StartTime} <br />

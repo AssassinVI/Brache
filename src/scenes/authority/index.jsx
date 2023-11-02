@@ -1,4 +1,4 @@
-import { Box, Typography, useTheme, Button, ButtonGroup, TextField, FormControlLabel } from "@mui/material";
+import { Box, Typography, useTheme, Button, ButtonGroup, TextField, FormControlLabel, Radio, RadioGroup,  } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import { tokens } from "../../theme";
 import CheckIcon from '@mui/icons-material/Check';
@@ -270,14 +270,14 @@ const TableRow = ({ data, accessData, style, icon, className, handleDataCollecti
     }, [access])
     return (
         <Box className={className} display={"flex"} alignItems={"center"} sx={{ width: "100%", height: "60px", padding: "10px 12px", "@media all and (max-width:850px)": { padding: "10px 0" }, ...style }} >
-            <Typography flex={1} display={"flex"} alignItems={"center"} sx={{ "& svg": { marginRight: "5px" }, "@media all and (max-width:1110px)": { flex: "0.5" } }} color={colors.greenAccent[300]}>
+            <Typography flex={'1 1 20%'} display={"flex"} alignItems={"center"} sx={{ "& svg": { marginRight: "5px" }, "@media all and (max-width:1110px)": { flex: "0.5" } }} color={colors.greenAccent[300]}>
                 {icon && icon}
                 {data.name}
             </Typography>
-            <Typography flex={1} sx={{ "@media all and (max-width:1110px)": { flex: "0.3" } }}>
+            <Typography flex={'1 1 10%'} sx={{ "@media all and (max-width:1110px)": { flex: "0.3" } }}>
                 {data.orderBy}
             </Typography>
-            <Box display={"flex"} flex={1}>
+            <Box display={"flex"} flex={'1 1 50%'} justifyContent={'flex-end'}>
                 <FormControlLabel
                     control={
                         <Checkbox checked={access.p_insert} onChange={() => {
@@ -313,8 +313,8 @@ const TableRow = ({ data, accessData, style, icon, className, handleDataCollecti
                     label="檢視"
                 />
             </Box>
-            <Box display={"flex"} flex={0.3}>
-                <FormControlLabel
+            <Box display={"flex"} flex={'1 1 20%'} justifyContent={'flex-end'}>
+                {/* <FormControlLabel
                     control={
                         <Checkbox checked={(access.p_insert && access.p_update && access.p_delete) && true} onChange={((e) => {
                             if (e.target.checked) {
@@ -335,7 +335,29 @@ const TableRow = ({ data, accessData, style, icon, className, handleDataCollecti
                         })} />
                     }
                     label="全選"
-                />
+                /> */}
+                <RadioGroup
+                    row
+                    aria-labelledby="demo-row-radio-buttons-group-label"
+                    name="row-radio-buttons-group"
+                >
+                    <FormControlLabel value="全選" control={<Radio />} label="全選" checked={(access.p_insert && access.p_update && access.p_delete) && true} onChange={(e)=>{
+                         setAccess({
+                            p_insert: true,
+                            p_update: true,
+                            p_delete: true,
+                            p_read: true,
+                        })
+                    }} />
+                    <FormControlLabel value="不全選" control={<Radio />} label="不全選" checked={(!access.p_insert && !access.p_update && !access.p_delete && !access.p_read)} onChange={(e)=>{
+                         setAccess({
+                            p_insert: false,
+                            p_update: false,
+                            p_delete: false,
+                            p_read: false,
+                        })
+                    }} />
+                </RadioGroup>
             </Box>
         </Box>
     )
@@ -393,7 +415,6 @@ const Authority = () => {
     //數據刷新點
     const handleButtonClick = () => {
         refetchData();
-
     };
     const dispatch = useDispatch(null)
     const columns = [

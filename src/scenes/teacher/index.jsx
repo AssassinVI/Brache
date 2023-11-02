@@ -21,6 +21,10 @@ import { QRCode } from 'react-qr-code';
 import { useRef } from "react";
 
 
+//-- 關鍵字工具 --
+import KeywordTextField from '../../tool/keywordTextField'
+
+
 function UpdatedTeacherData({ id, sx, handleButtonClick }) {
     const [open, setOpen] = useState(false);
     const [name, setName] = useState("")
@@ -432,6 +436,9 @@ const TeacherDataList = () => {
     const { accessData, accessDetect } = useAuthorityRange()
     const [authorityRange, setAuthorityRange] = useState({})
 
+    //-- 關鍵字暫存所有資料用 --
+    const [keywordAdminData, setKeywordAdminData] = useState(null)
+
     //獲取權限範圍
     useEffect(() => {
         if (accessData) {
@@ -448,6 +455,7 @@ const TeacherDataList = () => {
     useEffect(() => {
         teacherApi.getAll().then((res) => {
             setTeacherData(res.data)
+            setKeywordAdminData(res.data)
             // console.log(res.data);
         })
     }, [])
@@ -456,6 +464,7 @@ const TeacherDataList = () => {
     const handleButtonClick = () => {
         teacherApi.getAll().then((res) => {
             setTeacherData(res.data)
+            setKeywordAdminData(res.data)
         })
     };
     const columns = [
@@ -517,6 +526,10 @@ const TeacherDataList = () => {
             {/* <Alert severity="success">This is a success alert — check it out!</Alert> */}
             <Box m="20px auto 0" width={"95%"} display={"flex"} flexDirection={"column"} >
                 <Header title="教師資料管理" subtitle="本頁面條列所有教師的資料，供修改基本資料；如欲修改帳號、密碼、請到管理者管理。" />
+                <Box display={'flex'} justifyContent={'flex-end'}>
+                    {/* 關鍵字查詢 */}
+                    <KeywordTextField keywordAdminData={keywordAdminData} setAdminData={setTeacherData} searchAttr={['name']} />
+                </Box>
                 <Box
                     m="20px 0 0 0"
                     width="100%"
