@@ -1,7 +1,7 @@
 import { isTestType } from "../type";
 
 const initialState = {
-    test: false,
+    test: true,
 }
 
 // 這部分和useReducer hook是一樣的

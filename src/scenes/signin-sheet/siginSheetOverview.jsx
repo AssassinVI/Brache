@@ -53,7 +53,7 @@ const SignInSheetOverView = () => {
             year: year,
             month: month,
         }, (res) => {
-            console.log(res.data.data)
+            console.log(res.data)
             //後續ajax
             setListData({
                 year: year,
@@ -165,7 +165,7 @@ function List({ listData }) {
             headerName: "簽到狀況",
             flex: 1,
             renderCell: (rows) => {
-                return (
+                                return (
                     <Box width={"100%"} overflow={isMobile ? "scroll" : "none"}>
                         <Box display={"flex"} flexWrap={"wrap"} gap={"25px"} width="100%" minWidth={`${rows.row.classes.length * 25 + rows.row.classes.length * 100 + 50}px`}>
                             <Box alignSelf={"flex-end"} sx={{
@@ -182,10 +182,12 @@ function List({ listData }) {
                                 <p className="student">學生</p>
                             </Box>
                             {rows.row.classes.map((item) => {
-                                const date = `${item.c_date.split("-")[1]}月${item.c_date.split("-")[2]}日`
+                                const date = `${item.c_date.split("-")[1]}月${item.c_date.split("-")[2]}日`;
+                                const t_time= item.t_signin_time==null ? '': item.t_signin_time.split(" ")[1];
+                                const s_time= item.s_signin_time==null ? '': item.s_signin_time.split(" ")[1];
                                 return (
                                     <Box sx={{
-                                        width: "100px",
+                                        width: "200px",
                                         "& .date": {
                                             width: "100%",
                                             "&  p": {
@@ -205,7 +207,7 @@ function List({ listData }) {
                                     }}>
                                         <Box className="date">
                                             <p>{date}</p>
-                                            <Box display={"flex"} justifyContent={"center"} width={"100%"} sx={{
+                                            <Box display={"flex"} justifyContent={"center"}  width={"100%"} sx={{
                                                 margin: "3px 0",
                                                 "& p": {
                                                     width: "50%",
@@ -238,13 +240,15 @@ function List({ listData }) {
                                             }
                                         }}>
                                             <Box className="checkIn" display={"flex"} gap={"10px"} justifyContent={"center"} >
-                                                <Box>
-                                                    {item.t_signin_time ? <div className="round"></div> : <div className="x"></div>}
+                                                <Box alignItems={"center"}>
+                                                    {item.t_signin_time ? <div className="round" style={{marginRight:'8px'}}></div> : <div className="x"></div>}
+                                                    {item.t_signin_time ? <p style={{lineHeight:'1'}}>{t_time}</p> : ''}
                                                 </Box>
                                             </Box>
                                             <Box className="checkOut" display={"flex"} gap={"10px"} justifyContent={"center"} >
-                                                <Box>
-                                                    {item.s_signin_time ? <div className="round"></div> : <div className="x"></div>}
+                                                <Box alignItems={"center"}>
+                                                    {item.s_signin_time ? <div className="round" style={{marginRight:'8px'}}></div> : <div className="x"></div>}
+                                                    {item.s_signin_time ? <p style={{lineHeight:'1'}}>{s_time}</p> : ''}
                                                 </Box>
                                             </Box>
                                         </Box>

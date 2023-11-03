@@ -14,15 +14,15 @@ import {
 } from "@mui/material";
 import axios from "axios";
 import { infromAction } from "../../redux/action";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import axiosInstance from "../../axios-api/axiosInstance";
 export default function Login() {
     const [remember, setRemember] = useState(window.localStorage.getItem("account") !== null)
     const [recaptcha, setRecaptcha] = useState(null)
     const navigate = useNavigate();
     const dispatch = useDispatch(null)
-
-
+    const isTest = useSelector(state => state.testReducer)
+    const headers_obj=isTest.test ? {Test:'test'}:{};
 
     //送出登入
     const handleSubmit = (event) => {
@@ -31,9 +31,7 @@ export default function Login() {
         axios({
             method: 'post',
             url: "https://bratsche.web-board.tw/ajax/login_ajax.php",
-            headers:{
-                Test:'test'
-            },
+            headers:headers_obj,
             data: {
                 type: "login",
                 admin_id: data.get("account"),

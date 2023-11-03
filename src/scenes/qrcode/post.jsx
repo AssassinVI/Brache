@@ -3,6 +3,7 @@ import React, { useState, useEffect, useRef } from "react";
 import axios from "axios";
 import axiosInstance from "../../axios-api/axiosInstance";
 import {useParams, Link} from 'react-router-dom'
+import { useDispatch, useSelector } from "react-redux";
 import { Box, Button } from "@mui/material";
 export default function Post() {
 
@@ -10,6 +11,8 @@ export default function Post() {
     const param=useParams();
     const [titleName, setTitleName]=useState('');
     const [dt, setDt]=useState({});
+    const isTest = useSelector(state => state.testReducer)
+    const headers_obj=isTest.test ? {Test:'test'}:{};
 
     const msg_style={
         backgroundColor: course.success ? '#daffea':'#ffdada',
@@ -30,9 +33,7 @@ export default function Post() {
         axios({
             method: 'post',
             url: "https://bratsche.web-board.tw/ajax/qrcode.php",
-            headers:{
-                Test:'test'
-            },
+            headers:headers_obj,
             data: {
                 type: "qrcode",
                 qrcodeId: param.Tb_index

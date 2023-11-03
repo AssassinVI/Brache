@@ -404,6 +404,7 @@ const CalendarTop = () => {
                 dispatch(calendarDateAction(getWeekInfoForDate(new Date())))
               }}>TODAY</Button>
               {authorityRange.p_update&&<ImportTemplate />}
+              <Button sx={{backgroundColor:'#207c23'}}>匯出Excel課表</Button>
             </Box>
             <Box display={"flex"} alignItems={"center"}>
 
@@ -785,6 +786,8 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   const [tableData, setTableData] = useState(null)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
 
+  console.log(unitData);
+
   const dispatch = useDispatch(null)
   const currentDateRedux = useSelector(state => state.calendarReducer.currentDate)
   
@@ -879,7 +882,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
       const classTimeStamp = EndTime.getTime();
 
       //-- 判斷課程背景色 --
-      if((Date.now() < classTimeStamp)||(unitData.signin_time && unitData.signout_time)){
+      if((Date.now() < classTimeStamp)||(unitData.signin_time )){
       } 
       //-- 超過上課時間視為遲到變紅色 --
       else{
