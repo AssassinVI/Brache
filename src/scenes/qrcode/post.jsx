@@ -1,9 +1,8 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 
 import axios from "axios";
-import axiosInstance from "../../axios-api/axiosInstance";
 import {useParams, Link} from 'react-router-dom'
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { Box, Button } from "@mui/material";
 export default function Post() {
 
@@ -28,7 +27,7 @@ export default function Post() {
         textAlign:'left',
     }
 
-    useEffect(()=>{
+    useMemo(()=>{
 
         axios({
             method: 'post',
@@ -40,7 +39,7 @@ export default function Post() {
             },
         }).then((res) => {
             setCourse(res.data);
-            if(res.data.data.type=='2'){
+            if(res.data.data.type==='2'){
                 setTitleName(`${res.data.data.teacher_name}老師`);
             }
             else{
@@ -48,7 +47,7 @@ export default function Post() {
             }
         })
         
-    }, [])
+    }, [headers_obj, param.Tb_index])
 
     useEffect(()=>{
         setDt(course.data);
@@ -74,7 +73,7 @@ export default function Post() {
                     letterSpacing: '0.1em',
                     fontWeight: 600,
                     marginTop: '15px',
-                    display: course.data?.type=='2' && !course?.success ? 'block':'none'
+                    display: course.data?.type==='2' && !course?.success ? 'block':'none'
                 }
             }>登入系統 </Button>
             <p style={dt_style}>

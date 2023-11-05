@@ -362,10 +362,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                     if(res.data.success){
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`))
                         changeApi.get_course_transfer(userId,(res)=>{
-                            setListData(res.data.data)
-                    })
+                                setListData(res.data.data)
+                        })
                     }
-                 
+                    else{
+                        dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
+                    }
+                    
                    handleCancel()
                 })
             }else{
@@ -379,13 +382,19 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                     if(res.data.success){
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`))
                         changeApi.get_course_transfer(userId,(res)=>{
-                            setListData(res.data.data)
-                    })
+                                setListData(res.data.data)
+                        })
                     }
+                    else{
+                        dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
+                    }
+                    
                    handleCancel()
                 })
             }
           }
+
+          
         if(window.confirm(status === "0" ? "是否要暫存此異動單" : "送出後不可再修改，確認是否送出此異動單")){
            
             if(data.change_type === "1"){
@@ -429,6 +438,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
             }
             })
      }
+
+     
     return(
         <>
              <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {

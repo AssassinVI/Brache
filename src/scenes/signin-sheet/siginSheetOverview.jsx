@@ -84,7 +84,7 @@ function TopBar({ teacher, setTeacher, teacherData, month, setMonth, year, setYe
                     <InputLabel id="demo-simple-select-label">老師</InputLabel>
                     <Select onChange={(e) => {
                         setTeacher(e.target.value)
-                        console.log(e.target)
+                        //console.log(e.target)
                     }}
                         value={teacher || ""}
                         labelId="demo-simple-select-label"
@@ -142,8 +142,13 @@ function TopBar({ teacher, setTeacher, teacherData, month, setMonth, year, setYe
                 e.preventDefault()
                 handleSubmit()
             }}>
-                送出
+                查詢
             </Button >
+            <Button variant="contained" sx={{backgroundColor:'#207c23'}} 
+             onClick={()=>{
+                window.open(`https://bratsche.web-board.tw/ajax/outputSigninExcel.php?Tb_index=${teacher}&year=${year}&month=${month}`, '_blank')
+             }}
+            > 匯出Excel檔</Button>
         </Box>
     )
 }
@@ -167,13 +172,13 @@ function List({ listData }) {
             renderCell: (rows) => {
                                 return (
                     <Box width={"100%"} overflow={isMobile ? "scroll" : "none"}>
-                        <Box display={"flex"} flexWrap={"wrap"} gap={"25px"} width="100%" minWidth={`${rows.row.classes.length * 25 + rows.row.classes.length * 100 + 50}px`}>
+                        <Box display={"flex"}  gap={"25px"} width="100%" minWidth={`${rows.row.classes.length * 25 + rows.row.classes.length * 100 + 50}px`}>
                             <Box alignSelf={"flex-end"} sx={{
                                 "& p": {
                                     margin: 0
                                 },
                                 "& :nth-child(1)": {
-                                    marginBottom: "4px",
+                                    marginBottom: "7px",
                                 },
                                 marginBottom: "-2px",
                                 marginRight: "-10px",
@@ -183,6 +188,13 @@ function List({ listData }) {
                             </Box>
                             {rows.row.classes.map((item) => {
                                 const date = `${item.c_date.split("-")[1]}月${item.c_date.split("-")[2]}日`;
+                                const StartTime_s= new Date(`${item.c_date} ${item.StartTime}`).getTime();
+                                const t_time_s= new Date(item.t_signin_time).getTime();
+                                const s_time_s= new Date(item.s_signin_time).getTime();
+                                const delay_t_time=StartTime_s-t_time_s;
+                                const delay_s_time=StartTime_s-s_time_s;
+                                const show_delay_t=delay_t_time<0 ? `(晚${Math.abs(Math.round(delay_t_time/60000))}分${Math.abs((delay_t_time/1000)%60)}秒)` : '';
+                                const show_delay_s=delay_t_time<0 ? `(晚${Math.abs(Math.round(delay_s_time/60000))}分${Math.abs((delay_s_time/1000)%60)}秒)` : '';
                                 const t_time= item.t_signin_time==null ? '': item.t_signin_time.split(" ")[1];
                                 const s_time= item.s_signin_time==null ? '': item.s_signin_time.split(" ")[1];
                                 return (
@@ -221,12 +233,11 @@ function List({ listData }) {
                                             "& .checkIn,& .checkOut": {
                                                 width: "100%",
                                                 "& > div": {
-                                                    width: "50%",
                                                     display: "flex",
                                                     justifyContent: "center",
                                                     "& > div": {
-                                                        width: "11px",
-                                                        height: "11px",
+                                                        width: "15px",
+                                                        height: "15px",
                                                         borderRadius: "50%",
                                                         border: "1px solid #fff"
                                                     },
@@ -242,13 +253,13 @@ function List({ listData }) {
                                             <Box className="checkIn" display={"flex"} gap={"10px"} justifyContent={"center"} >
                                                 <Box alignItems={"center"}>
                                                     {item.t_signin_time ? <div className="round" style={{marginRight:'8px'}}></div> : <div className="x"></div>}
-                                                    {item.t_signin_time ? <p style={{lineHeight:'1'}}>{t_time}</p> : ''}
+                                                    {item.t_signin_time ? <p style={{lineHeight:'1'}}>{t_time}{show_delay_t}</p> : ''}
                                                 </Box>
                                             </Box>
                                             <Box className="checkOut" display={"flex"} gap={"10px"} justifyContent={"center"} >
                                                 <Box alignItems={"center"}>
                                                     {item.s_signin_time ? <div className="round" style={{marginRight:'8px'}}></div> : <div className="x"></div>}
-                                                    {item.s_signin_time ? <p style={{lineHeight:'1'}}>{s_time}</p> : ''}
+                                                    {item.s_signin_time ? <p style={{lineHeight:'1'}}>{s_time}{show_delay_s}</p> : ''}
                                                 </Box>
                                             </Box>
                                         </Box>
@@ -320,7 +331,7 @@ function List({ listData }) {
                     overflowX: "scroll",
                     "@media all and (max-width:850px)": {
                         paddingBottom: "40px",
-                        height: "70vh"
+                        // height: "70vh"
                     },
                     "&::-webkit-scrollbar": {
                         display: "none"

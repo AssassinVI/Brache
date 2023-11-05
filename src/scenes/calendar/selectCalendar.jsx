@@ -55,6 +55,8 @@ const SelectCalendar = ({ tableData, currentDate = new Date(), data, setData, se
   ]
 
   const lessonTime = [
+    { start: "06:00", end: "07:00" },
+    { start: "07:00", end: "08:00" },
     { start: "08:00", end: "09:00" },
     { start: "09:00", end: "10:00" },
     { start: "10:00", end: "11:00" },
