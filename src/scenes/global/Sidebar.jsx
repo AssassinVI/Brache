@@ -107,7 +107,7 @@ const Sidebar = () => {
   const dispatch = useDispatch(null)
   const navigate = useNavigate(null)
   useEffect(()=>{
-    console.log(adminData)
+    //console.log(adminData)
   },[adminData])
 
   //登入後儲存系統架構資料到Redux以及登入者姓名及id
@@ -156,6 +156,7 @@ const Sidebar = () => {
     
         dispatch(adminAction(treeData, {
           name: res.data.data.Group_name,
+          admin_per: res.data.data.admin_per,
           access: res.data.data.name,
           Tb_index: res.data.data.Tb_index
         }))

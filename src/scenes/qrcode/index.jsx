@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate, Link } from "react-router-dom";
 import {
     CssBaseline,
     Paper,
@@ -8,52 +7,9 @@ import {
     Typography,
     Container,
 } from "@mui/material";
-import axios from "axios";
-import { infromAction } from "../../redux/action";
-import { useDispatch } from "react-redux";
-import axiosInstance from "../../axios-api/axiosInstance";
 import UrlPost from './post'
 export default function Login() {
-    const [remember, setRemember] = useState(window.localStorage.getItem("account") !== null)
     const [recaptcha, setRecaptcha] = useState(null)
-    const navigate = useNavigate();
-    const dispatch = useDispatch(null)
-
-
-    //送出登入
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
-        axios({
-            method: 'post',
-            url: "https://bratsche.web-board.tw/ajax/login_ajax.php",
-            headers:{
-                Test:'test'
-            },
-            data: {
-                type: "login",
-                admin_id: data.get("account"),
-                admin_pwd: data.get("password"),
-                "g-recaptcha-response": recaptcha
-            },
-        }).then((res) => {
-            if (res.data.success) {
-                window.sessionStorage.setItem("jwt", res.data.jwt)
-                window.localStorage.setItem("refresh_jwt", res.data.refresh_jwt)
-                if (remember) {
-                    window.localStorage.setItem("account", data.get("account"))
-                }
-                window.alert(`${res.data.msg}`)
-           
-                navigate("/calendar/overview");
-            } else {
-                window.alert(`${res.data.msg}`)
-                window.location.reload()
-            }
-
-        })
-
-    };
 
     const handleLoaded = _ => {
         window.grecaptcha.ready(_ => {
