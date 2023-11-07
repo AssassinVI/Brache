@@ -76,6 +76,7 @@ const SignInSheetOverView = () => {
 
 function TopBar({ teacher, setTeacher, teacherData, month, setMonth, year, setYear, handleSubmit }) {
     const accessRange = useSelector(store => store.accessRangeReducer)
+    const isTest = useSelector(store => store.testReducer)
     return (
         <Box display={"flex"} gap={"20px"} width={"fit-content"} alignItems={"center"} flexWrap={"wrap"}>
 
@@ -146,7 +147,8 @@ function TopBar({ teacher, setTeacher, teacherData, month, setMonth, year, setYe
             </Button >
             <Button variant="contained" sx={{backgroundColor:'#207c23'}} 
              onClick={()=>{
-                window.open(`https://bratsche.web-board.tw/ajax/outputSigninExcel.php?Tb_index=${teacher}&year=${year}&month=${month}`, '_blank')
+                const ExcelUrl= isTest.test ? `https://bratsche.web-board.tw/ajax/outputSigninExcel.php?Tb_index=${teacher}&year=${year}&month=${month}&test=test` : `https://bratsche.web-board.tw/ajax/outputSigninExcel.php?Tb_index=${teacher}&year=${year}&month=${month}`;
+                window.open(ExcelUrl, '_blank')
              }}
             > 匯出Excel檔</Button>
         </Box>

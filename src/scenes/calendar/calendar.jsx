@@ -254,6 +254,7 @@ const CalendarTop = () => {
   const dispatch = useDispatch(null)
   const currentDate = useSelector(state => state.calendarReducer.currentDate)
   const tableData = useSelector(state => state.calendarReducer.tableData)
+  const isTest = useSelector(store => store.testReducer)
   const [studentAll, setStudentAll] = useState([]);
   const [teacherAll, setTeacherAll] = useState([]);
   const [maxWeeks, setMaxWeeks]=useState(0);
@@ -404,7 +405,10 @@ const CalendarTop = () => {
                 dispatch(calendarDateAction(getWeekInfoForDate(new Date())))
               }}>TODAY</Button>
               {authorityRange.p_update&&<ImportTemplate />}
-              <Button sx={{backgroundColor:'#207c23 !important'}}>匯出Excel課表</Button>
+              <Button sx={{backgroundColor:'#207c23 !important'}} onClick={()=>{
+                const ExcelUrl= isTest.test ? `https://bratsche.web-board.tw/ajax/outputCourseExcel.php?test=test` : `https://bratsche.web-board.tw/ajax/outputCourseExcel.php`;
+                window.open(ExcelUrl, '_blank')
+              }}>匯出Excel課表</Button>
             </Box>
             <Box display={"flex"} alignItems={"center"}>
 
