@@ -47,7 +47,7 @@ export default function Post() {
             }
         })
         
-    }, [headers_obj, param.Tb_index])
+    }, [])
 
     useEffect(()=>{
         setDt(course.data);
