@@ -195,8 +195,8 @@ function List({ listData }) {
                                 const s_time_s= new Date(item.s_signin_time).getTime();
                                 const delay_t_time=StartTime_s-t_time_s;
                                 const delay_s_time=StartTime_s-s_time_s;
-                                const show_delay_t=delay_t_time<0 ? `(晚${Math.abs(Math.round(delay_t_time/60000))}分${Math.abs((delay_t_time/1000)%60)}秒)` : '';
-                                const show_delay_s=delay_t_time<0 ? `(晚${Math.abs(Math.round(delay_s_time/60000))}分${Math.abs((delay_s_time/1000)%60)}秒)` : '';
+                                const show_delay_t=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_t_time/60000))}分${Math.abs((delay_t_time/1000)%60)}秒)` : '';
+                                const show_delay_s=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_s_time/60000))}分${Math.abs((delay_s_time/1000)%60)}秒)` : '';
                                 const t_time= item.t_signin_time==null ? '': item.t_signin_time.split(" ")[1];
                                 const s_time= item.s_signin_time==null ? '': item.s_signin_time.split(" ")[1];
                                 return (
