@@ -411,7 +411,7 @@ const CalendarTop = () => {
                 const Tb_index=adminData.inform.Tb_index;
                 const adminURL= adminPer=='group2023071815335388' || adminPer=='group2023071815332755' ? `&Tb_index=${Tb_index}&admin_per=${adminPer}` :'';
                 const testUrl=isTest.test ? '&test=test' : '';
-                window.open(`https://bratsche.web-board.tw/ajax/outputCourseExcel.php?year=${currentDate.year}&month=${currentDate.month}${adminURL}${testUrl}}`, '_blank');
+                window.open(`https://bratsche.web-board.tw/ajax/outputCourseExcel.php?year=${currentDate.year}&month=${currentDate.month}${adminURL}${testUrl}`, '_blank');
               }}>
                 匯出Excel課表
               </Button>
