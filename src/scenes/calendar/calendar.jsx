@@ -255,6 +255,7 @@ const CalendarTop = () => {
   const currentDate = useSelector(state => state.calendarReducer.currentDate)
   const tableData = useSelector(state => state.calendarReducer.tableData)
   const adminData = useSelector(state => state.accessRangeReducer)
+  const isTest = useSelector(store => store.testReducer)
   const [studentAll, setStudentAll] = useState([]);
   const [teacherAll, setTeacherAll] = useState([]);
   const [maxWeeks, setMaxWeeks]=useState(0);
@@ -409,10 +410,13 @@ const CalendarTop = () => {
                 const adminPer=adminData.inform.admin_per;
                 const Tb_index=adminData.inform.Tb_index;
                 const adminURL= adminPer=='group2023071815335388' || adminPer=='group2023071815332755' ? `&Tb_index=${Tb_index}&admin_per=${adminPer}` :'';
-                window.open(`https://bratsche.web-board.tw/ajax/outputCourseExcel.php?year=${currentDate.year}&month=${currentDate.month}${adminURL}`, '_blank')
+                const testUrl=isTest.test ? '&test=test' : '';
+                window.open(`https://bratsche.web-board.tw/ajax/outputCourseExcel.php?year=${currentDate.year}&month=${currentDate.month}${adminURL}${testUrl}}`, '_blank');
               }}>
                 匯出Excel課表
               </Button>
+
+
             </Box>
             <Box display={"flex"} alignItems={"center"}>
 
