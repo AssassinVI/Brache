@@ -6,7 +6,7 @@ import { useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import { useEffect } from "react";
 import { TimeSelect } from "../calendar/calendar";
-import { getAll } from "../../axios-api/calendarData";
+import { getCourseAll } from "../../axios-api/calendarData";
 import { dataTransformTable, formatDateBack } from "../calendar/getMonday";
 import { IsLoading } from "../../components/loading";
 import Select from '@mui/material/Select';
@@ -108,7 +108,7 @@ function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type 
             <h4>{`${newDate.getFullYear()}年${newDate.getMonth()+1}月${newDate.getDate()}日課堂`}</h4>
             <ul>
                 <li>
-                    <div className="box">名稱</div>
+                    <div className="box">學生</div>
                     <div className="box">教室</div>
                     <div className="box">上課</div>
                     <div className="box radio">選擇</div>
@@ -116,7 +116,11 @@ function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type 
          {listData.map((item)=>{
             return(
             <li key={item.Tb_index}>
-                <div className="box"><p>{item.c_name}</p></div>
+                <div className="box"><p>{
+                    item.student.map((student)=>{
+                        return ( <span>{student.name}</span> )
+                    })    
+                }</p></div>
                 <div className="box"><p>{item.room_name}</p></div>
                 <div className="box"><p>{item.StartTime}</p></div>
                 <div className="box radio"><FormControlLabel value={item.Tb_index} control={<Radio  />}  /></div>
@@ -187,7 +191,7 @@ function TargetClass({course_id,teacher=null,setTeacher=()=>{},type=null,beforeD
             }}>
                <ul>
                     <li>
-                        <div className="box">名稱</div>
+                        <div className="box">學生</div>
                         <div className="box">日期</div>
                         <div className="box">教室</div>
                         <div className="box">上課</div>
@@ -195,14 +199,22 @@ function TargetClass({course_id,teacher=null,setTeacher=()=>{},type=null,beforeD
                     <li>
                        {type !== "history" ? 
                        <>
-                        <div className="box">{courseData.c_name}</div>
+                        <div className="box">{
+                            courseData.student.map((student)=>{
+                                return ( <span>{student.name}</span> )
+                            })
+                        }</div>
                         <div className="box">{courseData.c_date}</div>
                         <div className="box">{courseData.room_name}</div>
                         <div className="box">{courseData.StartTime}</div>
                        </>
                        :
                        <>
-                        <div className="box">{courseData.c_name}</div>
+                        <div className="box">{
+                            courseData.student.map((student)=>{
+                                return ( <span>{student.name}</span> )
+                            })
+                        }</div>
                         <div className="box">{beforeData?.before_date}</div>
                         <div className="box">{beforeData?.before_room_name}</div>
                         <div className="box">{beforeData?.before_StartTime}</div>
@@ -260,7 +272,7 @@ function OpenSelectCalendar({setData}){
     useEffect(() => {
         if (currentDate) {
             //獲取calendar的資料
-            getAll(formatDateBack(currentDate), formatDateBack(currentDate)).then((data) => {
+            getCourseAll(formatDateBack(currentDate), formatDateBack(currentDate)).then((data) => {
             setTableData(dataTransformTable(data.data));
           })
         }

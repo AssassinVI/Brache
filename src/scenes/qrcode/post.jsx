@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect } from "react";
 
 import axios from "axios";
 import {useParams, Link} from 'react-router-dom'
@@ -27,7 +27,7 @@ export default function Post() {
         textAlign:'left',
     }
 
-    useMemo(()=>{
+    useEffect(()=>{
 
         axios({
             method: 'post',
@@ -47,7 +47,7 @@ export default function Post() {
             }
         })
         
-    }, [headers_obj, param.Tb_index])
+    }, [])
 
     useEffect(()=>{
         setDt(course.data);

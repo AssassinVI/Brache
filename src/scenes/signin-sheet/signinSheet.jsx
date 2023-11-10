@@ -3,7 +3,7 @@ import Header from '../../components/Header';
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
 import { useDispatch, useSelector } from 'react-redux';
-import { Box, Button, Dialog, useMediaQuery } from '@mui/material';
+import { Box, Button, Dialog, useMediaQuery, Chip } from '@mui/material';
 import { useEffect } from 'react';
 import { DataGrid } from '@mui/x-data-grid';
 import { IsLoading } from '../../components/loading';
@@ -59,6 +59,18 @@ function SignInList() {
             headerName: "課堂名稱",
             flex: isMobile ? 0.5 : 1,
             cellClassName: "name-column--cell",
+        },
+        {
+            field: "student",
+            headerName: "學生",
+            flex: 1,
+            renderCell: (rows) => {
+
+                const studentAll=rows.row.student.map((student)=>{
+                    return (<span className='student'>{student.name}</span>)
+                })
+                return <div>{studentAll}</div>;
+            },
         },
         {
             field: "teacher_name",
@@ -147,7 +159,7 @@ function SignInList() {
                 }
             }}
         >
-            {listData ? <DataGrid rowHeight={isMobile ? 110 : 85} rows={listData} getRowId={(row) => row.index} columns={columns} /> : <IsLoading />}
+            {listData ? <DataGrid rowHeight={isMobile ? 110 : 85} rows={listData} getRowId={(row) => row.index} columns={columns} sx={{'& .student':{marginRight:'8px'}}} /> : <IsLoading />}
         </Box>
     )
 }

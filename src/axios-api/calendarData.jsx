@@ -2,6 +2,27 @@
 import axiosInstance from "./axiosInstance";
 const calendarApi = "https://bratsche.web-board.tw/ajax/course.php";
 
+
+export const getCourseAll = async (start, end) => {
+    try {
+        const response = await axiosInstance({
+            method: 'post',
+            url: calendarApi,
+            data: {
+                type: "get_course_all",
+                s_date: start,
+                e_date: end
+            },
+        });
+
+        let data = response.data;
+        return data
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+
 export const getAll = async (start, end) => {
     try {
         const response = await axiosInstance({
