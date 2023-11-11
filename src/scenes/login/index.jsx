@@ -15,31 +15,71 @@ import {
 import axios from "axios";
 import { useSelector } from "react-redux";
 export default function Login() {
-    const [remember, setRemember] = useState(window.localStorage.getItem("account") !== null)
+    const [remember, setRemember] = useState(localStorage['account'] !== null && localStorage['account'] !== undefined)
     const [recaptcha, setRecaptcha] = useState(null)
     const navigate = useNavigate();
     const isTest = useSelector(state => state.testReducer)
     const headers_obj=isTest.test ? {Test:'test'}:{};
 
-    //送出登入
-    const handleSubmit = (event) => {
-        event.preventDefault();
-        const data = new FormData(event.currentTarget);
+    //-- 獲取記住帳號資訊 --
+    const [rememberAdmin, setRememberAdmin]=useState(null);
+    const [is_rememberAdmin, setIsRememberAdmin]=useState(false);
+
+
+
+    useEffect(()=>{
+
+        console.log(remember);
+
         axios({
             method: 'post',
             url: "https://bratsche.web-board.tw/ajax/login_ajax.php",
             headers:headers_obj,
-            data: {
-                type: "login",
-                admin_id: data.get("account"),
-                admin_pwd: data.get("password"),
-                "g-recaptcha-response": recaptcha
-            },
+            data:{
+                type:'rememberAdmin',
+                admin_id:localStorage['account']
+            }
+        }).then((res)=>{
+            //console.log(res.data);
+            setRememberAdmin(res.data);
+            if(res.data.success){
+                setIsRememberAdmin(true);
+            }
+        });
+
+    }, [])
+    
+
+
+    //送出登入
+    const handleSubmit = (event) => {
+        event.preventDefault();
+        const data = new FormData(event.currentTarget);
+
+        const axiosData={
+            type: "login",
+            "g-recaptcha-response": recaptcha
+        }
+
+        //-- 記住帳號 --
+        if(is_rememberAdmin){
+            axiosData.Tb_index=rememberAdmin.data.Tb_index
+        }
+        else{
+            axiosData.admin_id=data.get("account");
+            axiosData.admin_pwd=data.get("password");
+        }
+
+        axios({
+            method: 'post',
+            url: "https://bratsche.web-board.tw/ajax/login_ajax.php",
+            headers:headers_obj,
+            data: axiosData,
         }).then((res) => {
             if (res.data.success) {
                 window.sessionStorage.setItem("jwt", res.data.jwt)
                 window.localStorage.setItem("refresh_jwt", res.data.refresh_jwt)
-                if (remember) {
+                if (remember && !is_rememberAdmin) {
                     window.localStorage.setItem("account", data.get("account"))
                 }
                 window.alert(`${res.data.msg}`)
@@ -69,6 +109,16 @@ export default function Login() {
         script.addEventListener("load", handleLoaded)
         document.body.appendChild(script)
     }, [])
+
+    const adminName={
+        margin: 0,
+
+        padding: '10px 20px',
+        border: '1px solid #bbb',
+        borderRadius: '5px',
+        textAlign: 'center'
+    }
+
     return (
         <Box
             sx={{
@@ -97,22 +147,7 @@ export default function Login() {
                         justifyContent: "center"
                     }}>
                         <CssBaseline />
-                        {/* <Grid
-                            item
-                            xs={false}
-                            sm={4}
-                            md={7}
-                            sx={{
-                                backgroundImage: "url(https://source.unsplash.com/random)",
-                                backgroundRepeat: "no-repeat",
-                                backgroundColor: (t) =>
-                                    t.palette.mode === "light"
-                                        ? t.palette.grey[50]
-                                        : t.palette.grey[900],
-                                backgroundSize: "cover",
-                                backgroundPosition: "center",
-                            }}
-                        /> */}
+                       
                         <Grid item xs={12} sm={8} md={5} component={Paper} elevation={6} square >
                             <Box
                                 sx={{
@@ -126,32 +161,53 @@ export default function Login() {
                                 <Typography component="h1" variant="h4">
                                     巴雀系統
                                 </Typography>
-                                <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 }}>
-                                    <TextField
-                                        margin="normal"
-                                        required
-                                        fullWidth
-                                        id="account"
-                                        label="帳號"
-                                        name="account"
-                                        autoComplete="account"
-                                        autoFocus
-                                        defaultValue={window.localStorage.getItem("account")}
-                                    />
-                                    <TextField
-                                        margin="normal"
-                                        required
-                                        fullWidth
-                                        name="password"
-                                        label="密碼"
-                                        type="password"
-                                        id="password"
-                                        autoComplete="current-password"
-                                    />
-                                    <FormControlLabel
-                                        control={<Checkbox defaultChecked={remember} onChange={(e) => { setRemember(e.target.checked) }} color="primary" />}
-                                        label="記住帳號"
-                                    />
+                                <Box component="form" noValidate onSubmit={handleSubmit} sx={{ mt: 1 ,width:'100%'}}>
+
+                                    {
+                                        is_rememberAdmin ?
+                                        <div className="rememberAdmin">
+                                            <h2 style={adminName}>{rememberAdmin?.data?.Group_name}：{rememberAdmin?.data?.name}</h2>
+                                            <Button onClick={()=>{setIsRememberAdmin(false)}} fullWidth sx={{
+                                                letterSpacing: '0.1em',
+                                                backgroundColor: '#f3f3f3'
+                                            }}>更換帳號</Button>
+                                        </div>
+                                        : 
+                                        <Box>
+                                            <TextField
+                                                margin="normal"
+                                                required
+                                                fullWidth
+                                                id="account"
+                                                label="帳號"
+                                                name="account"
+                                                autoComplete="account"
+                                                autoFocus
+                                                defaultValue={window.localStorage.getItem("account")}
+                                            />
+                                            <TextField
+                                                margin="normal"
+                                                required
+                                                fullWidth
+                                                name="password"
+                                                label="密碼"
+                                                type="password"
+                                                id="password"
+                                                autoComplete="current-password"
+                                            />
+                                            <FormControlLabel
+                                                control={<Checkbox defaultChecked={remember} onChange={(e) => { setRemember(e.target.checked); }} color="primary" />}
+                                                label="記住帳號"
+                                            />
+                                            <Button onClick={()=>{setIsRememberAdmin(true)}}  sx={{
+                                                display: rememberAdmin?.success ? 'inline-flex':'none',
+                                                letterSpacing: '0.1em',
+                                                backgroundColor: '#f3f3f3'
+                                            }}>目前帳號</Button>
+                                        </Box>
+                                    }
+                                    
+                                    
 
 
                                     <Button

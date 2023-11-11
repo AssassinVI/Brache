@@ -1,16 +1,26 @@
-import { Box, Typography, useMediaQuery } from "@mui/material";
+import { Box, Typography, useMediaQuery, Button,  } from "@mui/material";
 import React from "react";
 import { IsLoading } from "../../components/loading";
 import { DataGrid } from "@mui/x-data-grid";
 import { useTheme } from "@emotion/react";
 import { tokens } from "../../theme";
 import ChangeSheet from "./changeSheet";
+import { delete_course_transfer, get_course_transfer } from "../../axios-api/changeSystem";
+import { useDispatch, useSelector } from "react-redux";
+import { snackBarOpenAction } from "../../redux/action";
 import ArrowRightAltSharpIcon from '@mui/icons-material/ArrowRightAltSharp';
+import DeleteIcon from '@mui/icons-material/Delete';
 import EditIcon from '@mui/icons-material/Edit';
+
 export default function Inprogress({listData=[],setListData}){
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
+
+    //獲取使用者資訊
+    const userData = useSelector(state => state.accessRangeReducer)
+    const dispatch = useDispatch(null)
+
     const columns = [
         {
             field: "c_name",
@@ -86,7 +96,24 @@ export default function Inprogress({listData=[],setListData}){
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"12px"} width="100%" >
                         <ChangeSheet data={rows.row} crud={"view"} sheetId={rows.row.Tb_index} setListData={setListData}/>
+
+                        <Button variant="contained" sx={{ backgroundColor: "#F8AC59", width: "85px", gap: "5px" }} onClick={(e) => {
+                               const userId = userData.inform.Tb_index;
+                               if(window.confirm("確定要刪除此異動單?")){
+                                delete_course_transfer(rows.row.Tb_index,(res)=>{
+                                    if(res.data.success){
+                                        dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+                                        get_course_transfer(userId,(res)=>{
+                                            setListData(res.data.data)
+                                    })}
+                                })
+                               }
+                        }}>
+                            <DeleteIcon sx={{ color: "#fff" }} />
+                            刪除
+                        </Button>
                     </Box>
+                    
                 )
             }
         },
