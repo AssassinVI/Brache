@@ -214,7 +214,8 @@ export default function Login() {
                                         type="submit"
                                         fullWidth
                                         variant="contained"
-                                        sx={{ mt: 3, mb: 2 }}
+                                        size="large"
+                                        sx={{ mt: 3, mb: 2, fontSize: '18px', letterSpacing: '0.1em' }}
                                     >
                                         登入
                                     </Button>

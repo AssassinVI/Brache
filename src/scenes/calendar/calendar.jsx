@@ -593,7 +593,7 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll },
             flexDirection: "column",
             width: "calc(100%/7)",
             "&:not(:last-child)": {
-              borderRight: "1px solid #000"
+              borderRight: "3px solid #000"
             },
             "& .calendar-date": {
               display: "flex",
@@ -813,6 +813,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   const handleSubmit = () => {
     const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
+    //-- 修改 --
     if (type === "update") {
       calendarApi.updateOne(data, (res) => {
         const status = res.data.success ? "success" : "error"
@@ -821,9 +822,13 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
           calendarApi.getAll(startDate, endDate).then((data) => {
             dispatch(calendarTableDataAction(dataTransformTable(data.data)))
           })
+          setOpen(false)
         }
       })
-    } else {
+    } 
+
+    //-- 新增 --
+    else {
       calendarApi.insertOne(data, (res) => {
         const status = res.data.success ? "success" : "error"
         dispatch(snackBarOpenAction(true, res.data.msg, status))
@@ -831,10 +836,12 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
           calendarApi.getAll(startDate, endDate).then((data) => {
             dispatch(calendarTableDataAction(dataTransformTable(data.data)))
           })
+          setOpen(false)
         }
       })
     }
-    setOpen(false)
+    
+    
   }
 
   //-- 視窗刪除課程 --
@@ -939,13 +946,16 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                 </Box> 
           </Tooltip>
           :
-            <Button  variant="contained" sx={{ backgroundColor: "#6DC4C5", gap: "10px" }} onClick={(e) => {
-              e.stopPropagation()
-              setOpen(true)
-            }}>
-              <EditIcon />
-              新增
-            </Button >
+           <Box>
+              <Button  variant="contained" sx={{ backgroundColor: "#6DC4C5", gap: "10px" }} onClick={(e) => {
+                e.stopPropagation()
+                setOpen(true)
+              }}>
+                <EditIcon />
+                新增
+              </Button >
+              
+           </Box>
         }
         <Dialog open={open} onClose={handleCancel} sx={{
           "& .MuiPaper-root": { padding: " 10px 25px" },

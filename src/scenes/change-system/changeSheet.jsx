@@ -491,12 +491,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         changeApi.get_course_transfer(userId,(res)=>{
                                 setListData(res.data.data)
                         })
+                        handleCancel()
                     }
                     else{
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
                     }
                     
-                   handleCancel()
+                   
                 })
             }else{
                 changeApi.update_course_transfer({
@@ -511,12 +512,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         changeApi.get_course_transfer(userId,(res)=>{
                                 setListData(res.data.data)
                         })
+                        handleCancel()
                     }
                     else{
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
                     }
                     
-                   handleCancel()
+                   
                 })
             }
           }
