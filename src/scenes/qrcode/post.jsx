@@ -4,6 +4,7 @@ import axios from "axios";
 import {useParams, Link} from 'react-router-dom'
 import { useSelector } from "react-redux";
 import { Box, Button } from "@mui/material";
+import HomeIcon from '@mui/icons-material/Home';
 export default function Post() {
 
     const [course, setCourse]=useState({});
@@ -73,9 +74,9 @@ export default function Post() {
                     letterSpacing: '0.1em',
                     fontWeight: 600,
                     marginTop: '15px',
-                    display: course.data?.type==='2' && !course?.success ? 'block':'none'
+                    
                 }
-            }>登入系統 </Button>
+            }><HomeIcon sx={{mr:'5px'}} /> 登入系統</Button>
             <p style={dt_style}>
                 課程：{dt?.c_name} <br />
                 上課時間：{dt?.StartTime} <br />

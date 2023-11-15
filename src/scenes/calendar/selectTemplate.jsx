@@ -11,7 +11,13 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = false, gap }) => {
     return (
         <Box width={"100%"} height={"100%"} className={`${isSelected ? 'selected' : ''} ${isSelecting ? 'selecting' : ''}`} data-uniqueid={uniqueId} ref={selectableRef} position={"relative"}>
-            {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={data.t_color} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "none", color: getContrastColor(data.t_color) }}>{data.c_name}</Box>}
+            {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={data.t_color} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "none", color: getContrastColor(data.t_color) }}>{
+            data.student.map((student)=>{
+                return (
+                  <span>{student.name}</span>
+                )
+              })
+            }</Box>}
         </Box>
     )
 }
