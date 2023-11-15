@@ -22,6 +22,7 @@ import DangerousSharpIcon from '@mui/icons-material/DangerousSharp';
 import ArrowLeftSharpIcon from '@mui/icons-material/ArrowLeftSharp';
 import { snackBarOpenAction } from "../../redux/action";
 
+//-- 顯示指定日期的課堂 --
 function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type =null}){
     const [listData,setListData] = useState(null)
     const userData = useSelector(state => state.accessRangeReducer)
@@ -35,6 +36,7 @@ function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type 
                 c_date:`${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()}`,
                 teacher_id:teacher ? teacher:userData.inform.Tb_index
             },(data)=>{
+                console.log(data.data)
                 setListData(data.data.data)
             })
         }
@@ -118,12 +120,20 @@ function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type 
             <li key={item.Tb_index}>
                 <div className="box"><p>{
                     item.student.map((student)=>{
-                        return ( <span>{student.name}</span> )
+                        return ( <span style={{margin:'0 5px'}}>{student.name}</span> )
                     })    
                 }</p></div>
                 <div className="box"><p>{item.room_name}</p></div>
                 <div className="box"><p>{item.StartTime}</p></div>
-                <div className="box radio"><FormControlLabel value={item.Tb_index} control={<Radio  />}  /></div>
+                <div className="box radio">
+                    {
+                        item.change_id==null ? 
+                        <FormControlLabel value={item.Tb_index} control={<Radio  />}  />
+                        :
+                        "已有異動單"
+                    }
+                    
+                </div>
             </li>
             )
          })}
@@ -141,6 +151,7 @@ function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type 
     )
 }
 
+//-- 顯示選定的課堂 --
 function TargetClass({course_id,teacher=null,setTeacher=()=>{},type=null,beforeData=null}){
     const [courseData,setCourseData]=useState(null)
     useEffect(()=>{
@@ -302,6 +313,110 @@ function OpenSelectCalendar({setData}){
     )
 }
 
+function Process({data,isMobile,crud}){
+    const [open,setOpen] = useState(false)
+    const style = isMobile ? {
+        position:"absolute",
+        backgroundColor:"#fff",
+        left:open ? "auto": "100%" ,
+        right:open ? "0": "auto" ,
+        top:0,
+        padding:"40px",
+        boxShadow:"0 0 10px 1px #000",
+    }:{}
+    return(
+        <>
+        {/* main content */}
+            <Box sx={{
+            flexGrow:1,
+            padding:"25px 0 0 20px",
+            ...style,
+            "& .box":{
+                display:"flex",
+                alignItems:"center",
+                gap:"20px",
+                "& .left":{
+                    display:"flex",
+                    position:"relative",
+                    alignItems:"center",
+                    width:"fit-content",
+                    "& .line":{
+                        position:"absolute",
+                        display:"none",
+                        width:"1px",
+                        height:"80px",
+                        top:"80%",
+                        left:0,
+                        right:0,
+                        margin:"0 auto",
+                        backgroundColor:"#000"
+                    }
+                },
+                "& .right":{
+                    display:"flex",
+                    flexDirection:"column",
+                    justifyContent:"center",
+                    "& p":{
+                        margin:0
+                    }
+                },
+                "&:not(:last-child)":{
+                    marginBottom:"30px",
+                    "& .line":{
+                        display:"block",
+                    }
+                },
+                "&:nth-child(1)":{
+                    "& .left":{
+                        "& .line":{
+                            height:"57px"
+                        }
+                    }
+                }
+            }
+        }}>
+            <Box  className="box">
+                <div className="left">
+                    <MailOutlineIcon/>
+                    <div className="line"></div>
+                </div>
+                <div className="right">
+                    <p>{data.admin_name} - {crud === "storage"? "暫存" : "送件"}</p>
+                </div>
+            </Box>
+            {data.record.map((item)=>{
+                    return(
+                        <Box  className="box">
+                            <div className="left">
+                                {item.record_type !== "駁回" ? <CheckCircleIcon sx={{fill:"#6DC4C5"}}/>:<DangerousSharpIcon sx={{fill:"#c87B79"}}/>}
+                                <div className="line"></div>
+                            </div>
+                            <div className="right">
+                                <p>{item.record_type}日期 - {item.keyindate}</p>
+                                <p>{item.name} - {item.record_type}</p>
+                                <p>備註 : {item.c_remark}</p>
+                            </div>
+                        </Box>
+                    )
+                })}
+            </Box>
+        {/* toggle btn */}
+           {isMobile&&
+            <Box display={"flex"} alignItems={"center"}  sx={{position:"absolute",right:"15px",top:"5px"}} onClick={(e)=>{
+                if(open){
+                    setOpen(false)
+                }else{
+                    setOpen(true)
+                }
+            }}>
+                <ArrowLeftSharpIcon sx={{transform:open?"rotateY(180deg)":"none",width:"40px",height:"40px",marginRight:"-10px"}}/>
+                <p style={{margin:0,fontSize:"15px"}}>{open ? "收合" : "展開"}</p>
+            </Box>
+           }
+        </>
+    )
+}
+
 
 export default function ChangeSheet({sheetId,crud,setListData}){
     const [open,setOpen] = useState(false)
@@ -376,12 +491,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         changeApi.get_course_transfer(userId,(res)=>{
                                 setListData(res.data.data)
                         })
+                        handleCancel()
                     }
                     else{
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
                     }
                     
-                   handleCancel()
+                   
                 })
             }else{
                 changeApi.update_course_transfer({
@@ -396,12 +512,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         changeApi.get_course_transfer(userId,(res)=>{
                                 setListData(res.data.data)
                         })
+                        handleCancel()
                     }
                     else{
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
                     }
                     
-                   handleCancel()
+                   
                 })
             }
           }
@@ -464,7 +581,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
        
             setOpen(true)
           }}>
-            {crud !== "view" || crud !== "history" &&  <EditIcon />}
+            {crud !== "view" || crud !== "history" &&  "檢視"}
             {crud === "insert" && "新增"}
             {crud === "view" || crud === "history" && "檢視"}
             {(crud === "turndown" || crud ==="storage") && "修改"}
@@ -494,14 +611,18 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         <DialogContent sx={{padding:0,margin:"10px 0"}}>
                             <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>異動課堂</InputLabel>
                             {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
-                            <Box display={"flex"} gap={"5px"} alignItems={"center"}>
-                            <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
-                            <TimeSelect setCurrentDate={setClassDate}/>
-                        </Box>
+                                <Box display={"flex"} gap={"5px"} alignItems={"center"}>
+                                    <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
+                                    <TimeSelect setCurrentDate={setClassDate}/>
+                                </Box>
                             }
                             
-                            {(data.course_id && crud === "history") ? <TargetClass course_id={data.course_id} type={crud} beforeData={data}/>  : <TargetClass course_id={data.course_id}/>}
-                            {classDate &&<OpenSelectClass date={classDate} setClassDate={setClassDate} setData={setData} data={data}/>}
+                            {
+                              (data.course_id && crud === "history") ? <TargetClass course_id={data.course_id} type={crud} beforeData={data}/>  : <TargetClass course_id={data.course_id}/>
+                            }
+                            {
+                              classDate &&<OpenSelectClass date={classDate} setClassDate={setClassDate} setData={setData} data={data}/>
+                            }
                         </DialogContent>
                         <DialogContent sx={{padding:0,margin:"10px 0"}}>
                             <InputLabel id="demo-simple-select-label">事由</InputLabel>
@@ -685,106 +806,3 @@ export default function ChangeSheet({sheetId,crud,setListData}){
     )
 }
 
-function Process({data,isMobile,crud}){
-    const [open,setOpen] = useState(false)
-    const style = isMobile ? {
-        position:"absolute",
-        backgroundColor:"#fff",
-        left:open ? "auto": "100%" ,
-        right:open ? "0": "auto" ,
-        top:0,
-        padding:"40px",
-        boxShadow:"0 0 10px 1px #000",
-    }:{}
-    return(
-        <>
-        {/* main content */}
-            <Box sx={{
-            flexGrow:1,
-            padding:"25px 0 0 20px",
-            ...style,
-            "& .box":{
-                display:"flex",
-                alignItems:"center",
-                gap:"20px",
-                "& .left":{
-                    display:"flex",
-                    position:"relative",
-                    alignItems:"center",
-                    width:"fit-content",
-                    "& .line":{
-                        position:"absolute",
-                        display:"none",
-                        width:"1px",
-                        height:"80px",
-                        top:"80%",
-                        left:0,
-                        right:0,
-                        margin:"0 auto",
-                        backgroundColor:"#000"
-                    }
-                },
-                "& .right":{
-                    display:"flex",
-                    flexDirection:"column",
-                    justifyContent:"center",
-                    "& p":{
-                        margin:0
-                    }
-                },
-                "&:not(:last-child)":{
-                    marginBottom:"30px",
-                    "& .line":{
-                        display:"block",
-                    }
-                },
-                "&:nth-child(1)":{
-                    "& .left":{
-                        "& .line":{
-                            height:"57px"
-                        }
-                    }
-                }
-            }
-        }}>
-            <Box  className="box">
-                <div className="left">
-                    <MailOutlineIcon/>
-                    <div className="line"></div>
-                </div>
-                <div className="right">
-                    <p>{data.admin_name} - {crud === "storage"? "暫存" : "送件"}</p>
-                </div>
-            </Box>
-            {data.record.map((item)=>{
-                    return(
-                        <Box  className="box">
-                            <div className="left">
-                                {item.record_type !== "駁回" ? <CheckCircleIcon sx={{fill:"#6DC4C5"}}/>:<DangerousSharpIcon sx={{fill:"#c87B79"}}/>}
-                                <div className="line"></div>
-                            </div>
-                            <div className="right">
-                                <p>{item.record_type}日期 - {item.keyindate}</p>
-                                <p>{item.name} - {item.record_type}</p>
-                                <p>備註 : {item.c_remark}</p>
-                            </div>
-                        </Box>
-                    )
-                })}
-            </Box>
-        {/* toggle btn */}
-           {isMobile&&
-            <Box display={"flex"} alignItems={"center"}  sx={{position:"absolute",right:"15px",top:"5px"}} onClick={(e)=>{
-                if(open){
-                    setOpen(false)
-                }else{
-                    setOpen(true)
-                }
-            }}>
-                <ArrowLeftSharpIcon sx={{transform:open?"rotateY(180deg)":"none",width:"40px",height:"40px",marginRight:"-10px"}}/>
-                <p style={{margin:0,fontSize:"15px"}}>{open ? "收合" : "展開"}</p>
-            </Box>
-           }
-        </>
-    )
-}

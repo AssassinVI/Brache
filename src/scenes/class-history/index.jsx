@@ -174,14 +174,14 @@ function RecordList({date,student}) {
                         }
                     }}>
                         <Box className='box' >
-                        <Box>
+                            <Box>
                                 <p>簽到:</p>
                                 {rows.row.teacher.signin_time ? <p className='time'>{rows.row.teacher.signin_time.split(" ")[1]}</p>  :<CloseIcon/>}
                             </Box>
-                            <Box>
+                            {/* <Box>
                                 <p>簽退:</p>
                                 {rows.row.teacher.signout_time ? <p className='time'>{rows.row.teacher.signout_time.split(" ")[1]}</p>  :<CloseIcon/>}
-                            </Box>
+                            </Box> */}
                         </Box>
                     </Box>
                 )
@@ -214,10 +214,10 @@ function RecordList({date,student}) {
                                 <p>簽到:</p>
                                 {rows.row.student.signin_time ? <p className='time'>{rows.row.student.signin_time.split(" ")[1]}</p>  :<CloseIcon/>}
                             </Box>
-                            <Box>
+                            {/* <Box>
                                 <p>簽退:</p>
                                 {rows.row.student.signout_time ? <p className='time'>{rows.row.student.signout.split(" ")[1]}</p>  :<CloseIcon/>}
-                            </Box>
+                            </Box> */}
                         </Box>
                     </Box>
                 )

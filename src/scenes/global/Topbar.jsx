@@ -70,7 +70,10 @@ const Topbar = () => {
           <SettingsOutlinedIcon />
         </IconButton> */}
         <Box display={"flex"} alignItems={"center"} gap={"7px"}>
-          {userData?.inform?.Tb_index && <Qrcode value={userData.inform.Tb_index} />}
+          
+          { //-- 自己的Qrcode --
+            /* {userData?.inform?.Tb_index && <Qrcode value={userData.inform.Tb_index} />} */
+          }
           <IconButton onClick={() => {
             if (window.confirm("確認登出系統?")) {
               window.localStorage.removeItem("refresh_jwt")

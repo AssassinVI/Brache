@@ -18,6 +18,7 @@ axiosInstance.interceptors.request.use(config => {
     config.headers['Test'] = 'test';
     return config;
 }, error => {
+    
     return Promise.reject(error);
 });
 // 添加response攔截器
@@ -30,8 +31,9 @@ axiosInstance.interceptors.response.use(
             window.sessionStorage.setItem("jwt", response.data.jwt.jwt);
             window.localStorage.setItem("refresh_jwt", response.data.jwt.refresh_jwt);
         }
-        else if (response.data && response.data.success === false) {
+        else if (response.data && response.data.success === false && response.data?.verify === false) {
             // 執行您的操作，例如顯示錯誤訊息、重新導向到錯誤頁面等
+            
             window.location.reload()//透過重新整理讓sideBar的useEffect重新跑一次跳轉頁面
         }
         return response;
