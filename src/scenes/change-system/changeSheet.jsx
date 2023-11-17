@@ -1,7 +1,7 @@
 import React from "react";
 import Header from "../../components/Header";
 import SelectCalendar from "../calendar/selectCalendar";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, TextField, useMediaQuery } from "@mui/material";
+import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, TextField, useMediaQuery, Typography } from "@mui/material";
 import { useState } from "react";
 import EditIcon from '@mui/icons-material/Edit';
 import { useEffect } from "react";
@@ -17,13 +17,16 @@ import RadioGroup from '@mui/material/RadioGroup';
 import { getOne } from "../../axios-api/calendarData";
 import * as teacherApi from "../../axios-api/teacherData";
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
+import MultiSelect from '../../lib/multiSelect';
+import * as studentApi from "../../axios-api/studentData"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousSharpIcon from '@mui/icons-material/DangerousSharp';
 import ArrowLeftSharpIcon from '@mui/icons-material/ArrowLeftSharp';
 import { snackBarOpenAction } from "../../redux/action";
+import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
 //-- 顯示指定日期的課堂 --
-function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type =null}){
+function OpenSelectClass({teacher=null, date=null, isSelect=false, setClassDate, data, setData, type =null}){
     const [listData,setListData] = useState(null)
     const userData = useSelector(state => state.accessRangeReducer)
     const newDate = new Date(date)
@@ -32,11 +35,13 @@ function OpenSelectClass({teacher=null,date=null,setClassDate,data,setData,type 
     }
     useEffect(()=>{
         if(date && userData){
+            
             changeApi.select_course({
                 c_date:`${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()}`,
-                teacher_id:teacher ? teacher:userData.inform.Tb_index
+                teacher_id: teacher ? teacher : userData.inform.Tb_index,
+                isSelect:isSelect
             },(data)=>{
-                console.log(data.data)
+                // console.log(userData)
                 setListData(data.data.data)
             })
         }
@@ -436,6 +441,27 @@ export default function ChangeSheet({sheetId,crud,setListData}){
     //簽核留言位置
     const [message,setMessage] = useState(null)
 
+    const [studentAll, setStudentAll] = useState([]);
+    const [teacherAll, setTeacherAll] = useState([]);
+
+    const [currentDate, setCurrentDate] = useState(null)
+
+     //權限
+     const { accessData, accessDetect } = useAuthorityRange()
+     const [authorityRange, setAuthorityRange] = useState({})
+  
+        //獲取權限範圍
+        useEffect(() => {
+            if (accessData) {
+                const result = accessDetect(accessData, "課表總覽")
+                setAuthorityRange({
+                    p_delete: result?.p_delete === "1" ? true : false,
+                    p_insert: result?.p_insert === "1" ? true : false,
+                    p_update: result?.p_update === "1" ? true : false,
+                })
+            }
+        }, [accessData])
+
     const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
 
     const dispatch = useDispatch(null)
@@ -444,12 +470,19 @@ export default function ChangeSheet({sheetId,crud,setListData}){
         setData({})
         setOpen(false)
     }
+
+    useEffect(()=>{
+        studentApi.getAll().then((data) => {
+            setStudentAll(data.data);
+          });
+        teacherApi.getAll().then((data) => {
+            setTeacherAll(data.data);
+        });
+    }, [])
   
-      useEffect(()=>{
-        console.log(data)
-      },[data,classDate])
-
-
+    //   useEffect(()=>{
+    //     console.log(data)
+    //   },[data])
 
       useEffect(()=>{
         setData({
@@ -462,7 +495,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
       },[newClass])
 
       useEffect(()=>{
-        if(data?.change_type !== "1"){
+        if(data?.change_type !== "1" && data?.change_type !== "4"){
             setNewClass({})
         }
         if (data?.change_type !== "2"){
@@ -474,12 +507,14 @@ export default function ChangeSheet({sheetId,crud,setListData}){
         }
       },[data.change_type])
   
+     //-- 送出表單 --
      const handleSubmit = (status)=>{
         //status === 0 = > 暫存
           //status === 1 = > 送出
           const userId = userData.inform.Tb_index;
           const handleAjax = (status)=>{
             if(crud ==="insert"){
+                
                 changeApi.insert_course_transfer({
                     ...data,
                     admin_id:userId,
@@ -496,10 +531,9 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                     else{
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
                     }
-                    
-                   
                 })
             }else{
+                // console.log(data);
                 changeApi.update_course_transfer({
                     ...data,
                     admin_id:userId,
@@ -517,8 +551,6 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                     else{
                         dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
                     }
-                    
-                   
                 })
             }
           }
@@ -530,26 +562,34 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                 if(data.course_id && data.change_date){
                     handleAjax(status)
                 }else{
-                    window.alert("資料未完整，無法送出")
+                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
                 }
-              
-            }else if(data.change_type === "2"){
+            }
+            else if(data.change_type === "2"){
                 if(data.course_id && data.change_course_id){
                     handleAjax(status)
-                  
                 }else{
-                    window.alert("資料未完整，無法送出")
+                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
                 }
-            }else{
+            }
+            else if(data.change_type === "3"){
                 if(data.course_id ){
                     handleAjax(status)
                 }else{
-                    window.alert("資料未完整，無法送出")
+                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+                }
+            }
+            else if(data.change_type === "4"){
+                if(data.change_teacher_id && data.change_date && data.student){
+                    handleAjax(status)
+                }else{
+                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
                 }
             }
         }
      }
      
+     //-- 簽到 --
      const handleSign = (status)=>{
             const userId =userData.inform.Tb_index
             changeApi.signIn_course_transfer({
@@ -572,20 +612,20 @@ export default function ChangeSheet({sheetId,crud,setListData}){
     return(
         <>
              <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {
-            e.stopPropagation()
-            if(sheetId){
-                changeApi.course_transfer_one(sheetId,(res)=>{
-                    setData(res.data.data)
-                })
-            }
-       
-            setOpen(true)
-          }}>
-            {crud !== "view" || crud !== "history" &&  "檢視"}
-            {crud === "insert" && "新增"}
-            {crud === "view" || crud === "history" && "檢視"}
-            {(crud === "turndown" || crud ==="storage") && "修改"}
-            {crud === "needApproval" && "簽核"}
+                    e.stopPropagation()
+                    if(sheetId){
+                        changeApi.course_transfer_one(sheetId,(res)=>{
+                            //console.log(res);
+                            setData(res.data.data)
+                        })
+                    }
+                    setOpen(true)
+                }}>
+                {crud !== "view" || crud !== "history" &&  "檢視"}
+                {crud === "insert" && "新增"}
+                {crud === "view" || crud === "history" && "檢視"}
+                {(crud === "turndown" || crud ==="storage") && "修改"}
+                {crud === "needApproval" && "簽核"}
           </Button >
           <Dialog open={open} onClose={handleCancel} sx={{
                 "& .MuiPaper-root": { padding: " 10px 25px" },
@@ -609,22 +649,6 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                             {crud === "needApproval" && "異動單簽核"}
                         </DialogTitle>
                         <DialogContent sx={{padding:0,margin:"10px 0"}}>
-                            <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>異動課堂</InputLabel>
-                            {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
-                                <Box display={"flex"} gap={"5px"} alignItems={"center"}>
-                                    <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
-                                    <TimeSelect setCurrentDate={setClassDate}/>
-                                </Box>
-                            }
-                            
-                            {
-                              (data.course_id && crud === "history") ? <TargetClass course_id={data.course_id} type={crud} beforeData={data}/>  : <TargetClass course_id={data.course_id}/>
-                            }
-                            {
-                              classDate &&<OpenSelectClass date={classDate} setClassDate={setClassDate} setData={setData} data={data}/>
-                            }
-                        </DialogContent>
-                        <DialogContent sx={{padding:0,margin:"10px 0"}}>
                             <InputLabel id="demo-simple-select-label">事由</InputLabel>
                             <Select
                                 labelId="demo-simple-select-label"
@@ -641,11 +665,31 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                 value={data.change_type || ''} // 确保值不为 undefined
                                 disabled={crud  === "view" ||  crud === "history" || crud === "needApproval"}
                             >
+                                <MenuItem value={"4"} >{"加課"}</MenuItem>
                                 <MenuItem value={"1"} >{"調課"}</MenuItem>
                                 <MenuItem value={"2"} >{"換課"}</MenuItem>
                                 <MenuItem value={"3"} >{"補簽"}</MenuItem>
                             </Select>
                         </DialogContent>
+                        
+                        {data.change_type !== "4" &&
+                            <DialogContent sx={{padding:0,margin:"10px 0"}}>
+                            <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>異動課堂</InputLabel>
+                            {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
+                                <Box display={"flex"} gap={"5px"} alignItems={"center"}>
+                                    <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
+                                    <TimeSelect setCurrentDate={setClassDate}/>
+                                </Box>
+                            }
+
+                            {
+                            (data.course_id && crud === "history") ? <TargetClass course_id={data.course_id} type={crud} beforeData={data}/>  : <TargetClass course_id={data.course_id}/>
+                            }
+                            {
+                            classDate &&<OpenSelectClass  date={classDate} setClassDate={setClassDate} setData={setData} data={data}/>
+                            }
+                            </DialogContent>
+                        }
                         
                         {data.change_type === "1" &&
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
@@ -653,7 +697,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                             {crud !== "view" &&  crud !== "history" && crud!=="needApproval" &&
                                 <OpenSelectCalendar setData={setNewClass}/>
                             }
-                                <TextField
+                            <TextField
                             autoFocus
                             margin="dense"
                             id="c_date"
@@ -710,7 +754,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                 <Box display={"flex"} gap={"5px"} alignItems={"center"} flexWrap={"wrap"} m={"5px 0 0 0"}>
                                     {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
                                     <>
-                                    <TargetTeacher teacher={teacher} setTeacher={setTeacher}/>
+                                    <TargetTeacher teacher={teacher} setTeacher={setTeacher} />
                                     {teacher && <>
                                         <p style={{ color: "red",display:"inline", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂資訊透過右邊查詢)--{'>'}</p>
                                         <TimeSelect setCurrentDate={setClassDate2}/>
@@ -718,18 +762,121 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                     </>
                                     }
                                     
-                                    {classDate2 &&<OpenSelectClass teacher={teacher} date={classDate2} setClassDate={setClassDate2} setData={setData} data={data} type={"換課"}/>}
+                                    {classDate2 &&<OpenSelectClass teacher={teacher} isSelect={true} date={classDate2} setClassDate={setClassDate2} setData={setData} data={data} type={"換課"}/>}
                                 </Box>
                                 {data.change_course_id &&<TargetClass course_id={data.change_course_id} teacher={teacher} setTeacher={setTeacher}/>}
                             </DialogContent>
                         }
-        
-                        <DialogContent sx={{padding:0,margin:(isMobile && crud === "needApproval")?"10px 0 60px":"10px 0"}}>
-                        <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>備註</InputLabel>
+                        {data.change_type === "4" &&
+                            
+                            <DialogContent sx={{padding:0,margin:"10px 0"}}>
+
+                                <FormControl fullWidth sx={{marginTop:'10px'}}> 
+                                    <InputLabel id="demo-simple-select-label">老師</InputLabel>
+                                    <Select onChange={(e) => {
+                                        setData({
+                                            ...data,
+                                            change_teacher_id: e.target.value,
+                                        })
+                                        }}
+                                        disabled={!authorityRange.p_update}
+                                        value={data.change_teacher_id}
+                                        labelId="demo-simple-select-label"
+                                        id="demo-simple-select"
+                                        label="老師"
+                                        sx={{ width: "80%", maxWidth: "300px", "& .MuiButtonBase-root": { padding: "0 16px" } }}>
+                                        {teacherAll.map((item, i) => (
+                                            <MenuItem key={item.Tb_index} value={item.Tb_index} >
+                                            {item.name}
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
+
+                                
                                 <TextField
                                     autoFocus
                                     margin="dense"
-                                    id="name"
+                                    id="c_name"
+                                    label="課程名稱"
+                                    type="text"
+                                    fullWidth
+                                    variant="standard"
+                                    onChange={(e) => {
+                                        setData({
+                                            ...data,
+                                            change_c_name: e.target.value,
+                                        })
+                                    }}
+                                    value={data.change_c_name}
+                                    />
+                                <Box sx={{marginTop:'10px'}}>
+                                    {studentAll && data.student && <MultiSelect studentAll={studentAll} data={data} setData={setData} type={crud} author={authorityRange.p_update} />}
+                                </Box>
+                                <Box flex={"0 0 100%"} sx={{marginTop:'10px'}}>
+                                    <Typography variant="h5" component="h6">課堂時間及教室</Typography>
+                                    {crud !== "view" &&  crud !== "history" && crud!=="needApproval" &&
+                                        <OpenSelectCalendar setData={setNewClass}/>
+                                    }
+                                </Box>
+                                <TextField
+                                autoFocus
+                                margin="dense"
+                                id="c_date"
+                                label="日期"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                value={data.change_date || " "}
+                            
+                                className='input'
+                                />
+                                <TextField
+                                autoFocus
+                                margin="dense"
+                                id="room_name"
+                                label="教室"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                value={data.change_room_name || " "}
+                            
+                                className='input'
+                                />
+                
+                                <TextField
+                                autoFocus
+                                margin="dense"
+                                id="StartTime"
+                                label="課堂開始時間"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                value={data.change_StartTime || " "}
+                            
+                                className='input'
+                                />
+                                <TextField
+                                autoFocus
+                                margin="dense"
+                                id="EndTime"
+                                label="課堂結束時間"
+                                type="text"
+                                fullWidth
+                                variant="standard"
+                                value={data.change_EndTime || " "}
+                            
+                                className='input'
+                                />
+                            </DialogContent>
+                        }
+        
+                        <DialogContent sx={{padding:0,margin:(isMobile && crud === "needApproval")?"10px 0 60px":"10px 0"}}>
+                        <InputLabel id="demo-simple-select-label">備註</InputLabel>
+                                <TextField
+                                    autoFocus
+                                    margin="dense"
+                                    id="remark"
                                     type="text"
                                     fullWidth
                                     variant="standard"

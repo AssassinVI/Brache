@@ -284,9 +284,6 @@ const CalendarTop = () => {
     })
   }, [])
 
-  useEffect(()=>{
-    //console.log(teacherAll)
-  },[teacherAll])
 
     //權限
     const { accessData, accessDetect } = useAuthorityRange()
@@ -1027,7 +1024,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                     <TimeSelect setCurrentDate={setCurrentDate} />
                   </Box>
                   }
-                
                 </Box>
                 <TextField
                   autoFocus

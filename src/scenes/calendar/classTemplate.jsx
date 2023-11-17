@@ -594,6 +594,7 @@ const LessonPopUp = ({unitData, weekNum, id, name, gap, bg, type, teacherAll, st
             //setTableData(dataTransformTable(data.data.data, "template"))
             setAllWeekTableData(dataTransformTableTemplate(data.data.data));
           })
+          setOpen(false)
         }
 
       })
@@ -606,11 +607,12 @@ const LessonPopUp = ({unitData, weekNum, id, name, gap, bg, type, teacherAll, st
             //setTableData(dataTransformTable(data.data.data, "template"))
             setAllWeekTableData(dataTransformTableTemplate(data.data.data));
           })
+          setOpen(false)
         }
       })
     }
 
-    setOpen(false)
+    
   }
 
   const handleDelete = () => {
