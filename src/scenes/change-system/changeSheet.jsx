@@ -649,27 +649,28 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                             {crud === "needApproval" && "異動單簽核"}
                         </DialogTitle>
                         <DialogContent sx={{padding:0,margin:"10px 0"}}>
+                          <FormControl fullWidth sx={{marginTop:'10px'}}>
                             <InputLabel id="demo-simple-select-label">事由</InputLabel>
-                            <Select
-                                labelId="demo-simple-select-label"
-                                id="demo-simple-select"
-                                label="事由"
-                                onChange={(e) => {
-                                    setData({
-                                        ...data,
-                                        change_type:e.target.value
-                                    })
-                                }}
-                                fullWidth
-                                sx={{ "& #demo-simple-select": { padding: "10px" }, marginTop: "10px" }}
-                                value={data.change_type || ''} // 确保值不为 undefined
-                                disabled={crud  === "view" ||  crud === "history" || crud === "needApproval"}
-                            >
-                                <MenuItem value={"4"} >{"加課"}</MenuItem>
-                                <MenuItem value={"1"} >{"調課"}</MenuItem>
-                                <MenuItem value={"2"} >{"換課"}</MenuItem>
-                                <MenuItem value={"3"} >{"補簽"}</MenuItem>
-                            </Select>
+                                <Select
+                                    labelId="demo-simple-select-label"
+                                    id="demo-simple-select"
+                                    label="事由"
+                                    onChange={(e) => {
+                                        setData({
+                                            ...data,
+                                            change_type:e.target.value
+                                        })
+                                    }}
+                                    fullWidth
+                                    value={data.change_type || ''} // 确保值不为 undefined
+                                    inputProps={{ readOnly: crud  === "view" ||  crud === "history" || crud === "needApproval"}}
+                                >
+                                    <MenuItem value={"4"} >{"加課"}</MenuItem>
+                                    <MenuItem value={"1"} >{"調課"}</MenuItem>
+                                    <MenuItem value={"2"} >{"換課"}</MenuItem>
+                                    <MenuItem value={"3"} >{"補簽"}</MenuItem>
+                                </Select>
+                          </FormControl>
                         </DialogContent>
                         
                         {data.change_type !== "4" &&
@@ -779,7 +780,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                             change_teacher_id: e.target.value,
                                         })
                                         }}
-                                        disabled={!authorityRange.p_update}
+                                        inputProps={{ readOnly: !authorityRange.p_update || crud  === "view" ||  crud === "history" || crud === "needApproval"}}
                                         value={data.change_teacher_id}
                                         labelId="demo-simple-select-label"
                                         id="demo-simple-select"
@@ -809,9 +810,12 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                         })
                                     }}
                                     value={data.change_c_name}
+                                    InputProps={{
+                                        readOnly: crud === "view" || crud === "history" || crud === "needApproval",
+                                    }}
                                     />
                                 <Box sx={{marginTop:'10px'}}>
-                                    {studentAll && data.student && <MultiSelect studentAll={studentAll} data={data} setData={setData} type={crud} author={authorityRange.p_update} />}
+                                    {studentAll &&  <MultiSelect studentAll={studentAll} data={data} setData={setData} type={crud} author={authorityRange.p_update} />}
                                 </Box>
                                 <Box flex={"0 0 100%"} sx={{marginTop:'10px'}}>
                                     <Typography variant="h5" component="h6">課堂時間及教室</Typography>
@@ -887,7 +891,9 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                         })
                                     }}
                                     value={data.c_remark}
-                                    disabled={crud === "view" || crud === "history" || crud === "needApproval"}
+                                    InputProps={{
+                                        readOnly: crud === "view" || crud === "history" || crud === "needApproval",
+                                    }}
                                 />
                         </DialogContent>   
                         {(crud !== "view" &&  crud !== "history" && crud !== "needApproval") ?

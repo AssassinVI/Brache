@@ -41,17 +41,17 @@ export default function Inprogress({listData=[],setListData}){
         {
             field: "change_date",
             headerName: "上課日期",
-            flex: 0.5,
+            flex: 1,
         },
         {
             field: "change_StartTime",
             headerName: "上課時間",
-            flex: 0.5,
+            flex: 1,
         },
         {
             field: "change_room",
             headerName: "上課教室",
-            flex: 0.5,
+            flex: 1,
         },
         {
             field: "keyindate",
@@ -144,6 +144,11 @@ export default function Inprogress({listData=[],setListData}){
             }
         },
     ];
+
+    const responsiveColumns = isMobile
+    ? columns.filter((column) => column.field !== 'change_StartTime' && column.field !== 'change_room' && column.field !== 'keyindate')
+    : columns;
+
     return(
         <Box m={"25px 0"}>
              <Typography variant="h5" sx={{fontWeight:"600"}}>申請中的異動單</Typography>
@@ -188,7 +193,7 @@ export default function Inprogress({listData=[],setListData}){
                 }
             }}
         >
-            {listData ? <DataGrid rowHeight={isMobile ? 95 : 85} rows={listData} getRowId={(row) => row.Tb_index} columns={columns} /> : <IsLoading />}
+            {listData ? <DataGrid rowHeight={isMobile ? 95 : 85} rows={listData} getRowId={(row) => row.Tb_index} columns={responsiveColumns} /> : <IsLoading />}
         </Box>
         </Box>
     )

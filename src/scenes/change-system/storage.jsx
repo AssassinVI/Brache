@@ -99,6 +99,11 @@ export default function Storage({listData=[],setListData}){
             }
         },
     ];
+
+    const responsiveColumns = isMobile
+    ? columns.filter((column) => column.field !== 'change_StartTime' && column.field !== 'change_room' && column.field !== 'keyindate')
+    : columns;
+
     return(
         <Box m={"25px 0"}>
              <Typography variant="h5" sx={{fontWeight:"600"}}>暫存的異動單</Typography>
@@ -143,7 +148,7 @@ export default function Storage({listData=[],setListData}){
                 }
             }}
         >
-            {listData ? <DataGrid rowHeight={isMobile ? 95 : 85} rows={listData} getRowId={(row) => row.Tb_index} columns={columns} /> : <IsLoading />}
+            {listData ? <DataGrid rowHeight={isMobile ? 95 : 85} rows={listData} getRowId={(row) => row.Tb_index} columns={responsiveColumns} /> : <IsLoading />}
         </Box>
         </Box>
     )

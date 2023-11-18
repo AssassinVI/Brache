@@ -40,10 +40,35 @@ export default function TurnDown({listData=[],setListData}){
     const dispatch = useDispatch(null)
     const columns = [
         {
-            field: "c_name",
-            headerName: "課堂名稱",
+            field: "student",
+            headerName: "學生",
             flex: isMobile ? 0.7 : 1,
             cellClassName: "name-column--cell",
+            renderCell: (rows)=>{
+
+                return(
+                    rows.row.student.map((student)=>{
+                        return (
+                            <span style={{marginRight:'5px'}}>{student.name}</span>
+                        )
+                    })
+                )
+            }
+        },
+        {
+            field: "change_date",
+            headerName: "上課日期",
+            flex: 1,
+        },
+        {
+            field: "change_StartTime",
+            headerName: "上課時間",
+            flex: 1,
+        },
+        {
+            field: "change_room",
+            headerName: "上課教室",
+            flex: 1,
         },
         {
             field: "keyindate",
@@ -60,6 +85,7 @@ export default function TurnDown({listData=[],setListData}){
                         {rows.row.change_type === "1" && <p>調課</p>}
                         {rows.row.change_type === "2" && <p>換課</p>}
                         {rows.row.change_type === "3" && <p>補簽</p>}
+                        {rows.row.change_type === "4" && <p>加課</p>}
                     </Box>
                 )
             }
@@ -95,6 +121,12 @@ export default function TurnDown({listData=[],setListData}){
             }
         },
     ];
+
+    const responsiveColumns = isMobile
+    ? columns.filter((column) => column.field !== 'change_StartTime' && column.field !== 'change_room' && column.field !== 'keyindate')
+    : columns;
+
+
     return(
         <Box m={"25px 0"}>
              <Typography variant="h5" sx={{fontWeight:"600"}}>駁回的異動單</Typography>
@@ -139,7 +171,7 @@ export default function TurnDown({listData=[],setListData}){
                 }
             }}
         >
-            {listData ? <DataGrid rowHeight={isMobile ? 95 : 85} rows={listData} getRowId={(row) => row.Tb_index} columns={columns} /> : <IsLoading />}
+            {listData ? <DataGrid rowHeight={isMobile ? 95 : 85} rows={listData} getRowId={(row) => row.Tb_index} columns={responsiveColumns} /> : <IsLoading />}
         </Box>
         </Box>
     )

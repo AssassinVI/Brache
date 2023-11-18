@@ -158,7 +158,7 @@ const Listbox = styled('ul')(
 
 export default function MultiSelect({ studentAll, data, setData, type,author }) {
   const defaultIndex = []
-  if (type === "update" || type==="turndown" || type==="storage") {
+  if (type === "update" || type==="turndown" || type==="storage" || type==="view" || type==="needApproval" || type==="history") {
     studentAll.forEach((item, i) => {
       data.student.forEach((itemInner) => {
         // console.log(itemInner);
