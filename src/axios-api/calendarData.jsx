@@ -127,7 +127,25 @@ export const import_course = (data, func) => {
             data: {
                 ...data,
                 type: "import_course",
-            }
+            },
+            //-- POST資料前 --
+            transformRequest(data, headers){
+                const loadingDOM=document.getElementById('loadingBox');
+                loadingDOM.style.display='flex';
+                const formData = new FormData();
+                for (const key in data) {
+                    if (data.hasOwnProperty(key)) {
+                        formData.append(key, data[key]);
+                    }
+                }
+                return formData;
+            },
+            //-- 接收資料後 --
+            transformResponse(data){
+                const loadingDOM=document.getElementById('loadingBox');
+                loadingDOM.style.display='none';
+                return JSON.parse(data);
+            },
         }).then((res) => {
             func(res)
         })

@@ -8,8 +8,8 @@ import Invoices from "./scenes/invoices";
 import Contacts from "./scenes/contacts";
 import Form from "./scenes/form";
 import FAQ from "./scenes/faq";
-import { Box, CssBaseline, ThemeProvider } from "@mui/material";
-import { ColorModeContext, useMode } from "./theme";
+import { Box, CssBaseline, ThemeProvider, CircularProgress } from "@mui/material";
+import { ColorModeContext, useMode  } from "./theme";
 import Calendar from "./scenes/calendar/calendar";
 import ModuleManage from "./scenes/module-manage";
 import Snackbar from '@mui/material/Snackbar';
@@ -33,6 +33,7 @@ import ChangeHistory from "./scenes/change-system/changeHistory";
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
+  const [isLoading, setIsLoading]= useState(false);
   const snackbarOpen = useSelector(state => state.snackbarOpenReducer)
   const dispatch = useDispatch(null)
   const handleClose = () => {
@@ -42,6 +43,21 @@ function App() {
     <ColorModeContext.Provider value={colorMode}>
       <ThemeProvider theme={theme}>
         <CssBaseline />
+
+        {/* axios讀取 */}
+        <div id="loadingBox" style={{
+          position:'fixed', 
+          zIndex:1000,
+          width: '100%',
+          height: '100%',
+          backgroundColor: '#ffffffa1',
+          backdropFilter: 'blur(10px)',
+          display:'none',
+          justifyContent:'center',
+          alignItems:'center'
+        }}>
+            <CircularProgress color="inherit" />
+        </div>
 
         <Routes>
           <Route path="/" element={<Login />} />

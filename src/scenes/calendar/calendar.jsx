@@ -126,10 +126,13 @@ function SelectDate() {
   );
 }
 
+
+//-- 匯入課表按鈕 --
 function ImportTemplate() {
   const [data, setData] = useState({})
   const [open, setOpen] = useState(false)
   const [templateList, setTemplateList] = useState(null)
+  const [copyNum, setCopyNum] = useState(1)
   const [ct_title, setCtTitle] = useState(null)
   const currentDate = useSelector(state => state.calendarReducer.currentDate)
   const dispatch = useDispatch(null)
@@ -144,14 +147,17 @@ function ImportTemplate() {
     if(ct_title===null){
       dispatch(snackBarOpenAction(true, '請選擇公版課表', 'error'));
     }
-    else if (window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月" 的課表中\n匯入'${ct_title}'`)) {
+    else if (window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週" 的課表中\n匯入'${ct_title}'公版課表\n並複製${copyNum-1}週`)) {
       //-- 指定月的第一週星期一日期 --
-      const firstMonday=getDateOfMondayInWeek(currentDate.year, currentDate.month, 1);
+      //const firstMonday=getDateOfMondayInWeek(currentDate.year, currentDate.month, 1);
       calendarApi.import_course({
-        StartDate: `${firstMonday.getFullYear()}-${firstMonday.getMonth()+1}-${firstMonday.getDate()}`,
+       // StartDate: `${firstMonday.getFullYear()}-${firstMonday.getMonth()+1}-${firstMonday.getDate()}`,
+        StartDate: startDate,
         EndDate: endDate,
-        ct_list_id: data.Tb_index
+        ct_list_id: data.Tb_index,
+        copyNum:copyNum
       }, (res) => {
+        console.log(res);
         const status = res.data.success ? "success" : "error"
         dispatch(snackBarOpenAction(true, res.data.msg, status))
         if (res.data.success) {
@@ -196,33 +202,53 @@ function ImportTemplate() {
             <DialogTitle sx={{ fontSize: "12px", padding: "0 24px 10px 24px", color: "red" }}>{"匯入的公版課表無法覆蓋已登記的課表"}</DialogTitle>
             <DialogContent sx={{ width: "100%", padding: "20px 24px !important" }} >
               {templateList &&
-                <FormControl fullWidth >
-                  <InputLabel id="demo-simple-select-label">公版課表</InputLabel>
-                  <Select onChange={(e) => {
-                    const selectedTbIndex = e.target.value;
-                    const selectedTemplate = templateList.find(item => item.Tb_index === selectedTbIndex);
-                    setCtTitle(selectedTemplate.ct_title)
-                    setData({
-                      ...data,
-                      Tb_index: e.target.value,
-                    })
-                  }}
-                    labelId="demo-simple-select-label"
-                    id="demo-simple-select"
-                    label="模板"
-                    sx={{ width: "80%", maxWidth: "300px", "& .MuiButtonBase-root": { padding: "0 16px" } }}>
-                    {templateList.map((item, i) => (
-                      <MenuItem key={item.Tb_index} value={item.Tb_index} >
-                        {item.ct_title}
-                      </MenuItem>
-                    ))}
-                  </Select>
-                </FormControl>
+                <Box>
+                  <FormControl fullWidth >
+                    <InputLabel id="demo-simple-select-label">公版課表</InputLabel>
+                    <Select onChange={(e) => {
+                      const selectedTbIndex = e.target.value;
+                      const selectedTemplate = templateList.find(item => item.Tb_index === selectedTbIndex);
+                      setCtTitle(selectedTemplate.ct_title)
+                      setData({
+                        ...data,
+                        Tb_index: e.target.value,
+                      })
+                    }}
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="公版課表"
+                      sx={{ width: "80%", maxWidth: "300px", "& .MuiButtonBase-root": { padding: "0 16px" } }}>
+                      {templateList.map((item, i) => (
+                        <MenuItem key={item.Tb_index} value={item.Tb_index} >
+                          {item.ct_title}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                  <FormControl fullWidth sx={{marginTop:'20px'}}>
+                     <InputLabel id="demo-simple-select-label2">匯入幾週</InputLabel>
+                     <Select
+                      labelId="demo-simple-select-label2"
+                      label="匯入幾週"
+                      value={copyNum}
+                      onChange={(e)=>{
+                        setCopyNum(e.target.value);
+                      }}
+                     >
+                      <MenuItem value={1} >一週</MenuItem>
+                      <MenuItem value={2} >二週</MenuItem>
+                      <MenuItem value={3} >三週</MenuItem>
+                      <MenuItem value={4} >四週</MenuItem>
+                      <MenuItem value={5} >五週</MenuItem>
+                     </Select>
+                  </FormControl>
+                </Box>
+                
               }
             </DialogContent>
             <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
-              <Button onClick={handleSubmit}>OK</Button>
-              <Button onClick={handleCancel}>Cancel</Button>
+              <Button onClick={handleSubmit}>匯入</Button>
+              <Button onClick={handleCancel}>取消</Button>
             </Box>
           </Box>
         </Box>

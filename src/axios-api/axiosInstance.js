@@ -9,23 +9,29 @@ const axiosInstance = axios.create({
 });
 
 
+
 // // 設定請求攔截器
-axiosInstance.interceptors.request.use(config => {
-    // 在每個請求中自動添加 headers
-    config.headers['Authorization'] = `Bearer ${sessionStorage["jwt"]}`;
-    config.headers['Refresh-Token'] = localStorage["refresh_jwt"];
-    //-- 開啟測試資料庫用 --
-    config.headers['Test'] = 'test';
-    return config;
-}, error => {
-    
-    return Promise.reject(error);
-});
+axiosInstance.interceptors.request.use(
+    (config) => {
+        // 在每個請求中自動添加 headers
+        config.headers['Authorization'] = `Bearer ${sessionStorage["jwt"]}`;
+        config.headers['Refresh-Token'] = localStorage["refresh_jwt"];
+        //-- 開啟測試資料庫用 --
+        config.headers['Test'] = 'test';
+
+
+        return config;
+    }, 
+    (error) => {
+        
+        return Promise.reject(error);
+    }
+);
 // 添加response攔截器
 axiosInstance.interceptors.response.use(
     (response) => {
         // 檢查response中的data.success屬性是否為false
-        //console.log(response);
+
         //-- 延長token --
         if(response.data.jwt && response.data.jwt.jwt!==''){
             window.sessionStorage.setItem("jwt", response.data.jwt.jwt);

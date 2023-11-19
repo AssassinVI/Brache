@@ -45,6 +45,7 @@ const CalendarTop = ({ id }) => {
   const [teacherAll, setTeacherAll] = useState([]);
   //-- 第幾周 --
   const [weekNum, setWeekNum] = useState(1);
+  const [MaxWeekNum, setMaxWeekNum] = useState(1);
   //-- 所有週課程資料 --
   const [allWeekTableData, setAllWeekTableData] = useState([]);
   const scrollRef = useRef(null)
@@ -128,7 +129,7 @@ const CalendarTop = ({ id }) => {
 
    //-- 下一週 --
    function nextWeek() {
-    if(weekNum!==5){
+    if(weekNum!==MaxWeekNum){
         let newWeek=weekNum+1;
         setWeekNum(newWeek);
         if(allWeekTableData[newWeek]===undefined){
@@ -191,10 +192,10 @@ const CalendarTop = ({ id }) => {
                 color:'#fff', 
                 transform:'rotate(180deg)', 
                 "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
-               <h2>第{weekNum}週</h2>
+               {/* <h2>第{weekNum}週</h2> */}
                <IconButton onClick={(e)=>{nextWeek();}} aria-label="下一週" title='下一週' sx={{
-                opacity: weekNum===5 ? 0: 1 ,
-                visibility: weekNum===5 ? 'hidden': 'visible' ,
+                opacity: weekNum===MaxWeekNum ? 0: 1 ,
+                visibility: weekNum===MaxWeekNum ? 'hidden': 'visible' ,
                 backgroundColor:'#1d7dc9', 
                 color:'#fff', 
                 "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>

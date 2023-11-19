@@ -453,7 +453,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
         //獲取權限範圍
         useEffect(() => {
             if (accessData) {
-                const result = accessDetect(accessData, "課表總覽")
+                const result = accessDetect(accessData, "課表異動管理")
                 setAuthorityRange({
                     p_delete: result?.p_delete === "1" ? true : false,
                     p_insert: result?.p_insert === "1" ? true : false,
@@ -478,11 +478,10 @@ export default function ChangeSheet({sheetId,crud,setListData}){
         teacherApi.getAll().then((data) => {
             setTeacherAll(data.data);
         });
+        
     }, [])
   
-    //   useEffect(()=>{
-    //     console.log(data)
-    //   },[data])
+
 
       useEffect(()=>{
         setData({
@@ -772,7 +771,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                             
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
 
-                                <FormControl fullWidth sx={{marginTop:'10px'}}> 
+                                {teacherAll && <FormControl fullWidth sx={{marginTop:'10px'}}> 
                                     <InputLabel id="demo-simple-select-label">老師</InputLabel>
                                     <Select onChange={(e) => {
                                         setData({
@@ -792,7 +791,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                             </MenuItem>
                                         ))}
                                     </Select>
-                                </FormControl>
+                                </FormControl>}
 
                                 
                                 <TextField

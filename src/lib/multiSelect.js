@@ -161,7 +161,7 @@ export default function MultiSelect({ studentAll, data, setData, type,author }) 
   if (type === "update" || type==="turndown" || type==="storage" || type==="view" || type==="needApproval" || type==="history") {
     studentAll.forEach((item, i) => {
       data.student.forEach((itemInner) => {
-        // console.log(itemInner);
+        
         if (item.Tb_index === itemInner.Tb_index) {
           defaultIndex.push(i)
         }
