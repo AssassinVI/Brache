@@ -9,6 +9,7 @@ import SettingsOutlinedIcon from "@mui/icons-material/SettingsOutlined";
 import SearchIcon from "@mui/icons-material/Search";
 import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
+import NotificationsIcon from '@mui/icons-material/Notifications';
 import { useDispatch, useSelector } from "react-redux";
 import { menuInAction, clearReduxStateAction } from "../../redux/action";
 import { useNavigate } from "react-router-dom";
@@ -82,8 +83,19 @@ const Topbar = () => {
               navigate("/")
             }
           }}>
+            <NotificationsIcon />
+          </IconButton>
+          <IconButton onClick={() => {
+            if (window.confirm("確認登出系統?")) {
+              window.localStorage.removeItem("refresh_jwt")
+              window.sessionStorage.removeItem("jwt")
+              dispatch(clearReduxStateAction())
+              navigate("/")
+            }
+          }}>
             <LogoutIcon />
           </IconButton>
+          
         </Box>
       </Box>
     </Box>

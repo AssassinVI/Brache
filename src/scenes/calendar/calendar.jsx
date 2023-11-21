@@ -139,6 +139,7 @@ function ImportTemplate() {
   const handleCancel = () => {
     setCtTitle(null);
     setOpen(false)
+    setCopyNum(1);
   }
   const handleSubmit = () => {
     const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day;
@@ -170,6 +171,37 @@ function ImportTemplate() {
     }
 
   }
+
+  //-- 刪除匯入課表 --
+  const deletTemplateClass=()=>{
+    const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day;
+    const endDate = formatDateBack(getWeekDates(startDate)[6]);
+
+    if(ct_title===null){
+      dispatch(snackBarOpenAction(true, '請選擇公版課表', 'error'));
+    }
+    else if(window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週" 刪除匯入的'${ct_title}'公版課表\n共刪除${copyNum}週`)){
+      calendarApi.delete_template_course({
+        StartDate: startDate,
+        EndDate: endDate,
+        ct_list_id: data.Tb_index,
+        copyNum:copyNum
+      }, (res)=>{
+          const status = res.data.success ? "success" : "error"
+          dispatch(snackBarOpenAction(true, res.data.msg, status))
+          if (res.data.success) {
+            calendarApi.getAll(startDate, endDate).then((data) => {
+              dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+            })
+          }
+      });
+      handleCancel()
+    }
+    
+    
+  };
+
+
   useEffect(() => {
     get_course_template_list().then((data) => {
       setTemplateList(data.data)
@@ -185,7 +217,7 @@ function ImportTemplate() {
       }}>
         匯入課表
       </Button>
-      <Dialog open={open} onClose={handleCancel} >
+      <Dialog open={open} onClose={handleCancel}>
         <Box display={"flex"} justifyContent={"center"} alignItems={"center"} position={"relative"} zIndex={10} width={"100%"} height={"100%"} left={0} top={0}
           onClick={handleCancel}
         >
@@ -193,6 +225,7 @@ function ImportTemplate() {
             sx={{
               backgroundColor: "#fff",
               boxShadow: "0 0 10px 1px rgba(0,0,0,0.3)",
+              width:'350px'
             }}
             onClick={(e) => {
               e.stopPropagation()
@@ -226,10 +259,10 @@ function ImportTemplate() {
                     </Select>
                   </FormControl>
                   <FormControl fullWidth sx={{marginTop:'20px'}}>
-                     <InputLabel id="demo-simple-select-label2">匯入幾週</InputLabel>
+                     <InputLabel id="demo-simple-select-label2">匯入或刪除幾週</InputLabel>
                      <Select
                       labelId="demo-simple-select-label2"
-                      label="匯入幾週"
+                      label="匯入或刪除幾週"
                       value={copyNum}
                       onChange={(e)=>{
                         setCopyNum(e.target.value);
@@ -247,8 +280,9 @@ function ImportTemplate() {
               }
             </DialogContent>
             <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
-              <Button onClick={handleSubmit}>匯入</Button>
-              <Button onClick={handleCancel}>取消</Button>
+              <Button color="error" sx={{margin:'0 5px'}} onClick={deletTemplateClass}>刪除公版課表</Button>
+              <Button variant="contained" color="success" sx={{margin:'0 5px'}} onClick={handleSubmit}>匯入</Button>
+              <Button sx={{margin:'0 5px'}} onClick={handleCancel}>取消</Button>
             </Box>
           </Box>
         </Box>

@@ -155,3 +155,23 @@ export const import_course = (data, func) => {
     }
 
 };
+
+
+export const delete_template_course = (data, func) => {
+    try {
+        axiosInstance({
+            method: "POST",
+            url: "https://bratsche.web-board.tw/ajax/course_template.php",
+            data: {
+                ...data,
+                type: "delete_template_course",
+            }
+        }).then((res) => {
+            func(res)
+        })
+
+    } catch (error) {
+        console.error(error);
+    }
+
+};
