@@ -1,4 +1,4 @@
-import { snackbarOpen, menuIn, systemTree, adminType, clearType, calendarDateType, calednarTableDataType, informType, isTestType } from "./type"
+import { snackbarOpen, menuIn, systemTree, adminType, clearType, calendarDateType, calednarTableDataType, informType, isTestType, notificationListType } from "./type"
 export const snackBarOpenAction = (bolean, str, severity) => {
     return {
         type: snackbarOpen,
@@ -63,5 +63,19 @@ export const isTestTypeAction = (test) => {
     return {
         type: isTestType,
         payload: test,
+    }
+}
+
+/**
+ * 
+ * @param {Array} data 通知資料
+ * @param {Boolean} reflash 是否刷新
+ * @returns 
+ */
+export const notificationListAction = ({data, reflash}) => {
+    return {
+        type: notificationListType,
+        list: data,
+        reflash: reflash
     }
 }

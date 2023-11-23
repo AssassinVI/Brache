@@ -1,6 +1,5 @@
 import React from "react";
 import Header from "../../components/Header";
-import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, TextField, useMediaQuery } from "@mui/material";
 import { useState } from "react";
 import { useEffect } from "react";
 import * as changeApi from "../../axios-api/changeSystem"
@@ -44,11 +43,6 @@ export default function ScheduleChange(){
         }
     },[userData])
 
-    useEffect(()=>{
-        console.log(listData)
-    },[listData])
-
- 
 
 
     return(

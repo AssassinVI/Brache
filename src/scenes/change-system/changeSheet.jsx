@@ -1,9 +1,7 @@
 import React from "react";
-import Header from "../../components/Header";
 import SelectCalendar from "../calendar/selectCalendar";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, TextField, useMediaQuery, Typography } from "@mui/material";
 import { useState } from "react";
-import EditIcon from '@mui/icons-material/Edit';
 import { useEffect } from "react";
 import { TimeSelect } from "../calendar/calendar";
 import { getCourseAll } from "../../axios-api/calendarData";
@@ -22,7 +20,7 @@ import * as studentApi from "../../axios-api/studentData"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousSharpIcon from '@mui/icons-material/DangerousSharp';
 import ArrowLeftSharpIcon from '@mui/icons-material/ArrowLeftSharp';
-import { snackBarOpenAction } from "../../redux/action";
+import { snackBarOpenAction, notificationListAction } from "../../redux/action";
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
 //-- 顯示指定日期的課堂 --
@@ -525,6 +523,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         changeApi.get_course_transfer(userId,(res)=>{
                                 setListData(res.data.data)
                         })
+                        //-- 更新通知 --
+                        dispatch(notificationListAction({reflash: true}))
                         handleCancel()
                     }
                     else{
@@ -545,6 +545,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         changeApi.get_course_transfer(userId,(res)=>{
                                 setListData(res.data.data)
                         })
+                        //-- 更新通知 --
+                        dispatch(notificationListAction({reflash: true}))
                         handleCancel()
                     }
                     else{
@@ -602,6 +604,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                     changeApi.get_course_transfer(userId,(res)=>{
                         setListData(res.data.data)
                     })
+                    //-- 更新通知 --
+                    dispatch(notificationListAction({reflash: true}))
                     handleCancel()
             }
             })

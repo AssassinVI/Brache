@@ -14,6 +14,8 @@ import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import { IsLoading } from "../../components/loading"
 import axiosInstance from "../../axios-api/axiosInstance";
 import * as Icons from '@mui/icons-material'
+
+
 const Item = ({ treeData, selected, setSelected }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -157,6 +159,7 @@ const Sidebar = () => {
         dispatch(adminAction(treeData, {
           name: res.data.data.Group_name,
           admin_per: res.data.data.admin_per,
+          position_type: res.data.data.position_type,
           access: res.data.data.name,
           Tb_index: res.data.data.Tb_index
         }))

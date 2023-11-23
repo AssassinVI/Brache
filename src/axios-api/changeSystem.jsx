@@ -42,6 +42,27 @@ export const course_transfer_one = async (id,func) => {
     }
 };
 
+
+//-- 異動單通知 --
+export const course_transfer_notification = async (id,func) => {
+    try {
+      axiosInstance({
+            method: 'post',
+            url: changeApi,
+            data: {
+                type: "course_transfer_notification",
+                admin_id:id
+            },
+        }).then((data)=>{
+            func(data)
+        })
+
+  
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 //簽核
 export const signIn_course_transfer = async (data,func) => {
     try {

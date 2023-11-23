@@ -1,17 +1,21 @@
 import React, { useState } from 'react'
-import { Box, Button, Dialog, DialogContent, TextField } from '@mui/material'
+import { Box, Button, Dialog, DialogContent, TextField, IconButton } from '@mui/material'
 import EditIcon from '@mui/icons-material/Edit';
 import { set_student_course_record,get_course_record_one } from '../../axios-api/recordList';
+import { useDispatch } from 'react-redux'
+import { notificationListAction } from "../../redux/action";
 import AddIcon from '@mui/icons-material/Add';
 export default function AddPractice({data,setRecordData,time=null}){
     console.log(data)
     const [open , setOpen] = useState(false)
     const [practiceData,setPracticeData] = useState({})
+    const dispatch=useDispatch(null);
     const handleCancel=()=>{
         setOpen(false)
     }
     const handleSubmit = ()=>{
         console.log(practiceData)
+       
         set_student_course_record({
             record_id:data.record_id,
            ...practiceData
@@ -19,15 +23,17 @@ export default function AddPractice({data,setRecordData,time=null}){
             get_course_record_one(data.record_id,(res)=>{
                 setRecordData(res.data.data[0])
             })
+            //-- 更新通知 --
+            dispatch(notificationListAction({reflash: true}))
             setOpen(false)
         })
     }
    
     return(
         <>
-        <AddIcon className='practiceBtn' onClick={()=>{
-            setOpen(true)
-        }}/>
+        <Button variant="contained" color="success" onClick={()=>{setOpen(true)}} sx={{position: 'absolute', right:0, top:0}}>
+            <AddIcon /> 練習時間
+        </Button>
           <Dialog open={open} onClose={handleCancel} >
             <Box sx={{
                 padding:"30px",

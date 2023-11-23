@@ -4,13 +4,13 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
 import { DateCalendar, DateRangeIcon, LocalizationProvider } from '@mui/x-date-pickers'
-import { Box, Button, Dialog, useMediaQuery } from '@mui/material'
+import { Box, Button, Dialog, useMediaQuery, Badge } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { convertToChineseNumber, getWeekInfoForDate } from '../calendar/getMonday'
 import * as recordListApi from "../../axios-api/recordList"
 import { useTheme } from '@emotion/react'
 import { tokens } from '../../theme'
-import { useSelector } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import { useEffect } from 'react'
 import { IsLoading } from '../../components/loading';
 import CloseIcon from '@mui/icons-material/Close';
@@ -18,6 +18,7 @@ import TaskAltIcon from '@mui/icons-material/TaskAlt';
 import RemarkUpdated from './remark_updated'
 import AddPractice from './addPractice'
 import useAuthorityRange from '../../custom-hook/useAuthorityRange'
+import {notificationListAction} from '../../redux/action'
 
 function DateSelector({setDate}) {
     const [data, setData] = useState({})
@@ -74,10 +75,11 @@ function DateSelector({setDate}) {
     );
   }
 
-function RecordSheet({studentData}){
+function RecordSheet({studentData, record=null}){
   const [open,setOpen] = useState(false);
   const [recordData,setRecordData] = useState(null)
   const userData = useSelector(state => state.accessRangeReducer)
+  const dispatch = useDispatch(null)
   const handleClose = ()=>{
     setOpen(false)
   }
@@ -98,17 +100,23 @@ function RecordSheet({studentData}){
   }, [accessData])
   return(
     <>
-       <Button  className='studentBtn' sx={{backgroundColor:"transparent",color:"#000",boxShadow:"none",borderRadius:"0",width:"50%",padding:"10px",margin:"0 auto"}} onClick={() => {
-          recordListApi.get_course_record_one(studentData.student_record_id,(res)=>{
-            console.log(res.data.data)
-            console.log(userData)
-            setRecordData(res.data.data[0])
-          })
-      setOpen(true)
-  }
-  }>
-   {studentData.name}
-  </Button>
+    <Box sx={{textAlign:'center'}}>
+      <Badge variant="dot" color="error" invisible={record===null}>
+        <Button className='studentBtn' sx={{backgroundColor:"transparent",color:"#000",boxShadow:"none",borderRadius:"0",width:"150px",padding:"10px",margin:"0 auto"}} onClick={() => {
+                recordListApi.get_course_record_one(studentData.student_record_id,(res)=>{
+                  // console.log(res.data.data)
+                  // console.log(userData)
+                  setRecordData(res.data.data[0])
+                  })
+              setOpen(true)
+          }
+          }>
+          {studentData.name}
+        </Button>
+      </Badge>
+    </Box>
+    
+       
   <Dialog open={open} onClose={handleClose} sx={{
       "& .MuiDialog-container > .MuiPaper-root": {
           maxWidth: "750px",
@@ -124,7 +132,7 @@ function RecordSheet({studentData}){
       <Box width={"92.5%"} m={"0 auto"} sx={{
         "& .record-title":{
           width:"100%",
-          textAlign:"center"
+          // textAlign:"center"
         },
         "& .remark-area":{
           textAlign:"justify",
@@ -134,7 +142,7 @@ function RecordSheet({studentData}){
         "& .practice-total":{
           marginTop:0,
           width:"100%",
-          textAlign:"center",
+          // textAlign:"center",
           "& span":{
             padding:"0 6px 1px",
           }
@@ -251,7 +259,11 @@ function RecordSheet({studentData}){
                             recordListApi.get_course_record_one(studentData.student_record_id,(res)=>{
                               setRecordData(res.data.data[0])
                             })
+
+                            //-- 更新通知 --
+                            dispatch(notificationListAction({reflash:true}))
                           })
+                          
                         }
                       }else{
                         window.alert("此欄位由巴雀藝術簽閱")
@@ -276,6 +288,9 @@ function RecordSheet({studentData}){
                                recordListApi.get_course_record_one(studentData.student_record_id,(res)=>{
                                  setRecordData(res.data.data[0])
                                })
+
+                               //-- 更新通知 --
+                               dispatch(notificationListAction({reflash:true}))
                              })
                            }
                          }else{
@@ -299,41 +314,44 @@ function RecordSheet({studentData}){
 }
 
 
-function RecordButton({studentData}){
+function RecordButton({studentData, record=null}){
   const [open,setOpen] = useState(false);
   const handleClose = ()=>{
     setOpen(false)
   }
   return(
     <>
-       <Button variant="contained" sx={{ backgroundColor: "#6DC4C5" }} onClick={() => {
-      setOpen(true)
-  }
-  }>
-      紀錄表
-  </Button>
-  <Dialog open={open} onClose={handleClose} sx={{
-      "& .MuiDialog-container > .MuiPaper-root": {
-          maxWidth: "400px",
-          width: "95%",
-          padding: "80px 0",
-      },
-      "& .studentBtn:not(:last-child)":{
-        marginBottom:"5px",
-        borderBottom:"1px solid #ccc"
-     
-      }
-  }}>
-      <CloseIcon sx={{ position: "absolute", cursor: "pointer", right: "5px", top: "5px", width: "25px", height: "25px", zIndex: 99 }} onClick={(e) => {
-          e.stopPropagation()
-          setOpen(false)
-      }} />
-      {studentData.map((item,i)=>{
-        return(
-          <RecordSheet studentData={item}/>
-        )
-      })}
-  </Dialog>
+      <Badge variant="dot" color="error" invisible={record===null}>
+        <Button variant="contained" sx={{ backgroundColor: "#6DC4C5" }} onClick={() => {
+              setOpen(true)
+          }
+        }>
+            紀錄表
+        </Button>
+      </Badge>
+       
+      <Dialog open={open} onClose={handleClose} sx={{
+          "& .MuiDialog-container > .MuiPaper-root": {
+              maxWidth: "400px",
+              width: "95%",
+              padding: "80px 0",
+          },
+          "& .studentBtn:not(:last-child)":{
+            marginBottom:"5px",
+            borderBottom:"1px solid #ccc"
+        
+          }
+      }}>
+          <CloseIcon sx={{ position: "absolute", cursor: "pointer", right: "5px", top: "5px", width: "25px", height: "25px", zIndex: 99 }} onClick={(e) => {
+              e.stopPropagation()
+              setOpen(false)
+          }} />
+          {studentData.map((item,i)=>{
+            return(
+              <RecordSheet studentData={item} record={record}/>
+            )
+          })}
+      </Dialog>
     </>
  
   )
@@ -392,6 +410,9 @@ function RecordList({date}) {
     const userId = useSelector(state => state.accessRangeReducer)
  
     const [listData, setListData] = useState(null)
+    
+    //-- 提醒資料 --
+    const notificationList = useSelector(state => state.notificationListReducer)
 
     const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
 
@@ -443,9 +464,18 @@ function RecordList({date}) {
             headerName: "紀錄",
             flex: isMobile ? 0.5 : 1,
             renderCell: (rows) => {
+               
+                const student_record=notificationList?.data?.student_record;
+                const record_one= student_record!==null && student_record!==undefined ? 
+                student_record.find((item)=>{
+                  return rows.row.Tb_index===item.course_id
+                })
+                :
+                null;
+                //console.log(record_one);
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"12px"} width="100%" >
-                      {(userId && userId.inform.name !== "學生") ?<RecordButton studentData={rows.row.student}/>:<RecordButtonStudentVer studentData={rows.row.student}/>}
+                      {(userId && userId.inform.name !== "學生") ?<RecordButton studentData={rows.row.student} record={record_one}/>:<RecordButtonStudentVer studentData={rows.row.student}/>}
                       
                     </Box>
                 )
@@ -458,7 +488,7 @@ function RecordList({date}) {
       const dates = new Date()
       const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
       if(date){
-        recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index,date:date.monday}).then((res) => {
+        recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index, date:date.monday}).then((res) => {
           setListData(res.data)
       })
       }else{
