@@ -356,7 +356,7 @@ function RecordButton({studentData, record=null}){
  
   )
 }
-function  RecordButtonStudentVer({studentData}){
+function  RecordButtonStudentVer({studentData, record=null}){
   const [open,setOpen] = useState(false);
   const userData = useSelector(state => state.accessRangeReducer)
   const handleClose = ()=>{
@@ -365,12 +365,15 @@ function  RecordButtonStudentVer({studentData}){
 
   return(
     <>
-       <Button variant="contained" sx={{ backgroundColor: "#6DC4C5" }} onClick={() => {
-      setOpen(true)
-  }
-  }>
-      紀錄表
-  </Button>
+    <Badge variant="dot" color="error" invisible={record===null}>
+      <Button variant="contained" sx={{ backgroundColor: "#6DC4C5" }} onClick={() => {
+              setOpen(true)
+            }
+        }>
+          紀錄表
+      </Button>
+    </Badge>
+       
   <Dialog open={open} onClose={handleClose} sx={{
       "& .MuiDialog-container > .MuiPaper-root": {
           maxWidth: "400px",
@@ -390,7 +393,7 @@ function  RecordButtonStudentVer({studentData}){
       {userData&& studentData.map((item,i)=>{
         if(item.name === userData.inform.access){
           return(
-            <RecordSheet studentData={item}/>
+            <RecordSheet studentData={item} record={record}/>
           )
         }
       })}
@@ -475,7 +478,7 @@ function RecordList({date}) {
                 //console.log(record_one);
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"12px"} width="100%" >
-                      {(userId && userId.inform.name !== "學生") ?<RecordButton studentData={rows.row.student} record={record_one}/>:<RecordButtonStudentVer studentData={rows.row.student}/>}
+                      {(userId && userId.inform.name !== "學生") ?<RecordButton studentData={rows.row.student} record={record_one}/>:<RecordButtonStudentVer studentData={rows.row.student} record={record_one}/>}
                       
                     </Box>
                 )
@@ -487,6 +490,7 @@ function RecordList({date}) {
     useEffect(() => {
       const dates = new Date()
       const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
+      console.log(userId?.inform?.Tb_index);
       if(date){
         recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index, date:date.monday}).then((res) => {
           setListData(res.data)

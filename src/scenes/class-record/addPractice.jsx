@@ -6,7 +6,7 @@ import { useDispatch } from 'react-redux'
 import { notificationListAction } from "../../redux/action";
 import AddIcon from '@mui/icons-material/Add';
 export default function AddPractice({data,setRecordData,time=null}){
-    console.log(data)
+    //console.log(data)
     const [open , setOpen] = useState(false)
     const [practiceData,setPracticeData] = useState({})
     const dispatch=useDispatch(null);
@@ -14,7 +14,7 @@ export default function AddPractice({data,setRecordData,time=null}){
         setOpen(false)
     }
     const handleSubmit = ()=>{
-        console.log(practiceData)
+        //console.log(practiceData)
        
         set_student_course_record({
             record_id:data.record_id,
@@ -111,7 +111,7 @@ export default function AddPractice({data,setRecordData,time=null}){
                             step: 300, // 5 分鐘一個tick
                         }}
                         onChange={(e)=>{
-                            console.log(e)
+                            //console.log(e)
                             setPracticeData({
                              ...practiceData,
                              EndTime:e.target.value
