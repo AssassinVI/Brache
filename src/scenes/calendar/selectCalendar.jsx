@@ -9,7 +9,7 @@ import { createSelectable } from "react-selectable-fast";
 const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = false, gap }) => {
   return (
     <Box width={"100%"} height={"100%"} className={`${isSelected ? 'selected' : ''} ${isSelecting ? 'selecting' : ''}`} data-uniqueid={uniqueId} ref={selectableRef} position={"relative"}>
-      {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={data.t_color} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "none", color: getContrastColor(data.t_color) }}>{
+      {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={`${data.t_color}99`} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "none", color: getContrastColor(data.t_color) }}>{
         data.student.map((student)=>{
           return (
             <span>{student.name}</span>
@@ -213,11 +213,11 @@ const SelectCalendar = ({ tableData, currentDate = new Date(), data, setData, se
               flexGrow: 1,
               "& .calendar-y-axis": {
                 "& .selected": {
-                  backgroundColor: "#ffcdcd",
+                  backgroundColor: "#2970bc",
 
                 },
                 "& .selecting": {
-                  backgroundColor: "#f5d9b2",
+                  backgroundColor: "#7bb6f5",
 
                 },
                 "&:not(:last-child)": {

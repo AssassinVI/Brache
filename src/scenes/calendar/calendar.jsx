@@ -36,22 +36,30 @@ import { get_course_template_list } from '../../axios-api/calendarTemplateData';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
 //-- 日期選擇btn --
-function SelectDate() {
+function SelectDate({setScrollNum}) {
   const [data, setData] = useState({})
   const [open, setOpen] = useState(false)
   const dispatch = useDispatch(null)
 
   //-- 選擇日期 --
   const handleChange = (e) => {
-    const selectDate=new Date(getDateOfMondayInWeek(e.$y, e.$M+1, 1));
+    // const selectDate=new Date(getDateOfMondayInWeek(`${e.$y}-${e.$M+1}-${e.$D}`));
+    const selectDate=new Date(`${e.$y}-${e.$M+1}-${e.$D}`);
     const monday_weekNumber = getWeekInfoForDate(selectDate);
     const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
     const endDate = formatDateBack(getWeekDates(startDate)[6]);
     setData({
       monday_weekNumber: monday_weekNumber,
+      selectDate: `${e.$y}-${e.$M+1}-${e.$D}`,
       startDate: startDate,
       endDate: endDate,
     })
+    console.log({
+      monday_weekNumber: monday_weekNumber,
+      selectDate: `${e.$y}-${e.$M+1}-${e.$D}`,
+      startDate: startDate,
+      endDate: endDate,
+    });
   }
 
   const handleCancel = () => {
@@ -68,6 +76,11 @@ function SelectDate() {
     calendarApi.getAll(data.startDate, data.endDate).then((data) => {
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
+
+    //-- 捲到指定位置 --
+    let getday=new Date(data.selectDate);
+        getday=getday.getDay()==0 || getday.getDay()>6 ? 6 : getday.getDay()-1;
+    setScrollNum(getday)
 
     handleCancel()
   }
@@ -109,7 +122,7 @@ function SelectDate() {
             }}
           >
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
-              <DateCalendar onChange={handleChange} views={['month', 'year']} />
+              <DateCalendar onChange={handleChange}  />
               <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
                 <Button onClick={handleSubmit}>OK</Button>
                 <Button onClick={handleCancel}>Cancel</Button>
@@ -158,7 +171,7 @@ function ImportTemplate() {
         ct_list_id: data.Tb_index,
         copyNum:copyNum
       }, (res) => {
-        console.log(res);
+        // console.log(res);
         const status = res.data.success ? "success" : "error"
         dispatch(snackBarOpenAction(true, res.data.msg, status))
         if (res.data.success) {
@@ -321,8 +334,20 @@ const CalendarTop = () => {
   const [maxWeeks, setMaxWeeks]=useState(0);
   const scrollRef = useRef(null)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
-  let scrollNum = 0;
+  let [scrollNum, setScrollNum] = useState(0);
 
+  //-- 捲動到指定日期 --
+  useEffect(()=>{
+    if(scrollRef.current!=null){
+      scrollRef.current.scrollTo(
+        {
+          left: `${520 * scrollNum}`,
+          behavior: 'smooth',
+        }
+      )
+    }
+
+  }, [scrollNum])
 
   useEffect(() => {
     studentApi.getAll().then((data) => {
@@ -339,7 +364,7 @@ const CalendarTop = () => {
     const startDate = initDate.year + "-" + initDate.month + "-" + initDate.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     calendarApi.getAll(startDate, endDate).then((data) => {
-      console.log(data)
+      // console.log(data)
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
   }, [])
@@ -522,35 +547,37 @@ const CalendarTop = () => {
               }>
                 <div className="left" onClick={(e) => {
                   if (scrollNum > 0) {
-                    scrollNum = scrollNum - 1
+                    // scrollNum = scrollNum - 1
+                    setScrollNum(scrollNum - 1)
                   }
-                  scrollRef.current.scrollTo(
-                    {
-                      left: `${520 * scrollNum}`,
-                      behavior: 'smooth',
-                    }
-                  )
+                  // scrollRef.current.scrollTo(
+                  //   {
+                  //     left: `${520 * scrollNum}`,
+                  //     behavior: 'smooth',
+                  //   }
+                  // )
                 }}>
                   <ArrowForwardIcon sx={{ transform: "rotateY(180deg)" }} />
                 </div>
                 <div className="right" onClick={(e) => {
                   //console.log(scrollRef)
                   if (scrollNum < (3640 - scrollRef.current.clientWidth) / 520) {
-                    scrollNum = scrollNum + 1
+                    // scrollNum = scrollNum + 1
+                    setScrollNum(scrollNum + 1)
                   }
-                  scrollRef.current.scrollTo(
-                    {
-                      left: `${520 * scrollNum}`,
-                      behavior: 'smooth',
-                    }
-                  )
+                  // scrollRef.current.scrollTo(
+                  //   {
+                  //     left: `${520 * scrollNum}`,
+                  //     behavior: 'smooth',
+                  //   }
+                  // )
                 }}>
                   <ArrowForwardIcon />
                 </div>
               </Box>
               <Box sx={{display:'flex', alignItems:'center', gap: "10px",}}>
                 {/* <span>選擇日期</span> */}
-                <SelectDate currentDate={currentDate} />
+                <SelectDate currentDate={currentDate} setScrollNum={setScrollNum} />
                 {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
               </Box>
               

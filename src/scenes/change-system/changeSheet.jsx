@@ -130,7 +130,7 @@ function OpenSelectClass({teacher=null, date=null, isSelect=false, setClassDate,
                 <div className="box"><p>{item.StartTime}</p></div>
                 <div className="box radio">
                     {
-                        item.change_id==null ? 
+                        item.change_id==null || item.change_status==100 ? 
                         <FormControlLabel value={item.Tb_index} control={<Radio  />}  />
                         :
                         "已有異動單"
@@ -278,6 +278,7 @@ function TargetTeacher({teacher,setTeacher}){
        </>
     )
 }
+
 
 function OpenSelectCalendar({setData}){
     const [currentDate, setCurrentDate] = useState(null)
@@ -758,15 +759,16 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                 <Box display={"flex"} gap={"5px"} alignItems={"center"} flexWrap={"wrap"} m={"5px 0 0 0"}>
                                     {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
                                     <>
-                                    <TargetTeacher teacher={teacher} setTeacher={setTeacher} />
-                                    {teacher && <>
+                                        {/* <TargetTeacher teacher={teacher} setTeacher={setTeacher} /> */}
                                         <p style={{ color: "red",display:"inline", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂資訊透過右邊查詢)--{'>'}</p>
                                         <TimeSelect setCurrentDate={setClassDate2}/>
-                                    </>}
                                     </>
                                     }
                                     
-                                    {classDate2 &&<OpenSelectClass teacher={teacher} isSelect={true} date={classDate2} setClassDate={setClassDate2} setData={setData} data={data} type={"換課"}/>}
+                                    {classDate2 &&
+                                    <OpenSelectClass 
+                                        //teacher={teacher} 
+                                        isSelect={true} date={classDate2} setClassDate={setClassDate2} setData={setData} data={data} type={"換課"}/>}
                                 </Box>
                                 {data.change_course_id &&<TargetClass course_id={data.change_course_id} teacher={teacher} setTeacher={setTeacher}/>}
                             </DialogContent>
@@ -881,7 +883,6 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         <DialogContent sx={{padding:0,margin:(isMobile && crud === "needApproval")?"10px 0 60px":"10px 0"}}>
                         <InputLabel id="demo-simple-select-label">備註</InputLabel>
                                 <TextField
-                                    autoFocus
                                     margin="dense"
                                     id="remark"
                                     type="text"

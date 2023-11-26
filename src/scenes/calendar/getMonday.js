@@ -39,8 +39,6 @@ export function getWeekDates(mondayStr) {
 //     const daysToSubtract = (daysUntilMonday + 7); // 计算需要减去的天数
 //     const mondayDate = new Date(today);
 //     mondayDate.setDate(today.getDate() - daysToSubtract);
-
-    
   
 //     return mondayDate;
 // }
