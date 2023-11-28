@@ -46,6 +46,7 @@ function UpdatedAdminData({ id, type, sx, authorityData, handleButtonClick }) {
         account: accountAutoId,
         radio: "",
         password: "",
+        email: "",
         authority: "",
         gender: "",
         s_birthday: "",
@@ -79,6 +80,7 @@ function UpdatedAdminData({ id, type, sx, authorityData, handleButtonClick }) {
             account: accountAutoId,
             radio: "",
             password: "",
+            email: "",
             authority: "",
             gender: "",
             s_birthday: "",
@@ -110,6 +112,7 @@ function UpdatedAdminData({ id, type, sx, authorityData, handleButtonClick }) {
             Tb_index: id,
             admin_id: userData.account,
             admin_pwd: userData.password,
+            email: userData.email,
             position_type: userData.radio
         }, (data) => {
             if (data.data.success) {
@@ -131,6 +134,7 @@ function UpdatedAdminData({ id, type, sx, authorityData, handleButtonClick }) {
             is_use: userData.online ? "1" : "0",
             admin_id: userData.account,
             admin_pwd: userData.password,
+            email: userData.email,
             position_type: userData.radio,
             s_sex: userData.gender,
             s_birthday: userData.s_birthday,
@@ -208,6 +212,7 @@ function UpdatedAdminData({ id, type, sx, authorityData, handleButtonClick }) {
                 authority: data.admin_per,
                 account: data.admin_id,
                 password:data.admin_pwd,
+                email:data.email,
                 pwd:data.admin_pwd,
                 radio: data.position_type,
             })
@@ -775,8 +780,6 @@ const FormPage = ({ userData, setUserData, authorityData, type, formPage }) => {
                         }}
                         value={userData.account}
                     />
-                </DialogContent>
-                <DialogContent>
                     <TextField
                         autoFocus
                         margin="dense"
@@ -792,6 +795,23 @@ const FormPage = ({ userData, setUserData, authorityData, type, formPage }) => {
                             })
                         }}
                         value={userData.password}
+                    />
+                    <TextField
+                        sx={{display: userData.radio=="1" ? 'flex':'none'}}
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="管理者信箱"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                        onChange={(e) => {
+                            setUserData({
+                                ...userData,
+                                email: e.target.value,
+                            })
+                        }}
+                        value={userData.email}
                     />
                 </DialogContent>
             </Box>
@@ -855,9 +875,19 @@ const AdminManagement = () => {
     }, [authorityData])
 
     const handleButtonClick = () => {
-        adminApi.getAll().then((res) => {
-            setAdminData(res.data)
-        })
+
+        if(adminType==='all'){
+            adminApi.getAll().then((res) => {
+                setAdminData(res.data)
+            })
+        }
+        else{
+            adminApi.getTypeAll(adminType).then((res)=>{
+                setAdminData(res.data);
+                setKeywordAdminData(res.data);
+            });
+        }
+        
     };
 
     //-- 權限查詢 --
