@@ -2,15 +2,41 @@
 import axiosInstance from "./axiosInstance";
 const recordApi = "https://bratsche.web-board.tw/ajax/course_records.php";
 
-export const get_teacher_course = async (datas) => {
+export const get_teacher_course = async ({userId, date}) => {
     try {
         const response = await axiosInstance({
             method: 'post',
             url: recordApi,
             data: {
                 type: "get_teacher_course",
-                teacher_id: datas.userId,
-                StartDate:datas.date
+                teacher_id: userId,
+                StartDate:date,
+            },
+        });
+
+        let data = response.data;
+        data.data = data.data.map((item, i) => {
+            const updatedItem = {
+                ...item,
+                index: i,
+            };
+            return updatedItem;
+        });
+        return data
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+
+export const get_teacher_course_review = async ({userId}) => {
+    try {
+        const response = await axiosInstance({
+            method: 'post',
+            url: recordApi,
+            data: {
+                type: "get_teacher_course_review",
+                teacher_id: userId,
             },
         });
 

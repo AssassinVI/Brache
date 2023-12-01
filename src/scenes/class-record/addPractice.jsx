@@ -1,6 +1,9 @@
 import React, { useState } from 'react'
-import { Box, Button, Dialog, DialogContent, TextField, IconButton } from '@mui/material'
-import EditIcon from '@mui/icons-material/Edit';
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import {  LocalizationProvider, DatePicker  } from '@mui/x-date-pickers'
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { Box, Button, Dialog, DialogContent, TextField } from '@mui/material'
 import { set_student_course_record,get_course_record_one } from '../../axios-api/recordList';
 import { useDispatch } from 'react-redux'
 import { notificationListAction } from "../../redux/action";
@@ -28,6 +31,7 @@ export default function AddPractice({data,setRecordData,time=null}){
             setOpen(false)
         })
     }
+    
    
     return(
         <>
@@ -60,7 +64,18 @@ export default function AddPractice({data,setRecordData,time=null}){
                 }}>本周練習時間</h2>
             <ul>
                 <li>
-                    <TextField
+                    <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                        <DatePicker value={time?time.date :""} onChange={(e) => {
+
+                            console.log(`${e.$y}-${e.$M+1}-${e.$D}`);
+                            setPracticeData({
+                                ...practiceData,
+                                record_date: `${e.$y}-${e.$M+1}-${e.$D}`
+                            })
+                        }} />
+                    </LocalizationProvider>
+                    
+                    {/* <TextField
                         id="date"
                         label="日期"
                         type="date"
@@ -74,9 +89,10 @@ export default function AddPractice({data,setRecordData,time=null}){
                             record_date:e.target.value
                            })
                         }}
-                        />
+                        /> */}
                 </li>
                 <li>
+                
                     <TextField
                         id="time"
                         label="開始時間"
@@ -115,6 +131,24 @@ export default function AddPractice({data,setRecordData,time=null}){
                             setPracticeData({
                              ...practiceData,
                              EndTime:e.target.value
+                            })
+                         }}
+                        />
+                </li>
+                <li>
+                    <TextField
+                        id="remark"
+                        label="備註"
+                        type="text"
+                        defaultValue={time?time.remark :""}
+                        fullWidth
+                        multiline
+                        rows={4}
+                        onChange={(e)=>{
+                            //console.log(e)
+                            setPracticeData({
+                             ...practiceData,
+                             remark:e.target.value
                             })
                          }}
                         />

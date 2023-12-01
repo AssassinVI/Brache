@@ -19,6 +19,7 @@ import RemarkUpdated from './remark_updated'
 import AddPractice from './addPractice'
 import useAuthorityRange from '../../custom-hook/useAuthorityRange'
 import {notificationListAction} from '../../redux/action'
+import TextWithNewlines from '../../components/nl2br'
 
 function DateSelector({setDate}) {
     const [data, setData] = useState({})
@@ -104,7 +105,7 @@ function RecordSheet({studentData, record=null}){
       <Badge variant="dot" color="error" invisible={record===null}>
         <Button className='studentBtn' sx={{backgroundColor:"transparent",color:"#000",boxShadow:"none",borderRadius:"0",width:"150px",padding:"10px",margin:"0 auto"}} onClick={() => {
                 recordListApi.get_course_record_one(studentData.student_record_id,(res)=>{
-                  // console.log(res.data.data)
+                   console.log(res.data.data)
                   // console.log(userData)
                   setRecordData(res.data.data[0])
                   })
@@ -156,6 +157,7 @@ function RecordSheet({studentData, record=null}){
             display:"flex",
             alignItems:"center",
             width:"100%",
+            flexWrap: 'wrap',
             "&:not(:last-child)":{
               borderBottom:"1px solid #000"
             }
@@ -170,6 +172,23 @@ function RecordSheet({studentData, record=null}){
               borderRight:"1px solid #000"
             }
           },
+          "& li .remark":{
+            position:'relative',
+            flex: '1 1 100%',
+            height: 'auto',
+            borderTop: '1px solid #000',
+            justifyContent: 'flex-start',
+            padding: '3px 10px',
+            background: '#effeff',
+            "& span":{
+              position: 'absolute',
+              bottom: '5%',
+              right: '1%',
+              color: '#7bc4c9',
+              fontWeight: 500,
+              fontSize: '15px',
+            }
+          }
         },
         "& .sign":{
           border:"1px solid #000",
@@ -232,11 +251,15 @@ function RecordSheet({studentData, record=null}){
           </li>
           {recordData.record_time.length > 0 ? recordData.record_time.map((item,i)=>{
             return(
-              <li key={i}>
-              <div className="date">{item.record_date}</div>
-              <div className="startTime">{item.StartTime}</div>
-              <div className="endTime">{item.EndTime}</div>
-           </li>
+              <li key={`date${i}`}>
+                  <div className="date">{item.record_date}</div>
+                  <div className="startTime">{item.StartTime}</div>
+                  <div className="endTime">{item.EndTime}</div>
+                  <div className='remark' style={{display: item.remark===null ? 'none':'flex'}}>
+                    <TextWithNewlines text={item.remark} />
+                    <span>{`${item.record_date}學生反饋`}</span>
+                  </div>
+              </li>
             )
           }):
           <li >
@@ -314,6 +337,7 @@ function RecordSheet({studentData, record=null}){
 }
 
 
+//-- 紀錄表按鈕 --
 function RecordButton({studentData, record=null}){
   const [open,setOpen] = useState(false);
   const handleClose = ()=>{
@@ -356,6 +380,8 @@ function RecordButton({studentData, record=null}){
  
   )
 }
+
+//-- 紀錄表按鈕(學生用) --
 function  RecordButtonStudentVer({studentData, record=null}){
   const [open,setOpen] = useState(false);
   const userData = useSelector(state => state.accessRangeReducer)
@@ -403,7 +429,7 @@ function  RecordButtonStudentVer({studentData, record=null}){
   )
 }
 
-function RecordList({date}) {
+function RecordList({date, listDataReview=undefined}) {
 
 
     const theme = useTheme();
@@ -475,7 +501,8 @@ function RecordList({date}) {
                 })
                 :
                 null;
-                //console.log(record_one);
+
+                //console.log(rows.row.student, record_one);
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"12px"} width="100%" >
                       {(userId && userId.inform.name !== "學生") ?<RecordButton studentData={rows.row.student} record={record_one}/>:<RecordButtonStudentVer studentData={rows.row.student} record={record_one}/>}
@@ -485,29 +512,35 @@ function RecordList({date}) {
             }
         },
     ];
+    
 
     //獲取列表資料
     useEffect(() => {
       const dates = new Date()
       const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
-      console.log(userId?.inform?.Tb_index);
+      // console.log(userId?.inform?.Tb_index);
       if(date){
         recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index, date:date.monday}).then((res) => {
-          setListData(res.data)
-      })
+            setListData(res.data)
+        })
       }else{
         recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index,date:today}).then((res) => {
           setListData(res.data)
       })
       }
-  
     }, [userId,date])
 
+  
     useEffect(()=>{
-      if(listData){
-        console.log(listData)
+      if(listDataReview){
+        console.log(listDataReview)
+        setListData(listDataReview)
       }
-    },[listData])
+    },[listDataReview])
+
+    
+
+    
     return (
       
         <Box
@@ -559,6 +592,16 @@ function RecordList({date}) {
 export default function ClassRecord() {
   const [date,setDate] = useState(null)
   let monday = getWeekInfoForDate(new Date());
+  const userId = useSelector(state => state.accessRangeReducer)
+  const [listDataReview, setListDataReview]=useState(null);
+
+  //-- 獲取需審閱的紀錄表 --
+  function needReview_listData() {
+    recordListApi.get_teacher_course_review({userId:userId?.inform?.Tb_index}).then((res) => {
+        setListDataReview(res.data)
+    })
+  }
+
     return (
         <div style={{ width: '95%', margin: '20px auto 0' }}>
             <Header title="上課紀錄表" subtitle="請確實記錄" />
@@ -568,11 +611,12 @@ export default function ClassRecord() {
                     marginTop:"5px"
                 }
             }}>
-                <span >選擇日期:</span>
+            <span >選擇日期:</span>
             <DateSelector setDate={setDate}/>
+             <Button variant="contained" size="small" sx={{backgroundColor:'#2676b1', marginLeft:'5px'}} onClick={()=>{needReview_listData()}}>需審閱的紀錄表</Button>
             </Box>
             <h2 style={{fontWeight:"500",textAlign:"center"}}>{date === null ? `${monday.year}年${monday.month}月第${monday.weekNumber}週紀錄表` : `${date.monday.split("-")[0]}年${date.monday.split("-")[1]}月第${date.weekNumber}週紀錄表`}</h2>
-            <RecordList date={date}/>
+            <RecordList date={date} listDataReview={listDataReview}/>
     
         </div>
     )

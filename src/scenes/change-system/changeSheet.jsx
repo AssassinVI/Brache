@@ -39,7 +39,7 @@ function OpenSelectClass({teacher=null, date=null, isSelect=false, setClassDate,
                 teacher_id: teacher ? teacher : userData.inform.Tb_index,
                 isSelect:isSelect
             },(data)=>{
-                // console.log(userData)
+                 //console.log(userData)
                 setListData(data.data.data)
             })
         }
@@ -477,6 +477,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
         teacherApi.getAll().then((data) => {
             setTeacherAll(data.data);
         });
+
+        console.log(userData);
         
     }, [])
   
@@ -785,8 +787,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                             change_teacher_id: e.target.value,
                                         })
                                         }}
-                                        inputProps={{ readOnly: !authorityRange.p_update || crud  === "view" ||  crud === "history" || crud === "needApproval"}}
-                                        value={data.change_teacher_id}
+                                        inputProps={{ readOnly: !authorityRange.p_update || crud  === "view" ||  crud === "history" || crud === "needApproval" || userData.inform.admin_per==="group2023071815332755"}}
+                                        value={data.change_teacher_id==undefined ? userData.inform.Tb_index : data.change_teacher_id}
                                         labelId="demo-simple-select-label"
                                         id="demo-simple-select"
                                         label="老師"
