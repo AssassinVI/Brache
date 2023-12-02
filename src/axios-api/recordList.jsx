@@ -55,6 +55,31 @@ export const get_teacher_course_review = async ({userId}) => {
 };
 
 
+export const get_teacher_course_log = async ({userId}) => {
+    try {
+        const response = await axiosInstance({
+            method: 'post',
+            url: recordApi,
+            data: {
+                type: "get_teacher_course_log",
+                teacher_id: userId,
+            },
+        });
+
+        let data = response.data;
+        data.data = data.data.map((item, i) => {
+            const updatedItem = {
+                ...item,
+                index: i,
+            };
+            return updatedItem;
+        });
+        return data
+    } catch (error) {
+        console.error(error);
+    }
+};
+
 
 export const get_course_record_one = (id, func) => {
     try {

@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useParams, useNavigate } from 'react-router-dom';
 import Header from '../../components/Header'
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
@@ -24,6 +25,7 @@ import TextWithNewlines from '../../components/nl2br'
 function DateSelector({setDate}) {
     const [data, setData] = useState({})
     const [open, setOpen] = useState(false)
+    const navigate=useNavigate(null);
     const handleChange = (e) => {
         const date = new Date(e)
         let monday = getWeekInfoForDate(date);
@@ -99,13 +101,16 @@ function RecordSheet({studentData, record=null}){
           })
       }
   }, [accessData])
+
+
   return(
     <>
     <Box sx={{textAlign:'center'}}>
-      <Badge variant="dot" color="error" invisible={record===null}>
+      <Badge variant="dot" color="error" invisible={studentData.student_id!==record?.student_id}>
+      {/* <Badge variant="dot" color="error" invisible={record===null}> */}
         <Button className='studentBtn' sx={{backgroundColor:"transparent",color:"#000",boxShadow:"none",borderRadius:"0",width:"150px",padding:"10px",margin:"0 auto"}} onClick={() => {
                 recordListApi.get_course_record_one(studentData.student_record_id,(res)=>{
-                   console.log(res.data.data)
+                   //console.log(res.data.data)
                   // console.log(userData)
                   setRecordData(res.data.data[0])
                   })
@@ -502,7 +507,7 @@ function RecordList({date, listDataReview=undefined}) {
                 :
                 null;
 
-                //console.log(rows.row.student, record_one);
+                //console.log(record_one);
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"12px"} width="100%" >
                       {(userId && userId.inform.name !== "學生") ?<RecordButton studentData={rows.row.student} record={record_one}/>:<RecordButtonStudentVer studentData={rows.row.student} record={record_one}/>}
@@ -516,24 +521,17 @@ function RecordList({date, listDataReview=undefined}) {
 
     //獲取列表資料
     useEffect(() => {
-      const dates = new Date()
-      const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
-      // console.log(userId?.inform?.Tb_index);
-      if(date){
+      if(date!=undefined){
         recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index, date:date.monday}).then((res) => {
             setListData(res.data)
         })
-      }else{
-        recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index,date:today}).then((res) => {
-          setListData(res.data)
-      })
       }
-    }, [userId,date])
+    }, [date])
 
   
     useEffect(()=>{
       if(listDataReview){
-        console.log(listDataReview)
+        //console.log(listDataReview)
         setListData(listDataReview)
       }
     },[listDataReview])
@@ -594,13 +592,48 @@ export default function ClassRecord() {
   let monday = getWeekInfoForDate(new Date());
   const userId = useSelector(state => state.accessRangeReducer)
   const [listDataReview, setListDataReview]=useState(null);
+  const params = useParams();
 
-  //-- 獲取需審閱的紀錄表 --
-  function needReview_listData() {
-    recordListApi.get_teacher_course_review({userId:userId?.inform?.Tb_index}).then((res) => {
-        setListDataReview(res.data)
-    })
+  
+  function need_listData() {
+    //-- 獲取需審閱的紀錄表 (老師) --
+    if(userId.inform.admin_per==='group2023071815332755'){
+      recordListApi.get_teacher_course_review({userId:userId?.inform?.Tb_index}).then((res) => {
+          setListDataReview(res.data)
+      })
+    }
+    //-- 獲取需填寫的紀錄表 (學生) --
+    else{
+      recordListApi.get_teacher_course_log({userId:userId?.inform?.Tb_index}).then((res) => {
+          setListDataReview(res.data)
+      })
+    }
+    
   }
+
+  //-- 判斷網址參數 --
+  useEffect(()=>{
+    //console.log(params);
+    //-- 獲取需審閱的紀錄表 (老師) --
+    if(params.type==='review'){
+      recordListApi.get_teacher_course_review({userId:userId?.inform?.Tb_index}).then((res) => {
+          setListDataReview(res.data)
+      })
+    }
+    //-- 獲取需填寫的紀錄表 (學生) --
+    else if(params.type==='log'){
+      recordListApi.get_teacher_course_log({userId:userId?.inform?.Tb_index}).then((res) => {
+          setListDataReview(res.data)
+      })
+    }
+    else{
+      const dates = new Date()
+      const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
+      recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index,date:today}).then((res) => {
+        setListDataReview(res.data)
+      })
+    }
+  }, [params])
 
     return (
         <div style={{ width: '95%', margin: '20px auto 0' }}>
@@ -613,9 +646,14 @@ export default function ClassRecord() {
             }}>
             <span >選擇日期:</span>
             <DateSelector setDate={setDate}/>
-             <Button variant="contained" size="small" sx={{backgroundColor:'#2676b1', marginLeft:'5px'}} onClick={()=>{needReview_listData()}}>需審閱的紀錄表</Button>
+             <Button variant="contained" size="small" sx={{backgroundColor:'#2676b1', marginLeft:'5px'}} onClick={()=>{need_listData()}}>{ userId?.inform?.admin_per==='group2023071815332755' ? '需審閱的紀錄表' : '需填寫的紀錄表'}</Button>
             </Box>
-            <h2 style={{fontWeight:"500",textAlign:"center"}}>{date === null ? `${monday.year}年${monday.month}月第${monday.weekNumber}週紀錄表` : `${date.monday.split("-")[0]}年${date.monday.split("-")[1]}月第${date.weekNumber}週紀錄表`}</h2>
+            <h2 style={{fontWeight:"500",textAlign:"center"}}>
+              { params.type==='log' ? `需填寫的紀錄表` : 
+                params.type==='review' ? `需審閱的紀錄表` : 
+                date === null ? `${monday.year}年${monday.month}月第${monday.weekNumber}週紀錄表` : `${date.monday.split("-")[0]}年${date.monday.split("-")[1]}月第${date.weekNumber}週紀錄表`
+              }
+            </h2>
             <RecordList date={date} listDataReview={listDataReview}/>
     
         </div>

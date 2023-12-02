@@ -110,7 +110,7 @@ const Main = ({ isSidebar, setIsSidebar }) => {
           <Route path="/system-architecture" element={<SystemArchitecture />} />
           <Route path="/authority" element={<Authority />} />
           <Route path="/admin-management" element={<AdminManagement />} />
-          <Route path="/class-record" element={<ClassRecord />} />
+          <Route path="/class-record/:type" element={<ClassRecord />} />
           <Route path="/class-history" element={<ClassHistory />} />
           <Route path="/schedule-change" element={<ScheduleChange />} />
           <Route path="/change-history" element={<ChangeHistory />} />

@@ -141,7 +141,15 @@ const Notification=()=>{
                         <ListItemText>您有異動單被駁回</ListItemText>
                         <Typography variant="body2" color="text.secondary"><Chip label={notificationList.data.turn_down.length} color="error" /></Typography>
                       </MenuItem>
-                      <MenuItem sx={{display: notificationList.data.student_record.length ===0 ? 'none':'flex'}} onClick={()=>{handleClose("/class-record")}}>
+                      <MenuItem sx={{display: notificationList.data.student_record.length ===0 ? 'none':'flex'}} onClick={()=>{
+                        if(userData.inform.position_type==='3'){
+                          handleClose("/class-record/log")
+                        }
+                        else{
+                          handleClose("/class-record/review")
+                        }
+                        
+                        }}>
                         <ListItemIcon><ContentPaste/></ListItemIcon>
                         <ListItemText>{userData.inform.position_type==='3' ? `您有新的上課紀錄表需要紀錄` : `您有上課紀錄表需要審閱`}</ListItemText>
                         <Typography variant="body2" color="text.secondary"><Chip label={notificationList.data.student_record.length} color="error" /></Typography>
