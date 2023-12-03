@@ -25,7 +25,7 @@ import TextWithNewlines from '../../components/nl2br'
 function DateSelector({setDate}) {
     const [data, setData] = useState({})
     const [open, setOpen] = useState(false)
-    const navigate=useNavigate(null);
+    const navigate=useNavigate(null)
     const handleChange = (e) => {
         const date = new Date(e)
         let monday = getWeekInfoForDate(date);
@@ -38,6 +38,7 @@ function DateSelector({setDate}) {
       setOpen(false)
     }
     const handleSubmit = () => {
+      navigate('/class-record/all')
       setDate(data)
       handleCancel()
     }
@@ -520,13 +521,13 @@ function RecordList({date, listDataReview=undefined}) {
     
 
     //獲取列表資料
-    useEffect(() => {
-      if(date!=undefined){
-        recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index, date:date.monday}).then((res) => {
-            setListData(res.data)
-        })
-      }
-    }, [date])
+    // useEffect(() => {
+    //   if(date!=undefined){
+    //     recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index, date:date.monday}).then((res) => {
+    //         setListData(res.data)
+    //     })
+    //   }
+    // }, [date])
 
   
     useEffect(()=>{
@@ -589,6 +590,7 @@ function RecordList({date, listDataReview=undefined}) {
 
 export default function ClassRecord() {
   const [date,setDate] = useState(null)
+  const navigate=useNavigate(null)
   let monday = getWeekInfoForDate(new Date());
   const userId = useSelector(state => state.accessRangeReducer)
   const [listDataReview, setListDataReview]=useState(null);
@@ -598,20 +600,16 @@ export default function ClassRecord() {
   function need_listData() {
     //-- 獲取需審閱的紀錄表 (老師) --
     if(userId.inform.admin_per==='group2023071815332755'){
-      recordListApi.get_teacher_course_review({userId:userId?.inform?.Tb_index}).then((res) => {
-          setListDataReview(res.data)
-      })
+      navigate('/class-record/review')
     }
     //-- 獲取需填寫的紀錄表 (學生) --
     else{
-      recordListApi.get_teacher_course_log({userId:userId?.inform?.Tb_index}).then((res) => {
-          setListDataReview(res.data)
-      })
+      navigate('/class-record/log')
     }
     
   }
 
-  //-- 判斷網址參數 --
+  //-- 判斷網址參數、日期 --
   useEffect(()=>{
     //console.log(params);
     //-- 獲取需審閱的紀錄表 (老師) --
@@ -627,13 +625,21 @@ export default function ClassRecord() {
       })
     }
     else{
-      const dates = new Date()
-      const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
-      recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index,date:today}).then((res) => {
-        setListDataReview(res.data)
-      })
+      if(date===null || date===undefined){
+        const dates = new Date()
+        const today = `${dates.getFullYear()}-${dates.getMonth()+1}-${dates.getDate()}`;
+        recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index,date:today}).then((res) => {
+          setListDataReview(res.data)
+        })
+      }
+      else{
+        recordListApi.get_teacher_course({userId:userId?.inform?.Tb_index, date:date?.monday}).then((res) => {
+          setListDataReview(res.data)
+        })
+      }
+     
     }
-  }, [params])
+  }, [params,date])
 
     return (
         <div style={{ width: '95%', margin: '20px auto 0' }}>

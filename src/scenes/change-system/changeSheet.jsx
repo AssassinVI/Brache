@@ -478,7 +478,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
             setTeacherAll(data.data);
         });
 
-        console.log(userData);
+        // console.log(userData);
         
     }, [])
   
