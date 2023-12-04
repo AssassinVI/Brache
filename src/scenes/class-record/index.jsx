@@ -599,12 +599,12 @@ export default function ClassRecord() {
   
   function need_listData() {
     //-- 獲取需審閱的紀錄表 (老師) --
-    if(userId.inform.admin_per==='group2023071815332755'){
-      navigate('/class-record/review')
+    if(userId.inform.admin_per==='group2023071815335388'){
+      navigate('/class-record/log')
     }
     //-- 獲取需填寫的紀錄表 (學生) --
     else{
-      navigate('/class-record/log')
+      navigate('/class-record/review')
     }
     
   }
@@ -652,7 +652,7 @@ export default function ClassRecord() {
             }}>
             <span >選擇日期:</span>
             <DateSelector setDate={setDate}/>
-             <Button variant="contained" size="small" sx={{backgroundColor:'#2676b1', marginLeft:'5px'}} onClick={()=>{need_listData()}}>{ userId?.inform?.admin_per==='group2023071815332755' ? '需審閱的紀錄表' : '需填寫的紀錄表'}</Button>
+             <Button variant="contained" size="small" sx={{backgroundColor:'#2676b1', marginLeft:'5px'}} onClick={()=>{need_listData()}}>{ userId?.inform?.admin_per==='group2023071815335388' ? '需填寫的紀錄表' : '需審閱的紀錄表'}</Button>
             </Box>
             <h2 style={{fontWeight:"500",textAlign:"center"}}>
               { params.type==='log' ? `需填寫的紀錄表` : 
