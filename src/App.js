@@ -2,7 +2,6 @@ import { useState } from "react";
 import { HashRouter as Router, Routes, Route } from 'react-router-dom';
 import Topbar from "./scenes/global/Topbar";
 import Sidebar from "./scenes/global/Sidebar";
-import Dashboard from "./scenes/dashboard";
 import Team from "./scenes/team";
 import Invoices from "./scenes/invoices";
 import Contacts from "./scenes/contacts";
@@ -10,7 +9,6 @@ import Form from "./scenes/form";
 import FAQ from "./scenes/faq";
 import { Box, CssBaseline, ThemeProvider, CircularProgress } from "@mui/material";
 import { ColorModeContext, useMode  } from "./theme";
-import Calendar from "./scenes/calendar/calendar";
 import ModuleManage from "./scenes/module-manage";
 import Snackbar from '@mui/material/Snackbar';
 import Alert from "@mui/material/Alert";
@@ -33,7 +31,6 @@ import ChangeHistory from "./scenes/change-system/changeHistory";
 function App() {
   const [theme, colorMode] = useMode();
   const [isSidebar, setIsSidebar] = useState(true);
-  const [isLoading, setIsLoading]= useState(false);
   const snackbarOpen = useSelector(state => state.snackbarOpenReducer)
   const dispatch = useDispatch(null)
   const handleClose = () => {

@@ -1218,7 +1218,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   }
 }
 
-export const TimeSelect = ({ setCurrentDate }) => {
+export const TimeSelect = ({ setCurrentDate, maxDate=null, minDate=null }) => {
   const [open, setOpen] = useState(false)
   const [date, setDate] = useState(new Date())
   const handleCancel = () => {
@@ -1253,7 +1253,7 @@ export const TimeSelect = ({ setCurrentDate }) => {
             }}
           >
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
-              <DateCalendar onChange={handleChange} />
+              <DateCalendar onChange={handleChange} maxDate={dayjs(maxDate)} minDate={dayjs(minDate)} />
               <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
                 <Button onClick={handleSubmit}>OK</Button>
                 <Button onClick={handleCancel}>Cancel</Button>

@@ -49,7 +49,7 @@ function FunctionBar({date,setDate,teacher,setTeacher}){
                         defaultValue={1} sx={{ width: "120px" }}
 
                     >
-                        <MenuItem key={'all'} value={''} style={{ paddingLeft: "8px" }}>
+                        <MenuItem key={'all'} value={'all'} style={{ paddingLeft: "8px" }}>
                            全部
                         </MenuItem>
                         {teacherAll && teacherAll.map((item) => {

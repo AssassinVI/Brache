@@ -24,7 +24,7 @@ import { snackBarOpenAction, notificationListAction } from "../../redux/action";
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
 //-- 顯示指定日期的課堂 --
-function OpenSelectClass({teacher=null, date=null, isSelect=false, setClassDate, data, setData, type =null}){
+function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, type =null}){
     const [listData,setListData] = useState(null)
     const userData = useSelector(state => state.accessRangeReducer)
     const newDate = new Date(date)
@@ -37,10 +37,19 @@ function OpenSelectClass({teacher=null, date=null, isSelect=false, setClassDate,
             changeApi.select_course({
                 c_date:`${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()}`,
                 teacher_id: teacher ? teacher : userData.inform.Tb_index,
-                isSelect:isSelect
             },(data)=>{
-                 //console.log(userData)
-                setListData(data.data.data)
+                 
+
+                if(type==="補簽"){
+                  let newList=data.data.data.filter((item)=>{
+                    return item.signin==="0" 
+                  })
+                  setListData(newList)
+                }
+                else{
+                  setListData(data.data.data)
+                }
+                
             })
         }
     },[date])
@@ -445,6 +454,11 @@ export default function ChangeSheet({sheetId,crud,setListData}){
 
     const [currentDate, setCurrentDate] = useState(null)
 
+    //-- 日期(今日、昨日) --
+    const date=new Date();
+    const today=`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
+    const yesterday=`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()-1}`;
+
      //權限
      const { accessData, accessDetect } = useAuthorityRange()
      const [authorityRange, setAuthorityRange] = useState({})
@@ -479,7 +493,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
         });
 
         // console.log(userData);
-        
+
+    
     }, [])
   
 
@@ -497,12 +512,21 @@ export default function ChangeSheet({sheetId,crud,setListData}){
       useEffect(()=>{
         if(data?.change_type !== "1" && data?.change_type !== "4"){
             setNewClass({})
+           
         }
         if (data?.change_type !== "2"){
             setTeacher(null)
             setData({
                 ...data,
                 change_course_id:undefined
+            })
+        }
+
+         //-- 老師加課預設 --
+         if(userData.inform.admin_per==="group2023071815332755" && data?.change_type==="4"){
+            setData({
+                ...data,
+                change_teacher_id: userData.inform.Tb_index,
             })
         }
       },[data.change_type])
@@ -679,13 +703,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                           </FormControl>
                         </DialogContent>
                         
-                        {data.change_type !== "4" &&
+                        {(data.change_type === "1" || data.change_type === "2") &&
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
                             <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>異動課堂</InputLabel>
                             {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
                                 <Box display={"flex"} gap={"5px"} alignItems={"center"}>
                                     <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
-                                    <TimeSelect setCurrentDate={setClassDate}/>
+                                    <TimeSelect setCurrentDate={setClassDate} maxDate={data.change_type==="3" ? yesterday : null} minDate={data.change_type!=="3" ? today : null}/>
                                 </Box>
                             }
 
@@ -693,11 +717,12 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                             (data.course_id && crud === "history") ? <TargetClass course_id={data.course_id} type={crud} beforeData={data}/>  : <TargetClass course_id={data.course_id}/>
                             }
                             {
-                            classDate &&<OpenSelectClass  date={classDate} setClassDate={setClassDate} setData={setData} data={data}/>
+                              classDate &&<OpenSelectClass  date={classDate} setClassDate={setClassDate} setData={setData} data={data}/>
                             }
                             </DialogContent>
                         }
                         
+                        {/* 調課 */}
                         {data.change_type === "1" &&
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
                                 <InputLabel id="demo-simple-select-label" sx={{margin:"10px 0 5px"}}>欲調課至的課堂日期</InputLabel>
@@ -755,6 +780,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                             />
                             </DialogContent>
                         }
+
+                        {/* 換課 */}        
                         {data.change_type === "2" &&
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
                                 <InputLabel id="demo-simple-select-label"sx={{marginBottom:"20px"}}>互換的課堂</InputLabel>
@@ -763,18 +790,40 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                     <>
                                         {/* <TargetTeacher teacher={teacher} setTeacher={setTeacher} /> */}
                                         <p style={{ color: "red",display:"inline", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂資訊透過右邊查詢)--{'>'}</p>
-                                        <TimeSelect setCurrentDate={setClassDate2}/>
+                                        <TimeSelect setCurrentDate={setClassDate2} minDate={today}/>
                                     </>
                                     }
                                     
                                     {classDate2 &&
                                     <OpenSelectClass 
                                         //teacher={teacher} 
-                                        isSelect={true} date={classDate2} setClassDate={setClassDate2} setData={setData} data={data} type={"換課"}/>}
+                                         date={classDate2} setClassDate={setClassDate2} setData={setData} data={data} type={"換課"}/>}
                                 </Box>
                                 {data.change_course_id &&<TargetClass course_id={data.change_course_id} teacher={teacher} setTeacher={setTeacher}/>}
                             </DialogContent>
                         }
+                        
+                        {/* 補簽 */}
+                        {data.change_type === "3" &&
+                            <DialogContent sx={{padding:0,margin:"10px 0"}}>
+                            <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>補簽課堂</InputLabel>
+                            {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
+                                <Box display={"flex"} gap={"5px"} alignItems={"center"}>
+                                    <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
+                                    <TimeSelect setCurrentDate={setClassDate} maxDate={yesterday} />
+                                </Box>
+                            }
+
+                            {
+                            (data.course_id && crud === "history") ? <TargetClass course_id={data.course_id} type={crud} beforeData={data}/>  : <TargetClass course_id={data.course_id}/>
+                            }
+                            {
+                              classDate &&<OpenSelectClass  date={classDate} setClassDate={setClassDate} setData={setData} data={data} type={"補簽"}/>
+                            }
+                            </DialogContent>
+                        }
+
+                        {/* 加課 */}
                         {data.change_type === "4" &&
                             
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
@@ -782,10 +831,10 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                 {teacherAll && <FormControl fullWidth sx={{marginTop:'10px'}}> 
                                     <InputLabel id="demo-simple-select-label">老師</InputLabel>
                                     <Select onChange={(e) => {
-                                        setData({
-                                            ...data,
-                                            change_teacher_id: e.target.value,
-                                        })
+                                            setData({
+                                                ...data,
+                                                change_teacher_id: e.target.value,
+                                            })
                                         }}
                                         inputProps={{ readOnly: !authorityRange.p_update || crud  === "view" ||  crud === "history" || crud === "needApproval" || userData.inform.admin_per==="group2023071815332755"}}
                                         value={data.change_teacher_id==undefined ? userData.inform.Tb_index : data.change_teacher_id}

@@ -463,11 +463,19 @@ function RecordList({date, listDataReview=undefined}) {
             hide: isMobile
         },
         {
-            field: "c_name",
-            headerName: "課堂名稱",
+            field: "student",
+            headerName: "學生",
             flex: isMobile ? 0.6 : 1,
             cellClassName: "name-column--cell",
-            
+            renderCell: (params) => {
+              return (
+                params.row.student.map((s_one)=>{
+                  return (
+                    <span style={{margin:"0px 5px"}}>{s_one.name}</span>
+                  );
+                })
+              );
+            },
         },
         {
           field: "room_name",
@@ -532,7 +540,7 @@ function RecordList({date, listDataReview=undefined}) {
   
     useEffect(()=>{
       if(listDataReview){
-        //console.log(listDataReview)
+        console.log(listDataReview)
         setListData(listDataReview)
       }
     },[listDataReview])
