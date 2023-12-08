@@ -5,6 +5,7 @@ import {useParams, Link} from 'react-router-dom'
 import { useSelector } from "react-redux";
 import { Box, Button } from "@mui/material";
 import HomeIcon from '@mui/icons-material/Home';
+import { hasFormSubmit } from "@testing-library/user-event/dist/utils";
 export default function Post() {
 
     const [course, setCourse]=useState({});
@@ -20,12 +21,19 @@ export default function Post() {
         color: course.success ? '#158d49':'#8d1515',
         letterSpacing: '0.1em',
         borderRadius: '8px',
-        margin: 0
+        marginTop: "20px"
     }
 
     const dt_style={
         display: course.success ? 'block':'none',
         textAlign:'left',
+    }
+
+    const btn={
+        fontSize: '16px',
+        letterSpacing: '0.1em',
+        fontWeight: 600, 
+        margin:'0 5px'
     }
 
     useEffect(()=>{
@@ -41,14 +49,28 @@ export default function Post() {
         }).then((res) => {
             setCourse(res.data);
             if(res.data.data.type==='2'){
-                setTitleName(`${res.data.data.teacher_name}老師`);
+                setTitleName(`${res.data.data.name}老師`);
             }
             else{
-                setTitleName(`${res.data.data.student_name}同學`);
+                setTitleName(`${res.data.data.name}同學`);
             }
         })
         
     }, [])
+
+    const signIn=()=>{
+        axios({
+            method: 'post',
+            url: "https://bratsche.web-board.tw/ajax/qrcode.php",
+            headers:headers_obj,
+            data: {
+                type: "signIn",
+                qrcodeId: param.Tb_index
+            },
+        }).then((res) => {
+            setCourse(res.data);
+        })
+    }
 
     useEffect(()=>{
         setDt(course.data);
@@ -66,15 +88,21 @@ export default function Post() {
             >
             {titleName}
             </h2>
+            <Box>
+                <Button variant="contained" size="large" color="success" sx={btn} onClick={()=>{signIn()}}>簽到</Button>
+                <Button variant="contained" size="large" color="error" sx={btn}>請假</Button>
+            </Box>
+            
             <h3 style={msg_style}>{course.msg}</h3>
-            <Button component={Link} variant="contained" to={"/"} sx={
+            <Button component={Link} variant="outlined" to={"/"} sx={
                 {
-                    backgroundColor: '#009688',
-                    fontSize: '16px',
+                    // backgroundColor: '#009688',
+                    fontSize: '14px',
                     letterSpacing: '0.1em',
                     fontWeight: 600,
-                    marginTop: '15px',
-                    
+                    marginTop: '35px',
+                    color:'#009688',
+                    border: "1px solid"
                 }
             }><HomeIcon sx={{mr:'5px'}} /> 登入系統</Button>
             <p style={dt_style}>

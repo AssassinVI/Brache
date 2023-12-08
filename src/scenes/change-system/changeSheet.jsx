@@ -293,6 +293,9 @@ function OpenSelectCalendar({setData}){
     const [currentDate, setCurrentDate] = useState(null)
     const [tableData,setTableData] = useState(null)
     const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
+    //-- 日期(今日、昨日) --
+    const date=new Date();
+    const today=`${date.getFullYear()}-${date.getMonth()+1}-${date.getDate()}`;
     useEffect(() => {
         if (currentDate) {
             //獲取calendar的資料
@@ -306,7 +309,7 @@ function OpenSelectCalendar({setData}){
        
           <Box display={"flex"} alignItems={"center"}>
                 <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(時間與教室透過右邊行事曆選擇)--{'>'}</p>
-                <TimeSelect setCurrentDate={setCurrentDate} />
+                <TimeSelect setCurrentDate={setCurrentDate} minDate={today} />
             </Box>
             {currentDate &&
                 <Dialog open={currentDate !==null ? currentDate :false} onClose={() => setCurrentDate(null)} sx={{
@@ -709,7 +712,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                             {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
                                 <Box display={"flex"} gap={"5px"} alignItems={"center"}>
                                     <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
-                                    <TimeSelect setCurrentDate={setClassDate} maxDate={data.change_type==="3" ? yesterday : null} minDate={data.change_type!=="3" ? today : null}/>
+                                    <TimeSelect setCurrentDate={setClassDate}  minDate={today}/>
                                 </Box>
                             }
 
