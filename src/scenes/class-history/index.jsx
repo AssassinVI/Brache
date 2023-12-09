@@ -5,7 +5,7 @@ import 'dayjs/locale/zh-cn';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Box, Button, Dialog, FormControl, InputLabel, MenuItem, Select, TextField, useMediaQuery, Autocomplete } from '@mui/material'
+import { Box, TextField, useMediaQuery, Autocomplete } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { get_student_course_history_one } from '../../axios-api/studentData'
 import { useTheme } from '@emotion/react'
@@ -174,9 +174,18 @@ function RecordList({date,student}) {
                         }
                     }}>
                         <Box className='box' >
-                            <Box>
-                                <p>簽到:</p>
-                                {rows.row.teacher.signin_time ? <p className='time'>{rows.row.teacher.signin_time.split(" ")[1]}</p>  :<CloseIcon/>}
+                            <Box sx={{
+                                backgroundColor: rows.row.teacher.signin_time ? '#178417' : rows.row.teacher.askForLeave_time? '#c22020' : '',
+                                color: rows.row.teacher.signin_time===null && rows.row.teacher.askForLeave_time===null ? '#000' : '#fff',
+                                padding: '0 10px',
+                                borderRadius: '10px',
+                             }}>
+                                <p>{rows.row.teacher.signin_time ? '簽到:' : rows.row.teacher.askForLeave_time ? '請假:': ''}</p>
+                                {rows.row.teacher.signin_time ? <p className='time'>{rows.row.teacher.signin_time.split(" ")[1]}</p>  
+                                 :
+                                 rows.row.teacher.askForLeave_time ? <p className='time'>{rows.row.teacher.askForLeave_time.split(" ")[1]}</p>
+                                 :
+                                 <CloseIcon/>}
                             </Box>
                             {/* <Box>
                                 <p>簽退:</p>
@@ -210,9 +219,18 @@ function RecordList({date,student}) {
                         }
                     }}>
                         <Box  className='box' >
-                            <Box>
-                                <p>簽到:</p>
-                                {rows.row.student.signin_time ? <p className='time'>{rows.row.student.signin_time.split(" ")[1]}</p>  :<CloseIcon/>}
+                            <Box sx={{
+                                backgroundColor: rows.row.student.signin_time ? '#178417' : rows.row.student.askForLeave_time ? '#c22020' : '',
+                                color: rows.row.student.signin_time===null && rows.row.student.askForLeave_time===null ? '#000' : '#fff',
+                                padding: '0 10px',
+                                borderRadius: '10px',
+                             }}>
+                                <p>{rows.row.student.signin_time ? '簽到:' : rows.row.student.askForLeave_time ? '請假:': ''}</p>
+                                {rows.row.student.signin_time ? <p className='time'>{rows.row.student.signin_time.split(" ")[1]}</p>  
+                                 : 
+                                 rows.row.student.askForLeave_time ? <p className='time'>{rows.row.student.askForLeave_time.split(" ")[1]}</p>
+                                 :
+                                 <CloseIcon/>}
                             </Box>
                             {/* <Box>
                                 <p>簽退:</p>

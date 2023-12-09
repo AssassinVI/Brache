@@ -198,7 +198,9 @@ function List({ listData }) {
                                 const show_delay_t=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_t_time/60000))}分${Math.abs((delay_t_time/1000)%60)}秒)` : '';
                                 const show_delay_s=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_s_time/60000))}分${Math.abs((delay_s_time/1000)%60)}秒)` : '';
                                 const t_time= item.t_signin_time==null ? '': item.t_signin_time.split(" ")[1];
+                                const t_leave_time= item.t_askForLeave_time==null ? '': item.t_askForLeave_time.split(" ")[1];
                                 const s_time= item.s_signin_time==null ? '': item.s_signin_time.split(" ")[1];
+                                const s_leave_time= item.s_askForLeave_time==null ? '': item.s_askForLeave_time.split(" ")[1];
                                 return (
                                     <Box sx={{
                                         width: "200px",
@@ -253,15 +255,39 @@ function List({ listData }) {
                                             }
                                         }}>
                                             <Box className="checkIn" display={"flex"} gap={"10px"} justifyContent={"center"} >
-                                                <Box alignItems={"center"}>
-                                                    {item.t_signin_time ? <div className="round" style={{marginRight:'8px'}}></div> : <div className="x"></div>}
-                                                    {item.t_signin_time ? <p style={{lineHeight:'1'}}>{t_time}{show_delay_t}</p> : ''}
+                                                <Box alignItems={"center"}
+                                                    sx={{
+                                                        '& .round, & .x':{
+                                                            marginRight: '8px'
+                                                        },
+                                                        '& p':{
+                                                            lineHeight:'1'
+                                                        }
+                                                    }}>
+                                                    {item.t_signin_time ? <div className="round"></div> : <div className="x"></div>}
+                                                    {item.t_signin_time ? <p>{t_time}{show_delay_t}</p> 
+                                                     : 
+                                                     item.t_askForLeave_time ? <p>{`請假 ${t_leave_time}`}</p>
+                                                     : ''}
                                                 </Box>
                                             </Box>
                                             <Box className="checkOut" display={"flex"} gap={"10px"} justifyContent={"center"} >
-                                                <Box alignItems={"center"}>
-                                                    {item.s_signin_time ? <div className="round" style={{marginRight:'8px'}}></div> : <div className="x"></div>}
-                                                    {item.s_signin_time ? <p style={{lineHeight:'1'}}>{s_time}{show_delay_s}</p> : ''}
+                                                <Box alignItems={"center"}
+                                                 sx={{
+                                                    '& .round, & .x':{
+                                                        marginRight: '8px'
+                                                    },
+                                                    '& p':{
+                                                        lineHeight:'1'
+                                                    }
+                                                 }}
+                                                >
+                                                    {item.s_signin_time ? <div className="round"></div> : <div className="x"></div>}
+                                                    {item.s_signin_time ? <p>{s_time}{show_delay_s}</p> 
+                                                     :
+                                                     item.s_askForLeave_time ? <p>{`請假 ${s_leave_time}`}</p>
+                                                     : ''
+                                                    }
                                                 </Box>
                                             </Box>
                                         </Box>
