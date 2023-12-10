@@ -87,7 +87,7 @@ export default function Login() {
                 navigate("/calendar/overview");
             } else {
                 window.alert(`${res.data.msg}`)
-                window.location.reload()
+                // window.location.reload()
             }
 
         })

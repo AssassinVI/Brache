@@ -22,6 +22,7 @@ import { getWeekInfoForDate,
          getDateOfMondayInWeek } from './getMonday';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import * as calendarApi from "../../axios-api/calendarData"
+import * as changeApi from "../../axios-api/changeSystem"
 import MultiSelect from '../../lib/multiSelect';
 import * as studentApi from "../../axios-api/studentData"
 import * as teacherApi from "../../axios-api/teacherData"
@@ -881,6 +882,8 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   const [currentDate, setCurrentDate] = useState(null)
   const [tableData, setTableData] = useState(null)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
+  //獲取使用者資訊
+  const userData = useSelector(state => state.accessRangeReducer)
 
   // console.log(unitData);
 
@@ -924,8 +927,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
         }
       })
     }
-    
-    
   }
 
   //-- 視窗刪除課程 --
@@ -945,6 +946,29 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
     }
   }
 
+
+  //-- 補簽 --
+  const ReSigning = ()=>{
+    if (window.confirm("確定要補簽此課程嗎?")){
+
+      changeApi.insert_course_transfer({
+          type: 'insert_course_transfer',
+          course_id: data.Tb_index,
+          admin_id: userData.inform.Tb_index,
+          c_remark: ' ',
+          change_type:3,
+          change_status:1
+      },(res)=>{
+          if(res.data.success){
+              dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+              handleCancel()
+          }
+          else{
+              dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
+          }
+      })
+    }
+  }
 
   useEffect(() => {
     if (currentDate) {
@@ -1187,9 +1211,12 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                 />
 
               </DialogContent>
-              <DialogContent sx={{ display: "flex", justifyContent: (type === "update" && authorityRange.p_delete)? "space-between" : "flex-end", alignItems: "center", "& button": { fontSize: "16px" } }}>
-                {authorityRange.p_delete&& type === "update" && <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>}
-              
+              <DialogContent sx={{ display: "flex", gap:"15px", justifyContent: (type === "update" && authorityRange.p_delete)? "space-between" : "flex-end", alignItems: "center", "& button": { fontSize: "16px" } }}>
+                
+                <Box sx={{display:'flex', gap:'10px'}}>
+                  {authorityRange.p_delete&& type === "update" && <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>}
+                  <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display:isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
+                </Box>
                 <Box>
                   {authorityRange.p_update && <Button onClick={handleSubmit}>{type === "update" ? "修改" : "新增"}</Button>}
                   <Button onClick={handleCancel}>{authorityRange.p_update ? "取消" : "退出"}</Button>
