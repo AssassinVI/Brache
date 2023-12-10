@@ -976,7 +976,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
         setTableData(dataTransformTable(data.data));
       })
     }
-    // console.log(unitData);
+     //console.log(unitData);
   }, [currentDate])
 
    //權限
@@ -1009,7 +1009,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
       const classTimeStamp = EndTime.getTime();
 
       //-- 判斷課程背景色 --
-      if((Date.now() < classTimeStamp)||(unitData.signin_time )){
+      if((Date.now() < classTimeStamp)||(unitData.signin_time ) || (unitData.askForLeave_time) || (unitData.reSignin_time)){
       } 
       //-- 超過上課時間視為遲到變紅色 --
       else{

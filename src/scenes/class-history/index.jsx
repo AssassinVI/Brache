@@ -180,10 +180,21 @@ function RecordList({date,student}) {
                                 padding: '0 10px',
                                 borderRadius: '10px',
                              }}>
-                                <p>{rows.row.teacher.signin_time ? '簽到:' : rows.row.teacher.askForLeave_time ? '請假:': ''}</p>
+                                <p>
+                                    {
+                                    rows.row.teacher.signin_time ? '簽到:' 
+                                    : 
+                                    rows.row.teacher.askForLeave_time ? '請假:'
+                                    :
+                                    rows.row.teacher.reSignin_time ? '補簽:' 
+                                    :
+                                    ''}
+                                </p>
                                 {rows.row.teacher.signin_time ? <p className='time'>{rows.row.teacher.signin_time.split(" ")[1]}</p>  
-                                 :
+                                 : 
                                  rows.row.teacher.askForLeave_time ? <p className='time'>{rows.row.teacher.askForLeave_time.split(" ")[1]}</p>
+                                 :
+                                 rows.row.teacher.reSignin_time ? <p className='time'>{rows.row.teacher.reSignin_time.split(" ")[1]}</p>
                                  :
                                  <CloseIcon/>}
                             </Box>
@@ -225,10 +236,21 @@ function RecordList({date,student}) {
                                 padding: '0 10px',
                                 borderRadius: '10px',
                              }}>
-                                <p>{rows.row.student.signin_time ? '簽到:' : rows.row.student.askForLeave_time ? '請假:': ''}</p>
+                                <p>
+                                    {
+                                    rows.row.student.signin_time ? '簽到:' 
+                                    : 
+                                    rows.row.student.askForLeave_time ? '請假:'
+                                    :
+                                    rows.row.student.reSignin_time ? '補簽:' 
+                                    :
+                                    ''}
+                                </p>
                                 {rows.row.student.signin_time ? <p className='time'>{rows.row.student.signin_time.split(" ")[1]}</p>  
                                  : 
                                  rows.row.student.askForLeave_time ? <p className='time'>{rows.row.student.askForLeave_time.split(" ")[1]}</p>
+                                 :
+                                 rows.row.student.reSignin_time ? <p className='time'>{rows.row.student.reSignin_time.split(" ")[1]}</p>
                                  :
                                  <CloseIcon/>}
                             </Box>

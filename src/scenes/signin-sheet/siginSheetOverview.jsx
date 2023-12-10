@@ -197,10 +197,14 @@ function List({ listData }) {
                                 const delay_s_time=StartTime_s-s_time_s;
                                 const show_delay_t=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_t_time/60000))}分${Math.abs((delay_t_time/1000)%60)}秒)` : '';
                                 const show_delay_s=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_s_time/60000))}分${Math.abs((delay_s_time/1000)%60)}秒)` : '';
+
                                 const t_time= item.t_signin_time==null ? '': item.t_signin_time.split(" ")[1];
                                 const t_leave_time= item.t_askForLeave_time==null ? '': item.t_askForLeave_time.split(" ")[1];
+                                const t_reSignin_time= item.t_reSignin_time==null ? '': item.t_reSignin_time.split(" ")[1];
+
                                 const s_time= item.s_signin_time==null ? '': item.s_signin_time.split(" ")[1];
                                 const s_leave_time= item.s_askForLeave_time==null ? '': item.s_askForLeave_time.split(" ")[1];
+                                const s_reSignin_time= item.s_reSignin_time==null ? '': item.s_reSignin_time.split(" ")[1];
                                 return (
                                     <Box sx={{
                                         width: "200px",
@@ -268,6 +272,8 @@ function List({ listData }) {
                                                     {item.t_signin_time ? <p>{t_time}{show_delay_t}</p> 
                                                      : 
                                                      item.t_askForLeave_time ? <p>{`請假 ${t_leave_time}`}</p>
+                                                     :
+                                                     item.t_reSignin_time ? <p>{`補簽 ${t_reSignin_time}`}</p>
                                                      : ''}
                                                 </Box>
                                             </Box>
@@ -286,6 +292,8 @@ function List({ listData }) {
                                                     {item.s_signin_time ? <p>{s_time}{show_delay_s}</p> 
                                                      :
                                                      item.s_askForLeave_time ? <p>{`請假 ${s_leave_time}`}</p>
+                                                     :
+                                                     item.s_reSignin_time ? <p>{`補簽 ${s_reSignin_time}`}</p>
                                                      : ''
                                                     }
                                                 </Box>
