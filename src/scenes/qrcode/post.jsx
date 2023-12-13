@@ -3,7 +3,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {useParams, Link} from 'react-router-dom'
 import { useSelector } from "react-redux";
-import { Box, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText } from "@mui/material";
+import { Box, Button, Dialog, DialogTitle, DialogActions, DialogContent, DialogContentText, TextField } from "@mui/material";
 import HomeIcon from '@mui/icons-material/Home';
 import { hasFormSubmit } from "@testing-library/user-event/dist/utils";
 export default function Post() {
@@ -12,6 +12,7 @@ export default function Post() {
 
     const [course, setCourse]=useState({});
     const [signInType, setSignInType]=useState(null);
+    const [remark, setRemark]=useState(null);
     const param=useParams();
     const [titleName, setTitleName]=useState('');
     const [dt, setDt]=useState({});
@@ -68,8 +69,8 @@ export default function Post() {
     }, [course]);
 
 
-    //-- 簽到/遲到 --
-    const signIn=(signInType)=>{
+    //-- 簽到/請假 --
+    const signIn=({signInType, remark=null})=>{
         axios({
             method: 'post',
             url: "https://bratsche.web-board.tw/ajax/qrcode.php",
@@ -77,7 +78,8 @@ export default function Post() {
             data: {
                 type: "signIn",
                 qrcodeId: param.Tb_index,
-                signInType:signInType
+                signInType:signInType,
+                remark: remark
             },
         }).then((res) => {
             setCourse(res.data);
@@ -109,13 +111,13 @@ export default function Post() {
             </h2>
             <Box>
                 <Button variant="contained" size="large" color="success" sx={btn} onClick={()=>{handleClickOpen('signIn')}}>簽到</Button>
-                <Button variant="contained" size="large" color="error" sx={btn} onClick={()=>{handleClickOpen('askForLeave')}}>請假</Button>
+                <Button variant="contained" size="large" color="error" sx={btn} onClick={()=>{handleClickOpen('askForLeave', remark)}}>請假</Button>
             </Box>
 
             {/* 簽到/請假彈出視窗 */}
             <Dialog
                 open={open}
-                fullWidth={true}
+                // fullWidth={true}
                 maxWidth={'lg'}
                 aria-labelledby="alert-dialog-title"
                 aria-describedby="alert-dialog-description"
@@ -128,10 +130,23 @@ export default function Post() {
                 }}>
                     {`${titleName}是否要${signInType==='signIn' ? '簽到':'請假'}?`}
                 </DialogTitle>
-                
+                <DialogContent sx={{display: signInType==='signIn' ? 'none':'flex'}}>
+                    <TextField
+                        autoFocus
+                        margin="dense"
+                        id="name"
+                        label="備註"
+                        type="text"
+                        fullWidth
+                        variant="standard"
+                        onChange={(e)=>{
+                            setRemark(e.target.value)
+                        }}
+                    />
+                </DialogContent>
                 <DialogActions sx={{justifyContent:'center', paddingBottom:'20px'}}>
-                <Button variant="outlined" onClick={handleClose} color="error">取消</Button>
-                <Button variant="contained" onClick={()=>{signIn(signInType)}} color="success">確定</Button>
+                    <Button variant="outlined" onClick={handleClose} color="error">取消</Button>
+                    <Button variant="contained" onClick={()=>{signIn({signInType:signInType, remark:remark})}} color="success">確定</Button>
                 </DialogActions>
             </Dialog>
 

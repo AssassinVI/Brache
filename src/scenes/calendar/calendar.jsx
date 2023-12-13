@@ -55,12 +55,12 @@ function SelectDate({setScrollNum}) {
       startDate: startDate,
       endDate: endDate,
     })
-    console.log({
-      monday_weekNumber: monday_weekNumber,
-      selectDate: `${e.$y}-${e.$M+1}-${e.$D}`,
-      startDate: startDate,
-      endDate: endDate,
-    });
+    // console.log({
+    //   monday_weekNumber: monday_weekNumber,
+    //   selectDate: `${e.$y}-${e.$M+1}-${e.$D}`,
+    //   startDate: startDate,
+    //   endDate: endDate,
+    // });
   }
 
   const handleCancel = () => {
@@ -999,8 +999,11 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   if (bg || type === "insert") {
 
     let isSign=false;
+    let isAskForLeave=false;
+    let isReSignin_time=false;
     
     if(unitData){
+      //console.log(unitData);
 
       // 将日期时间字符串解析为Date对象
       const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
@@ -1008,12 +1011,17 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
       // 获取时间戳
       const classTimeStamp = EndTime.getTime();
 
-      //-- 判斷課程背景色 --
-      if((Date.now() < classTimeStamp)||(unitData.signin_time ) || (unitData.askForLeave_time) || (unitData.reSignin_time)){
-      } 
       //-- 超過上課時間視為遲到變紅色 --
-      else{
+      if((Date.now() > classTimeStamp)&& unitData.signin_time===null && unitData.askForLeave_time===null && unitData.reSignin_time===null){
         isSign=true;
+      } 
+      //-- 請假 --
+      else if((unitData.askForLeave_time)){
+        isAskForLeave=true;
+      }
+      //-- 補簽 --
+      else if((unitData.reSignin_time)){
+        isReSignin_time=true;
       }
     }
 
@@ -1038,7 +1046,19 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                     setOpen(true)
                   })
                 }}>
-                      <Chip label="未簽" size="small" color="error" sx={{position:'absolute', top:'-10px', right:'-3px', display: isSign ? 'inline-flex':'none'}}/>
+                  
+                      <Chip label={isSign ? '未簽' : isAskForLeave ? '請假': isReSignin_time ? '補簽' : ''} 
+                            size="small" 
+                            sx={{
+                              position:'absolute', 
+                              top:'-10px', 
+                              right:'-3px', 
+                              backgroundColor: isSign ? '#cb271b' : isAskForLeave ? '#c69e0e' : '#19851d',
+                              color: '#fff',
+                              display: isSign || isAskForLeave || isReSignin_time ? 'inline-flex':'none'
+                              }}/>
+
+
                       <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
                         { 
                           // 課程顯示學生名
@@ -1050,7 +1070,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                         }
                       </div>
 
-
+ 
                 </Box> 
           </Tooltip>
           :
@@ -1216,6 +1236,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                 <Box sx={{display:'flex', gap:'10px'}}>
                   {authorityRange.p_delete&& type === "update" && <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>}
                   <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display:isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
+                  <Button onClick={()=>{}} variant="contained" sx={{backgroundColor:'#d9a710', display:isSign || isAskForLeave ? 'none':'inline-flex'}}>{'請假'}</Button>
                 </Box>
                 <Box>
                   {authorityRange.p_update && <Button onClick={handleSubmit}>{type === "update" ? "修改" : "新增"}</Button>}
