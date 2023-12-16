@@ -1,15 +1,27 @@
-import { Box, Typography, useMediaQuery } from "@mui/material";
-import React from "react";
+import { Box, Typography, useMediaQuery, Button } from "@mui/material";
+import {useState, useEffect} from "react";
 import { IsLoading } from "../../components/loading";
 import { DataGrid } from "@mui/x-data-grid";
 import { useTheme } from "@emotion/react";
 import { tokens } from "../../theme";
+import { useDispatch, useSelector } from 'react-redux';
+import { snackBarOpenAction, notificationListAction } from '../../redux/action';
 import ChangeSheet from "./changeSheet";
+import * as changeApi from "../../axios-api/changeSystem"
 
 export default function YourApproval({listData=[],setListData}){
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
     const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
+    const [selectCt, setSelectCt] = useState([]); // 批次勾選異動單 --
+    const dispatch = useDispatch(null)
+    //獲取使用者資訊
+    const userData = useSelector(state => state.accessRangeReducer)
+
+    // useEffect(()=>{
+    //     console.log(selectCt);
+    // }, [selectCt])
+
     const columns = [
         {
             field: "student",
@@ -54,10 +66,10 @@ export default function YourApproval({listData=[],setListData}){
             renderCell: (rows) => {
                 return (
                     <Box display={"flex"} flexWrap={"wrap"} gap={"12px"} width="100%" >
-                        {rows.row.change_type === "1" && <p>調課</p>}
-                        {rows.row.change_type === "2" && <p>換課</p>}
-                        {rows.row.change_type === "3" && <p>補簽</p>}
-                        {rows.row.change_type === "4" && <p>加課</p>}
+                        {rows.row.change_type === "1" && '調課'}
+                        {rows.row.change_type === "2" && '換課'}
+                        {rows.row.change_type === "3" && '補簽'}
+                        {rows.row.change_type === "4" && '加課'}
                     </Box>
                 )
             }
@@ -76,6 +88,53 @@ export default function YourApproval({listData=[],setListData}){
         },
     ];
 
+    //-- 批次簽核 --
+    const batchApproval= ()=>{
+        let result = prompt("是否要簽核所勾選的異動單嗎?\n下欄填寫備註：", '');
+        if(result!==null){
+            if(selectCt.length>0){
+                const userId =userData.inform.Tb_index
+
+                    // 存储所有请求的Promise数组
+                    var promises = [];
+                    selectCt.forEach(ch_id => {
+                        let pm= changeApi.signIn_course_transfer({
+                            record_type:'100',
+                            admin_id:userId,
+                            c_remark:result,
+                            course_ch_id:ch_id
+                        },(res)=>{
+                            
+                        })
+                        promises.push(pm);
+                    });
+
+                    try{
+                         // 等待所有请求完成
+                         Promise.all(promises).then(()=>{
+                            setTimeout(() => {
+                                dispatch(snackBarOpenAction(true, `已完成所有批次審核`))
+                                changeApi.get_course_transfer(userId,(res)=>{
+                                    setListData(res.data.data)
+                                })
+                                //-- 更新通知 --
+                                dispatch(notificationListAction({reflash: true}))
+                            }, 500);
+                            
+                         });
+                    }
+                    catch (error){
+                        // 至少有一个请求失败
+                        console.error("至少有一个请求失败: " + error);
+                    }
+                
+
+            }
+            else{
+                dispatch(snackBarOpenAction(true, `請勾選需要簽核的異動單!`, 'error'))
+            }
+        }
+    }
 
     const responsiveColumns = isMobile
     ? columns.filter((column) => column.field !== 'change_StartTime' && column.field !== 'change_room' && column.field !== 'keyindate')
@@ -83,7 +142,11 @@ export default function YourApproval({listData=[],setListData}){
 
     return(
         <Box m={"25px 0"}>
+            <Box sx={{display:'flex', justifyContent:'space-between', alignItems:'flex-end'}}>
              <Typography variant="h5" sx={{fontWeight:"600"}}>須簽核的異動單</Typography>
+             <Button variant="contained" color="success" onClick={()=>{batchApproval()}}>批次簽核</Button>
+            </Box>
+             
              <Box
             m="20px 0 0 0"
             width="100%"
@@ -92,7 +155,7 @@ export default function YourApproval({listData=[],setListData}){
                 overflowX: "scroll",
                 "@media all and (max-width:850px)": {
                     paddingBottom: "40px",
-                    height: "40vh"
+                    // height: "40vh"
                 },
                 "&::-webkit-scrollbar": {
                     display: "none"
@@ -125,7 +188,17 @@ export default function YourApproval({listData=[],setListData}){
                 }
             }}
         >
-            {listData ? <DataGrid rowHeight={isMobile ? 95 : 85} rows={listData} getRowId={(row) => row.Tb_index} columns={responsiveColumns} /> : <IsLoading />}
+            {listData ? <DataGrid 
+                            rowHeight={isMobile ? 45 : 45} 
+                            rows={listData} 
+                            getRowId={(row) => row.Tb_index} 
+                            columns={responsiveColumns}
+                            checkboxSelection
+                            onSelectionModelChange={(item)=>{
+                                setSelectCt(item);
+                            }}
+                             /> 
+                        : <IsLoading />}
         </Box>
         </Box>
     )

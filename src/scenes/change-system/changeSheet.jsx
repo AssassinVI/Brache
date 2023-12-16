@@ -622,7 +622,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
         }
      }
      
-     //-- 簽到 --
+     //-- 簽核 --
      const handleSign = (status)=>{
             const userId =userData.inform.Tb_index
             changeApi.signIn_course_transfer({

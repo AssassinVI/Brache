@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, DialogActions, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -970,6 +970,31 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
     }
   }
 
+
+  //-- 請假 --
+  const askForLeave=()=>{
+    let result = prompt("確定要為此課程請假嗎?\n下欄填寫備註：", '');
+    if(result!==null){
+      const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
+      const endDate = formatDateBack(getWeekDates(startDate)[6])
+      calendarApi.askForLeave({
+        course_id: data.Tb_index,
+        remark: result
+      }, (res)=>{
+        if(res.data.success){
+          dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+          calendarApi.getAll(startDate, endDate).then((data) => {
+            dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+          })
+          handleCancel()
+        }
+        else{
+            dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
+        }
+      })
+    }
+  }
+
   useEffect(() => {
     if (currentDate) {
       calendarApi.getAll(formatDateBack(currentDate), formatDateBack(currentDate)).then((data) => {
@@ -1003,7 +1028,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
     let isReSignin_time=false;
     
     if(unitData){
-      //console.log(unitData);
+      //=console.log(unitData);
 
       // 将日期时间字符串解析为Date对象
       const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
@@ -1236,7 +1261,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                 <Box sx={{display:'flex', gap:'10px'}}>
                   {authorityRange.p_delete&& type === "update" && <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>}
                   <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display:isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
-                  <Button onClick={()=>{}} variant="contained" sx={{backgroundColor:'#d9a710', display:isSign || isAskForLeave ? 'none':'inline-flex'}}>{'請假'}</Button>
+                  <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display:isSign || isAskForLeave ? 'none':'inline-flex'}}>{'請假'}</Button>
                 </Box>
                 <Box>
                   {authorityRange.p_update && <Button onClick={handleSubmit}>{type === "update" ? "修改" : "新增"}</Button>}

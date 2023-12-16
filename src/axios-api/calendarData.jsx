@@ -175,3 +175,23 @@ export const delete_template_course = (data, func) => {
     }
 
 };
+
+
+export const askForLeave = (data, func) => {
+    try {
+        axiosInstance({
+            method: 'POST',
+            url: "https://bratsche.web-board.tw/ajax/qrcode.php",
+            data: {
+                ...data,
+                type: "askForLeave",
+            },
+        }).then((data)=>{
+            func(data)
+        });
+        
+        return data
+    } catch (error) {
+        console.error(error);
+    }
+};

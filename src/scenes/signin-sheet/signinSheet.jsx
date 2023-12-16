@@ -258,7 +258,7 @@ const OpenScanner = ({ listData }) => {
                     paddingTop: "35px",
                 }
             }}>
-                {statusData?.is_signIn ?
+                {/* {statusData?.is_signIn ?
                     <Html5QrcodePlugin
                         fps={10}
                         qrbox={250}
@@ -268,7 +268,7 @@ const OpenScanner = ({ listData }) => {
                     <Box sx={{ width: "100%", height: "100px" }} display={"flex"} justifyContent={"center"} alignItems={"center"}>
                         <p style={{ width: "fit-content", margin: 0 }}>目前未在可簽到時間內</p>
                     </Box>
-                }
+                } */}
 
                 {statusData &&
                     <Box

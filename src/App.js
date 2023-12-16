@@ -66,7 +66,7 @@ function App() {
 
 
 
-        <Snackbar open={snackbarOpen.flag} autoHideDuration={2000} anchorOrigin={{vertical:'top', horizontal:'center'}} onClose={handleClose} sx={{
+        <Snackbar open={snackbarOpen.flag} autoHideDuration={5000} anchorOrigin={{vertical:'top', horizontal:'center'}} onClose={handleClose} sx={{
           // top: "3vh !important",
           // bottom: "auto !important",
           // left: "0 !important",
