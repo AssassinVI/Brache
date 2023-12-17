@@ -20,6 +20,7 @@ import * as studentApi from "../../axios-api/studentData"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousSharpIcon from '@mui/icons-material/DangerousSharp';
 import ArrowLeftSharpIcon from '@mui/icons-material/ArrowLeftSharp';
+import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { snackBarOpenAction, notificationListAction } from "../../redux/action";
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 
@@ -646,7 +647,9 @@ export default function ChangeSheet({sheetId,crud,setListData}){
      
     return(
         <>
-             <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "85px", gap: "5px" }} onClick={(e) => {
+          <Button 
+                startIcon={crud === "insert" ? <ReceiptLongIcon/> :''} 
+                variant="contained" sx={{ backgroundColor:'#1f5295'}} onClick={(e) => {
                     e.stopPropagation()
                     if(sheetId){
                         changeApi.course_transfer_one(sheetId,(res)=>{
@@ -657,7 +660,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                     setOpen(true)
                 }}>
                 {crud !== "view" || crud !== "history" &&  "檢視"}
-                {crud === "insert" && "新增"}
+                {crud === "insert" && "新增異動單"}
                 {crud === "view" || crud === "history" && "檢視"}
                 {(crud === "turndown" || crud ==="storage") && "修改"}
                 {crud === "needApproval" && "簽核"}

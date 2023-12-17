@@ -1,5 +1,5 @@
 import { Box, Typography, useMediaQuery, Button } from "@mui/material";
-import {useState, useEffect} from "react";
+import {useState} from "react";
 import { IsLoading } from "../../components/loading";
 import { DataGrid } from "@mui/x-data-grid";
 import { useTheme } from "@emotion/react";
@@ -18,9 +18,7 @@ export default function YourApproval({listData=[],setListData}){
     //獲取使用者資訊
     const userData = useSelector(state => state.accessRangeReducer)
 
-    // useEffect(()=>{
-    //     console.log(selectCt);
-    // }, [selectCt])
+    
 
     const columns = [
         {

@@ -1,7 +1,10 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, DialogActions, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton, MenuItem } from '@mui/material';
+import DateRangeIcon from '@mui/icons-material/DateRange';
+import EditIcon from '@mui/icons-material/Edit';
+import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
 import { LocalizationProvider } from '@mui/x-date-pickers';
@@ -20,27 +23,25 @@ import { getWeekInfoForDate,
          getContrastColor, 
          countMondaysInMonth, 
          getDateOfMondayInWeek } from './getMonday';
-import DateRangeIcon from '@mui/icons-material/DateRange';
 import * as calendarApi from "../../axios-api/calendarData"
 import * as changeApi from "../../axios-api/changeSystem"
 import MultiSelect from '../../lib/multiSelect';
 import * as studentApi from "../../axios-api/studentData"
 import * as teacherApi from "../../axios-api/teacherData"
 import { IsLoading } from "../../components/loading";
-import MenuItem from '@mui/material/MenuItem';
 import SelectCalendar from './selectCalendar';
 import { useDispatch, useSelector } from 'react-redux';
 import { calendarDateAction, calendarTableDataAction, snackBarOpenAction } from '../../redux/action';
-import EditIcon from '@mui/icons-material/Edit';
-import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { get_course_template_list } from '../../axios-api/calendarTemplateData';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
+import ChangeSheet from "../change-system/changeSheet";
 
 //-- 日期選擇btn --
 function SelectDate({setScrollNum}) {
   const [data, setData] = useState({})
   const [open, setOpen] = useState(false)
   const dispatch = useDispatch(null)
+  
 
   //-- 選擇日期 --
   const handleChange = (e) => {
@@ -336,13 +337,15 @@ const CalendarTop = () => {
   const scrollRef = useRef(null)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
   let [scrollNum, setScrollNum] = useState(0);
+  //儲存異動單list資料
+  const [listData, setListData] = useState(null)
 
   //-- 捲動到指定日期 --
   useEffect(()=>{
     if(scrollRef.current!=null){
       scrollRef.current.scrollTo(
         {
-          left: `${520 * scrollNum}`,
+          left: isMobile ? `${400 * scrollNum}` : `${520 * scrollNum}`,
           behavior: 'smooth',
         }
       )
@@ -377,6 +380,7 @@ const CalendarTop = () => {
   
     //獲取權限範圍
     useEffect(() => {
+    
         if (accessData) {
             const result = accessDetect(accessData, "課表總覽")
             setAuthorityRange({
@@ -577,8 +581,12 @@ const CalendarTop = () => {
                 </div>
               </Box>
               <Box sx={{display:'flex', alignItems:'center', gap: "10px",}}>
-                {/* <span>選擇日期</span> */}
+                {/* 選擇日期 */}
                 <SelectDate currentDate={currentDate} setScrollNum={setScrollNum} />
+
+                {/* 新增異動單 */}
+                {adminData.inform.position_type!=='3' ? <ChangeSheet crud={"insert"} setListData={setListData}/> : ''}
+
                 {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
               </Box>
               
@@ -774,7 +782,7 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll },
             const month = date.getMonth() + 1
             const day = date.getDate()
             return (
-              <Box className='day-of-the-week' minWidth={isMobile ? "100%" : "520px"}>
+              <Box className='day-of-the-week' minWidth={isMobile ? "400px" : "520px"}>
                 <Box className='calendar-date'>
                   {date && <h6>{`${month}月${day}日(星期${convertToChineseNumber(i + 1)})`}</h6>}
                 </Box>
@@ -864,6 +872,8 @@ const LessonUnit = ({ data, count, teacherAll, studentAll }) => {
 }
 
 
+
+
 /**
  * 課程單元+開啟編輯視窗
  * @param unitData 該筆課程資料
@@ -884,7 +894,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
   //獲取使用者資訊
   const userData = useSelector(state => state.accessRangeReducer)
-
   // console.log(unitData);
 
   const dispatch = useDispatch(null)
@@ -1100,12 +1109,11 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
           </Tooltip>
           :
            <Box>
-              <Button  variant="contained" sx={{ backgroundColor: "#6DC4C5", gap: "10px" }} onClick={(e) => {
+              <Button startIcon={<EditIcon />} variant="contained" sx={{ backgroundColor: "#6DC4C5" }} onClick={(e) => {
                 e.stopPropagation()
                 setOpen(true)
               }}>
-                <EditIcon />
-                新增
+                新增課程
               </Button >
               
            </Box>
@@ -1256,12 +1264,16 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                 />
 
               </DialogContent>
-              <DialogContent sx={{ display: "flex", gap:"15px", justifyContent: (type === "update" && authorityRange.p_delete)? "space-between" : "flex-end", alignItems: "center", "& button": { fontSize: "16px" } }}>
+              <DialogContent sx={{ display: "flex", flexDirection:{xs:"column", lg:"row"}, gap:"15px", justifyContent: (type === "update" && authorityRange.p_delete)? "space-between" : "flex-end", alignItems: "center", "& button": { fontSize: "16px" }, padding:"15px 0" }}>
                 
-                <Box sx={{display:'flex', gap:'10px'}}>
-                  {authorityRange.p_delete&& type === "update" && <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>}
-                  <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display:isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
-                  <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display:isSign || isAskForLeave ? 'none':'inline-flex'}}>{'請假'}</Button>
+                <Box sx={{display:'flex', gap:'10px', }}>
+
+                  {authorityRange.p_delete&& type === "update" && 
+                    <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>
+                  }
+                  <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
+                  <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display: isSign || isAskForLeave || isReSignin_time ? 'none':'inline-flex'}}>{'請假'}</Button>
+                  
                 </Box>
                 <Box>
                   {authorityRange.p_update && <Button onClick={handleSubmit}>{type === "update" ? "修改" : "新增"}</Button>}
@@ -1290,6 +1302,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
     )
   }
 }
+
 
 export const TimeSelect = ({ setCurrentDate, maxDate=null, minDate=null }) => {
   const [open, setOpen] = useState(false)
