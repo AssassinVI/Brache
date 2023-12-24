@@ -435,7 +435,7 @@ function Process({data,isMobile,crud}){
 }
 
 
-export default function ChangeSheet({sheetId,crud,setListData}){
+export default function ChangeSheet({sheetId, crud, course_id=null, setListData}){
     const [open,setOpen] = useState(false)
     //獲取使用者資訊
     const userData = useSelector(state => state.accessRangeReducer)
@@ -498,8 +498,29 @@ export default function ChangeSheet({sheetId,crud,setListData}){
 
         // console.log(userData);
 
-    
+        
+
+        console.log(data);
     }, [])
+
+    useEffect(()=>{
+        //-- 調課 --
+        if(crud==="adjustCourse"){
+            setData({
+                ...data,
+                change_type: "1",
+                course_id: course_id
+            })
+        }
+        //-- 換課 --
+        if(crud==="changeCourse"){
+            setData({
+                ...data,
+                change_type: "2",
+                course_id: course_id
+            })
+        }
+    }, [open])
   
 
 
@@ -535,6 +556,10 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                 change_teacher_id: userData.inform.Tb_index,
             })
         }
+
+        
+
+
       },[data.change_type])
   
      //-- 送出表單 --
@@ -543,7 +568,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
           //status === 1 = > 送出
           const userId = userData.inform.Tb_index;
           const handleAjax = (status)=>{
-            if(crud ==="insert"){
+            if(crud ==="insert" || crud ==="adjustCourse" || crud ==="changeCourse"){
                 
                 changeApi.insert_course_transfer({
                     ...data,
@@ -664,6 +689,8 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                 {crud === "view" || crud === "history" && "檢視"}
                 {(crud === "turndown" || crud ==="storage") && "修改"}
                 {crud === "needApproval" && "簽核"}
+                {crud === "adjustCourse" && "調課"}
+                {crud === "changeCourse" && "換課"}
           </Button >
           <Dialog open={open} onClose={handleCancel} sx={{
                 "& .MuiPaper-root": { padding: " 10px 25px" },
@@ -679,12 +706,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
             }}>
                 {data ?
                     <Box display={"flex"}>
-                        <Box sx={{width:(crud !== "turndown" && crud !== "insert")&&(!isMobile) ? "400px" : "100%"}}>
+                        <Box sx={{width:(crud !== "turndown" && crud !== "insert" && crud !== "adjustCourse" && crud !== "changeCourse")&&(!isMobile) ? "400px" : "100%"}}>
                         <DialogTitle sx={{ fontSize: "20px",padding:0 }}>
-                            {crud === "insert" && "異動單新增"}
+                            {crud === "insert" || crud==="adjustCourse" || crud==="changeCourse" ?  "異動單新增":""}
                             {crud === "view" || crud === "history" && "異動單檢視"}
                             {crud === "turndown" && "異動單修改"}
                             {crud === "needApproval" && "異動單簽核"}
+
                         </DialogTitle>
                         <DialogContent sx={{padding:0,margin:"10px 0"}}>
                           <FormControl fullWidth sx={{marginTop:'10px'}}>
@@ -701,7 +729,7 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                                     }}
                                     fullWidth
                                     value={data.change_type || ''} // 确保值不为 undefined
-                                    inputProps={{ readOnly: crud  === "view" ||  crud === "history" || crud === "needApproval"}}
+                                    inputProps={{ readOnly: crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}}
                                 >
                                     <MenuItem value={"4"} >{"加課"}</MenuItem>
                                     <MenuItem value={"1"} >{"調課"}</MenuItem>
@@ -714,11 +742,13 @@ export default function ChangeSheet({sheetId,crud,setListData}){
                         {(data.change_type === "1" || data.change_type === "2") &&
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
                             <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>異動課堂</InputLabel>
-                            {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
+                            {
+                             crud !== "view" &&  crud !== "history" && crud !== "needApproval" && crud !== "adjustCourse" && crud !== "changeCourse" ? 
                                 <Box display={"flex"} gap={"5px"} alignItems={"center"}>
                                     <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
                                     <TimeSelect setCurrentDate={setClassDate}  minDate={today}/>
                                 </Box>
+                             : ""
                             }
 
                             {
