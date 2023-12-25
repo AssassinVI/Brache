@@ -585,7 +585,7 @@ const CalendarTop = () => {
                 <SelectDate currentDate={currentDate} setScrollNum={setScrollNum} />
 
                 {/* 新增異動單 */}
-                {adminData.inform.position_type!=='3' ? <ChangeSheet crud={"insert"} setListData={setListData}/> : ''}
+                {adminData?.inform?.position_type!=='3' ? <ChangeSheet crud={"insert"} setListData={setListData}/> : ''}
 
                 {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
               </Box>
@@ -1043,18 +1043,23 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
 
   if (bg || type === "insert") {
 
+    
+
     let isSign=false;
     let isAskForLeave=false;
     let isReSignin_time=false;
+    let TimeOut=false;
+    
     
     if(unitData){
       //=console.log(unitData);
-
       // 将日期时间字符串解析为Date对象
       const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
 
       // 获取时间戳
       const classTimeStamp = EndTime.getTime();
+
+      TimeOut=Date.now() > classTimeStamp;
 
       //-- 超過上課時間視為遲到變紅色 --
       if((Date.now() > classTimeStamp)&& unitData.signin_time===null && unitData.askForLeave_time===null && unitData.reSignin_time===null){
@@ -1283,9 +1288,9 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                     <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>
                   }
                   <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
-                  {type ==='insert' || isSign || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"adjustCourse"} course_id={data.Tb_index} setListData={setListData}/>}
-                  {type ==='insert' || isSign || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"changeCourse"} course_id={data.Tb_index} setListData={setListData}/>}
-                  <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display: type ==='insert' || isSign || isAskForLeave || isReSignin_time ? 'none':'inline-flex'}}>{'請假'}</Button>
+                  {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"adjustCourse"} course_id={data.Tb_index} setListData={setListData}/>}
+                  {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"changeCourse"} course_id={data.Tb_index} setListData={setListData}/>}
+                  <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display: type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? 'none':'inline-flex'}}>{'請假'}</Button>
                   
                 </Box>
                 <Box>

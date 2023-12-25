@@ -550,7 +550,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
         //console.log(userData.inform);
 
          //-- 老師加課預設 --
-         if((userData.inform.admin_per==="group2023071815332755" || userData.inform.admin_per==="group2022092314594853") && data?.change_type==="4"){
+         if((userData?.inform?.admin_per==="group2023071815332755" || userData?.inform?.admin_per==="group2022092314594853") && data?.change_type==="4"){
             setData({
                 ...data,
                 change_teacher_id: userData.inform.Tb_index,
