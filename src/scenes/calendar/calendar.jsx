@@ -1031,7 +1031,13 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                p_update: result?.p_update === "1" ? true : false,
            })
        }
+
+       
    }, [accessData])
+
+   useEffect(()=>{
+    console.log(type);
+   }, [open])
 
    
 
@@ -1277,9 +1283,9 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                     <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>
                   }
                   <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
-                  <ChangeSheet crud={"adjustCourse"} course_id={data.Tb_index} setListData={setListData}/>
-                  <ChangeSheet crud={"changeCourse"} course_id={data.Tb_index} setListData={setListData}/>
-                  <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display: isSign || isAskForLeave || isReSignin_time ? 'none':'inline-flex'}}>{'請假'}</Button>
+                  {type ==='insert' || isSign || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"adjustCourse"} course_id={data.Tb_index} setListData={setListData}/>}
+                  {type ==='insert' || isSign || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"changeCourse"} course_id={data.Tb_index} setListData={setListData}/>}
+                  <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display: type ==='insert' || isSign || isAskForLeave || isReSignin_time ? 'none':'inline-flex'}}>{'請假'}</Button>
                   
                 </Box>
                 <Box>
