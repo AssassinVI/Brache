@@ -947,9 +947,11 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   //-- 視窗刪除課程 --
   const handleDelete = () => {
 
+    // console.log(adminData);
+
     if (window.confirm("確定要刪除此課程嗎?")) {
       //-- 老師 --
-      if(adminData.inform.position_type==='2'){
+      if(adminData.inform.admin_per==="group2023071815332755"){
         changeApi.insert_course_transfer({
             type: 'insert_course_transfer',
             course_id: data.Tb_index,
