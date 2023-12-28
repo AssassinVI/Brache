@@ -735,6 +735,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                     <MenuItem value={"1"} >{"調課"}</MenuItem>
                                     <MenuItem value={"2"} >{"換課"}</MenuItem>
                                     <MenuItem value={"3"} >{"補簽"}</MenuItem>
+                                    <MenuItem value={"5"} >{"刪課"}</MenuItem>
                                 </Select>
                           </FormControl>
                         </DialogContent>
@@ -966,6 +967,26 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                             
                                 className='input'
                                 />
+                            </DialogContent>
+                        }
+
+                        {/* 刪課 */}
+                        {data.change_type === "5" &&
+                            <DialogContent sx={{padding:0,margin:"10px 0"}}>
+                            <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>刪除課堂</InputLabel>
+                            {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
+                                <Box display={"flex"} gap={"5px"} alignItems={"center"}>
+                                    <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
+                                    <TimeSelect setCurrentDate={setClassDate} maxDate={yesterday} />
+                                </Box>
+                            }
+
+                            {
+                            (data.course_id && crud === "history") ? <TargetClass course_id={data.course_id} type={crud} beforeData={data}/>  : <TargetClass course_id={data.course_id}/>
+                            }
+                            {
+                              classDate &&<OpenSelectClass  date={classDate} setClassDate={setClassDate} setData={setData} data={data} type={"補簽"}/>
+                            }
                             </DialogContent>
                         }
         

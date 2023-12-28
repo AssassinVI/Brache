@@ -891,6 +891,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
   const [data, setData] = useState({})
   const [currentDate, setCurrentDate] = useState(null)
   const [tableData, setTableData] = useState(null)
+  const adminData = useSelector(state => state.accessRangeReducer)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
   //獲取使用者資訊
   const userData = useSelector(state => state.accessRangeReducer)
@@ -945,18 +946,42 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
 
   //-- 視窗刪除課程 --
   const handleDelete = () => {
+
     if (window.confirm("確定要刪除此課程嗎?")) {
-      const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
-      const endDate = formatDateBack(getWeekDates(startDate)[6])
-      calendarApi.deleteOne(id, (res) => {
-        const status = res.data.success ? "success" : "error"
-        dispatch(snackBarOpenAction(true, res.data.msg, status))
-        if (res.data.success) {
-          calendarApi.getAll(startDate, endDate).then((data) => {
-            dispatch(calendarTableDataAction(dataTransformTable(data.data)))
-          })
-        }
-      })
+      //-- 老師 --
+      if(adminData.inform.position_type==='2'){
+        changeApi.insert_course_transfer({
+            type: 'insert_course_transfer',
+            course_id: data.Tb_index,
+            admin_id: userData.inform.Tb_index,
+            c_remark: ' ',
+            change_type:5,
+            change_status:1
+        },(res)=>{
+            if(res.data.success){
+                dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+                handleCancel()
+            }
+            else{
+                dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
+            }
+        })
+      }
+      //-- 管理者 --
+      else{
+        const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
+        const endDate = formatDateBack(getWeekDates(startDate)[6])
+        calendarApi.deleteOne(id, (res) => {
+          const status = res.data.success ? "success" : "error"
+          dispatch(snackBarOpenAction(true, res.data.msg, status))
+          if (res.data.success) {
+            calendarApi.getAll(startDate, endDate).then((data) => {
+              dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+            })
+          }
+        })
+      }
+      
     }
   }
 
@@ -1035,9 +1060,10 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
        
    }, [accessData])
 
-   useEffect(()=>{
-    console.log(type);
-   }, [open])
+
+  //  useEffect(()=>{
+  //   console.log(type);
+  //  }, [open])
 
    
 
@@ -1140,15 +1166,16 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
             fontSize: "16px"
           },
           "& .MuiDialog-container > .MuiPaper-root": {
-            padding: " 10px 25px",
+            padding: " 10px 15px",
+            margin: "10px",
             width: "100%",
             maxWidth: "650px",
           },
         }}>
           {(data || type === "insert") && studentAll.length > 0 && teacherAll.length > 0 ?
             <>
-              <DialogTitle sx={{ fontSize: "20px" }}>{!authorityRange.p_update ?"課程瀏覽" : type === "update" ? "課程修改" : "課程新增"}</DialogTitle>
-              <DialogContent sx={{ width: "100%", padding: "20px 24px !important" }} >
+              <DialogTitle sx={{ fontSize: "20px", padding: '5px' }}>{!authorityRange.p_update ?"課程瀏覽" : type === "update" ? "課程修改" : "課程新增"}</DialogTitle>
+              <DialogContent sx={{ width: "100%", padding: "10px !important" }} >
                 {teacherAll &&
                   <FormControl fullWidth >
                     <InputLabel id="demo-simple-select-label">老師</InputLabel>
@@ -1173,7 +1200,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                   </FormControl>
                 }
               </DialogContent>
-              <DialogContent>
+              <DialogContent sx={{padding: "10px !important"}}>
                 <TextField
                   autoFocus
                   margin="dense"
@@ -1192,10 +1219,10 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                   disabled={!authorityRange.p_update}
                 />
               </DialogContent>
-              <DialogContent>
+              <DialogContent sx={{padding: "10px !important"}}>
                 {((studentAll && data.student) || type === "insert") && <MultiSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>}
               </DialogContent>
-              <DialogContent sx={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", "& .input": { flex: "0 0 45%", "& label": { color: "#000" }, "& input": { WebkitTextFillColor: "#000" } } }}>
+              <DialogContent sx={{padding: "10px !important", display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", "& .input": { flex: "0 0 45%", "& label": { color: "#000" }, "& input": { WebkitTextFillColor: "#000" } } }}>
                 <Box flex={"0 0 100%"}>
                   <Typography variant="h5" component="h6">課堂時間及教室</Typography>
                   {authorityRange.p_update &&
@@ -1280,11 +1307,21 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                 />
 
               </DialogContent>
-              <DialogContent sx={{ display: "flex", flexDirection:{xs:"column", lg:"row"}, gap:"15px", justifyContent: (type === "update" && authorityRange.p_delete)? "space-between" : "flex-end", alignItems: "center", "& button": { fontSize: "16px" }, padding:"15px 0" }}>
+
+              <DialogContent sx={{ 
+                display: "flex", 
+                flexDirection:{xs:"column", lg:"row"}, 
+                justifyContent: (type === "update" && authorityRange.p_delete)? "space-between" : "flex-end", 
+                alignItems: "center", 
+                "& button": { fontSize: "16px" }, 
+                height: '145px',
+                gap: '5px',
+                padding: '0',
+                paddingTop: '12px'}}>
                 
                 <Box sx={{display:'flex', gap:'10px', }}>
 
-                  {authorityRange.p_delete&& type === "update" && 
+                  {authorityRange.p_delete&& type === "update" && !TimeOut && 
                     <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>
                   }
                   <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
@@ -1298,6 +1335,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                   <Button onClick={handleCancel}>{authorityRange.p_update ? "取消" : "退出"}</Button>
                 </Box>
               </DialogContent>
+
               {currentDate &&
                 <Dialog open={currentDate} onClose={() => setCurrentDate(null)} sx={{
                   "& .MuiPaper-root": isMobile ? {

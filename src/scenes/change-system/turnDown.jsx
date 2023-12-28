@@ -86,6 +86,7 @@ export default function TurnDown({listData=[],setListData}){
                         {rows.row.change_type === "2" && <p>換課</p>}
                         {rows.row.change_type === "3" && <p>補簽</p>}
                         {rows.row.change_type === "4" && <p>加課</p>}
+                        {rows.row.change_type === "5" && <p>刪課</p>}
                     </Box>
                 )
             }
