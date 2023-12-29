@@ -445,6 +445,22 @@ const CalendarTop = () => {
       }
     }
   
+
+    //-- Today --
+    const go_today=()=>{
+      const monday_weekNumber = getWeekInfoForDate(new Date());
+      const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day
+      const endDate = formatDateBack(getWeekDates(startDate)[6])
+      calendarApi.getAll(startDate, endDate).then((data) => {
+        dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+      })
+      dispatch(calendarDateAction(getWeekInfoForDate(new Date())))
+
+      //-- 捲到指定位置 --
+      let getday=new Date();
+          getday=getday.getDay()==0 || getday.getDay()>6 ? 6 : getday.getDay()-1;
+      setScrollNum(getday)
+    }
   
 
   return (
@@ -483,15 +499,7 @@ const CalendarTop = () => {
        
           <Box className='title' display={"flex"} width={"100%"} justifyContent={"space-between"} gap={"15px"} alignItems={"center"} flexWrap={"wrap"}>
             <Box display={"flex"} gap={"15px"} className='buttonBox' >
-              <Button onClick={() => {
-                const monday_weekNumber = getWeekInfoForDate(new Date());
-                const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day
-                const endDate = formatDateBack(getWeekDates(startDate)[6])
-                calendarApi.getAll(startDate, endDate).then((data) => {
-                  dispatch(calendarTableDataAction(dataTransformTable(data.data)))
-                })
-                dispatch(calendarDateAction(getWeekInfoForDate(new Date())))
-              }}>TODAY</Button>
+              <Button onClick={() => {go_today()}}>TODAY</Button>
               {authorityRange.p_update&&<ImportTemplate />}
               <Button sx={{backgroundColor:'#207c23 !important'}} onClick={()=>{
                 const adminPer=adminData.inform.admin_per;

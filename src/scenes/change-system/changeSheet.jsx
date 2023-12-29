@@ -1,6 +1,11 @@
 import React from "react";
 import SelectCalendar from "../calendar/selectCalendar";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, TextField, useMediaQuery, Typography } from "@mui/material";
+import dayjs from 'dayjs';
+import 'dayjs/locale/zh-cn';
+import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
+import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
+import { DatePicker, LocalizationProvider, TimePicker } from '@mui/x-date-pickers'
 import { useState } from "react";
 import { useEffect } from "react";
 import { TimeSelect } from "../calendar/calendar";
@@ -23,6 +28,7 @@ import ArrowLeftSharpIcon from '@mui/icons-material/ArrowLeftSharp';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { snackBarOpenAction, notificationListAction } from "../../redux/action";
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
+import { string } from "yup";
 
 //-- 顯示指定日期的課堂 --
 function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, type =null}){
@@ -547,17 +553,17 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
             })
         }
 
-        //console.log(userData.inform);
+        
 
          //-- 老師加課預設 --
-         if((userData?.inform?.admin_per==="group2023071815332755" || userData?.inform?.admin_per==="group2022092314594853") && data?.change_type==="4"){
+         if(userData?.inform?.position_type==="2" && data?.change_type==="4"){
             setData({
                 ...data,
                 change_teacher_id: userData.inform.Tb_index,
             })
         }
 
-        
+        //console.log(data.change_teacher_id==undefined ? userData.inform.Tb_index : data.change_teacher_id);
 
 
       },[data.change_type])
@@ -631,7 +637,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                     dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
                 }
             }
-            else if(data.change_type === "3"){
+            else if(data.change_type === "3" || data.change_type === "5"){
                 if(data.course_id ){
                     handleAjax(status)
                 }else{
@@ -768,55 +774,101 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                             {crud !== "view" &&  crud !== "history" && crud!=="needApproval" &&
                                 <OpenSelectCalendar setData={setNewClass}/>
                             }
-                            <TextField
-                            autoFocus
-                            margin="dense"
-                            id="c_date"
-                            label="日期"
-                            type="text"
-                            fullWidth
-                            variant="standard"
-                            value={data.change_date || " "}
-                        
-                            className='input'
-                            />
-                            <TextField
-                            autoFocus
-                            margin="dense"
-                            id="room_name"
-                            label="教室"
-                            type="text"
-                            fullWidth
-                            variant="standard"
-                            value={data.change_room_name || " "}
-                        
-                            className='input'
-                            />
-            
-                            <TextField
-                            autoFocus
-                            margin="dense"
-                            id="StartTime"
-                            label="課堂開始時間"
-                            type="text"
-                            fullWidth
-                            variant="standard"
-                            value={data.change_StartTime || " "}
-                        
-                            className='input'
-                            />
-                            <TextField
-                            autoFocus
-                            margin="dense"
-                            id="EndTime"
-                            label="課堂結束時間"
-                            type="text"
-                            fullWidth
-                            variant="standard"
-                            value={data.change_EndTime || " "}
-                        
-                            className='input'
-                            />
+
+
+                            <Box sx={{ margin: '10px 0',  }}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                                    <DemoContainer components={['DatePicker']}>
+                                        <DatePicker 
+                                            label="日期" 
+                                            format="YYYY/MM/DD"
+                                            minDate={dayjs(today)}
+                                            value={dayjs( data.change_date)}
+                                            readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                            onChange={(newDate)=>{
+                                                let formatDate=`${newDate.$y}-${parseInt(newDate.$M)+1}-${newDate.$D}`;
+                                                setData({
+                                                    ...data,
+                                                    change_date: formatDate
+                                                })
+                                            }}
+                                        />
+                                    </DemoContainer>
+                                </LocalizationProvider>
+                            </Box>
+                            
+                            <Box>
+                                <FormControl variant="outlined" sx={{ margin: '10px 0', width: '240px' }}>
+                                    <InputLabel id="demo-simple-select-standard-label">教室</InputLabel>
+                                    <Select
+                                    labelId="demo-simple-select-standard-label"
+                                    id="demo-simple-select-standard"
+                                    value={data.change_room_name || " "}
+                                    onChange={(e)=>{
+                                        setData({
+                                            ...data,
+                                            change_room_name: e.target.value
+                                        })
+                                    }}
+                                    label="教室"
+                                    inputProps={{ readOnly: crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}}
+                                    >
+                                    <MenuItem value={201}>201</MenuItem>
+                                    <MenuItem value={202}>202</MenuItem>
+                                    <MenuItem value={203}>203</MenuItem>
+                                    <MenuItem value={204}>204</MenuItem>
+                                    <MenuItem value={205}>205</MenuItem>
+                                    <MenuItem value={206}>206</MenuItem>
+                                    <MenuItem value={"1F"}>1F</MenuItem>
+                                    <MenuItem value={"備"}>備</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
+                            
+                            <Box>
+                                <FormControl variant="standard" sx={{ margin: '10px 0', marginRight: '10px', width: '240px' }}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                                    <TimePicker 
+                                        label="課堂開始時間" 
+                                        value={dayjs(`${data.change_date}T${data.change_StartTime}`)} 
+                                        timeSteps={{  minutes: 15,  }}
+                                        minTime={dayjs().set('hour', 5)}
+                                        views={['hours', 'minutes']}
+                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                        onChange={(time)=>{
+                                            let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            setData({
+                                                ...data,
+                                                change_StartTime: formatTime
+                                            })
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                </FormControl>
+                            </Box>
+                            
+                            <Box>
+                                <FormControl variant="standard" sx={{ margin: '10px 0', marginRight: '10px', width: '240px' }}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                                    <TimePicker 
+                                        label="課堂結束時間" 
+                                        value={dayjs(`${data.change_date}T${data.change_EndTime}`)} 
+                                        timeSteps={{  minutes: 15,  }}
+                                        minTime={dayjs().set('hour', 5)}
+                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                        onChange={(time)=>{
+                                            let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            setData({
+                                                ...data,
+                                                change_EndTime: formatTime
+                                            })
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                </FormControl>
+                            </Box>
+                            
+
                             </DialogContent>
                         }
 
@@ -918,55 +970,102 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         <OpenSelectCalendar setData={setNewClass}/>
                                     }
                                 </Box>
-                                <TextField
-                                autoFocus
-                                margin="dense"
-                                id="c_date"
-                                label="日期"
-                                type="text"
-                                fullWidth
-                                variant="standard"
-                                value={data.change_date || " "}
+
+
+                               <Box sx={{ margin: '10px 0',  }}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                                    <DemoContainer components={['DatePicker']}>
+                                        <DatePicker 
+                                            label="日期" 
+                                            format="YYYY/MM/DD"
+                                            minDate={dayjs(today)}
+                                            value={dayjs( data.change_date)}
+                                            readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                            onChange={(newDate)=>{
+                                                let formatDate=`${newDate.$y}-${parseInt(newDate.$M)+1}-${newDate.$D}`;
+                                                setData({
+                                                    ...data,
+                                                    change_date: formatDate
+                                                })
+                                            }}
+                                        />
+                                    </DemoContainer>
+                                </LocalizationProvider>
+                            </Box>
                             
-                                className='input'
-                                />
-                                <TextField
-                                autoFocus
-                                margin="dense"
-                                id="room_name"
-                                label="教室"
-                                type="text"
-                                fullWidth
-                                variant="standard"
-                                value={data.change_room_name || " "}
+                            <Box>
+                                <FormControl variant="outlined" sx={{ margin: '10px 0', width: '240px' }}>
+                                    <InputLabel id="demo-simple-select-standard-label">教室</InputLabel>
+                                    <Select
+                                    labelId="demo-simple-select-standard-label"
+                                    id="demo-simple-select-standard"
+                                    value={data.change_room_name || " "}
+                                    onChange={(e)=>{
+                                        setData({
+                                            ...data,
+                                            change_room_name: e.target.value
+                                        })
+                                    }}
+                                    label="教室"
+                                    inputProps={{ readOnly: crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}}
+                                    >
+                                    <MenuItem value={201}>201</MenuItem>
+                                    <MenuItem value={202}>202</MenuItem>
+                                    <MenuItem value={203}>203</MenuItem>
+                                    <MenuItem value={204}>204</MenuItem>
+                                    <MenuItem value={205}>205</MenuItem>
+                                    <MenuItem value={206}>206</MenuItem>
+                                    <MenuItem value={"1F"}>1F</MenuItem>
+                                    <MenuItem value={"備"}>備</MenuItem>
+                                    </Select>
+                                </FormControl>
+                            </Box>
                             
-                                className='input'
-                                />
-                
-                                <TextField
-                                autoFocus
-                                margin="dense"
-                                id="StartTime"
-                                label="課堂開始時間"
-                                type="text"
-                                fullWidth
-                                variant="standard"
-                                value={data.change_StartTime || " "}
+                            <Box>
+                                <FormControl variant="standard" sx={{ margin: '10px 0', marginRight: '10px', width: '240px' }}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                                    <TimePicker 
+                                        label="課堂開始時間" 
+                                        value={dayjs(`${data.change_date}T${data.change_StartTime}`)} 
+                                        timeSteps={{  minutes: 15,  }}
+                                        minTime={dayjs().set('hour', 5)}
+                                        views={['hours', 'minutes']}
+                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                        onChange={(time)=>{
+                                            let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            setData({
+                                                ...data,
+                                                change_StartTime: formatTime
+                                            })
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                </FormControl>
+                            </Box>
                             
-                                className='input'
-                                />
-                                <TextField
-                                autoFocus
-                                margin="dense"
-                                id="EndTime"
-                                label="課堂結束時間"
-                                type="text"
-                                fullWidth
-                                variant="standard"
-                                value={data.change_EndTime || " "}
-                            
-                                className='input'
-                                />
+                            <Box>
+                                <FormControl variant="standard" sx={{ margin: '10px 0', marginRight: '10px', width: '240px' }}>
+                                <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
+                                    <TimePicker 
+                                        label="課堂結束時間" 
+                                        value={dayjs(`${data.change_date}T${data.change_EndTime}`)} 
+                                        timeSteps={{  minutes: 15,  }}
+                                        minTime={dayjs().set('hour', 5)}
+                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                        onChange={(time)=>{
+                                            let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            setData({
+                                                ...data,
+                                                change_EndTime: formatTime
+                                            })
+                                        }}
+                                    />
+                                </LocalizationProvider>
+                                </FormControl>
+                            </Box>
+
+
+
                             </DialogContent>
                         }
 
@@ -977,7 +1076,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                             {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
                                 <Box display={"flex"} gap={"5px"} alignItems={"center"}>
                                     <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
-                                    <TimeSelect setCurrentDate={setClassDate} maxDate={yesterday} />
+                                    <TimeSelect setCurrentDate={setClassDate} minDate={today} />
                                 </Box>
                             }
 
