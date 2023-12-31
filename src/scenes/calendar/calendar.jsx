@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton, MenuItem } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton, MenuItem, Autocomplete } from '@mui/material';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -101,6 +101,7 @@ function SelectDate({setScrollNum}) {
       })
     }
   }, [open])
+
   return (
     <>
       <Button sx={{backgroundColor:'#1d7dc9'}} variant="contained" startIcon={<DateRangeIcon />} onClick={() => {
@@ -333,6 +334,8 @@ const CalendarTop = () => {
   const isTest = useSelector(store => store.testReducer)
   const [studentAll, setStudentAll] = useState([]);
   const [teacherAll, setTeacherAll] = useState([]);
+  const [autocompleteStudentAll, setAutocompleteStudentAll] = useState([]);
+  const [searchStudent,setSearchStudent] =useState(null)
   const [maxWeeks, setMaxWeeks]=useState(0);
   const scrollRef = useRef(null)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
@@ -353,9 +356,39 @@ const CalendarTop = () => {
 
   }, [scrollNum])
 
+  //-- 查詢學生 --
+  useEffect(()=>{
+
+    if(currentDate!==null){
+      const prevWeekMonday=getDateOfMondayInWeek(currentDate.year , currentDate.month , currentDate.weekNumber);
+      const monday_weekNumber={
+          year: prevWeekMonday.getFullYear(),
+          month: prevWeekMonday.getMonth()+1,
+          day: prevWeekMonday.getDate(),
+          weekNumber: currentDate.weekNumber
+      }
+
+      const prevStartDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
+      const prevEndDate = formatDateBack(getWeekDates(prevStartDate)[6]);
+
+      //-- 送到redux calendarDateAction --
+      dispatch(calendarDateAction(monday_weekNumber));
+
+      //-- 獲取期間課表資料送到redux calendarTableDataAction --
+      calendarApi.getAll(prevStartDate, prevEndDate).then((data) => {
+        dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+      })
+    }
+    
+  }, [searchStudent])
+
   useEffect(() => {
     studentApi.getAll().then((data) => {
       setStudentAll(data.data);
+      setAutocompleteStudentAll({
+          options: data.data,
+          getOptionLabel: (option) => option.name,
+      });
     });
     teacherApi.getAll().then((data) => {
       setTeacherAll(data.data);
@@ -407,7 +440,7 @@ const CalendarTop = () => {
         const prevStartDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
         const prevEndDate = formatDateBack(getWeekDates(prevStartDate)[6]);
 
-         //-- 送到redux calendarDateAction --
+        //-- 送到redux calendarDateAction --
         dispatch(calendarDateAction(monday_weekNumber));
 
         //-- 獲取期間課表資料送到redux calendarTableDataAction --
@@ -595,14 +628,32 @@ const CalendarTop = () => {
                 {/* 新增異動單 */}
                 {adminData?.inform?.position_type!=='3' ? <ChangeSheet crud={"insert"} setListData={setListData}/> : ''}
 
-                {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll} />}
+                {authorityRange.p_update&& <LessonPopUp type={"insert"} studentAll={studentAll} teacherAll={teacherAll}  />}
               </Box>
               
               
             </Box>
           </Box>
-          {teacherAll && <TeacherColor data={teacherAll}/>}
-          <Calendar ref={scrollRef} tableData={tableData} currentDate={currentDate} studentAll={studentAll} teacherAll={teacherAll} />
+          <Box sx={{display:'flex', justifyContent:'space-between', flexDirection:{lg:'row', xs:'column'}, gap:{xs:'20px'}, paddingTop:'15px'}}>
+            {teacherAll && <TeacherColor data={teacherAll}/>}
+            <Box>
+               <Autocomplete
+                {...autocompleteStudentAll}
+                id="controlled-demo"
+                // disableClearable
+                onChange={(event, newValue) => {
+
+                  setSearchStudent(newValue===null ? null: newValue.Tb_index);
+                }}
+                renderInput={(params) => (
+                    <TextField {...params} label="查詢學生" variant="standard" />
+                )}
+                sx={{width:'200px'}}
+                />
+            </Box>
+          </Box>
+          
+          <Calendar ref={scrollRef} tableData={tableData} currentDate={currentDate} studentAll={studentAll} teacherAll={teacherAll} searchStudent={searchStudent} />
         </>
         : <IsLoading />
       }
@@ -619,7 +670,7 @@ const CalendarTop = () => {
  * @param studentAll 所有學生
  * @param teacherAll 所有老師
  */
-const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll }, ref) => {
+const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll, searchStudent=null }, ref) => {
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -829,7 +880,7 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll },
                                     }
                                   }
                                   return (
-                                    <LessonUnit teacherAll={teacherAll} studentAll={studentAll} count={count} uniqueId={uniqueId} data={tableData?.[formatDateBack(date)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
+                                    <LessonUnit teacherAll={teacherAll} studentAll={studentAll} count={count} uniqueId={uniqueId} data={tableData?.[formatDateBack(date)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} searchStudent={searchStudent} />
                                   )
                                 })
                               }
@@ -860,7 +911,7 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll },
  * @param studentAll 所有老師
  * @returns 顯示課程在日曆上
  */
-const LessonUnit = ({ data, count, teacherAll, studentAll }) => {
+const LessonUnit = ({ data, count, teacherAll, studentAll, searchStudent=null }) => {
   let gap;
   let bg_color;
   if (data) {
@@ -874,7 +925,7 @@ const LessonUnit = ({ data, count, teacherAll, studentAll }) => {
 
   return (
     <Box key={data && data.Tb_index} flexBasis="25%" width={"100%"}  >
-      {(data && count > 0) ? <LessonPopUp unitData={data} teacherAll={teacherAll} studentAll={studentAll} id={data.Tb_index} name={data.c_name} gap={gap} bg={bg_color} type={"update"} /> : null}
+      {(data && count > 0) ? <LessonPopUp unitData={data} teacherAll={teacherAll} studentAll={studentAll} id={data.Tb_index} name={data.c_name} gap={gap} bg={bg_color} type={"update"} searchStudent={searchStudent} /> : null}
     </Box>
   )
 }
@@ -894,7 +945,7 @@ const LessonUnit = ({ data, count, teacherAll, studentAll }) => {
  * @param studentAll 所有老師
  * @returns 
  */
-const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll }) => {
+const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll, searchStudent=null }) => {
   const [open, setOpen] = useState(false)
   const [data, setData] = useState({})
   const [currentDate, setCurrentDate] = useState(null)
@@ -1079,8 +1130,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
 
   if (bg || type === "insert") {
 
-    
-
     let isSign=false;
     let isAskForLeave=false;
     let isReSignin_time=false;
@@ -1122,18 +1171,23 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
               <p style={{margin:0, fontSize:'15px'}}>上課時間：{unitData.StartTime}</p>
               <p style={{margin:0, fontSize:'15px'}}>下課時間：{unitData.EndTime}</p>
             </React.Fragment>
-          } arrow placement="top">
+          } arrow placement="top" >
 
-            
+                {/* 課程底色方塊 */}
                 <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} onClick={(e) => {
                   e.stopPropagation()
-                  calendarApi.getOne(id, (data) => {
-                    setData(data.data.data[0])
-                    setOpen(true)
-                  })
+                    // console.log(unitData);
+                    calendarApi.getOne(id, (data) => {
+                      if(userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && data.data.data[0].teacher_id===userData.inform.Tb_index)){
+                        setData(data.data.data[0])
+                        setOpen(true)
+                      }
+                    })
                 }}>
                   
-                      <Chip label={isSign ? '未簽' : isAskForLeave ? '請假': isReSignin_time ? '補簽' : ''} 
+                     {
+                      userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && unitData.teacher_id===userData.inform.Tb_index) ?
+                        <Chip label={isSign ? '未簽' : isAskForLeave ? '請假': isReSignin_time ? '補簽' : ''} 
                             size="small" 
                             sx={{
                               position:'absolute', 
@@ -1143,20 +1197,34 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll 
                               color: '#fff',
                               display: isSign || isAskForLeave || isReSignin_time ? 'inline-flex':'none'
                               }}/>
+                      : ''
+                     }
 
+                     <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
+                          { 
+                            // 課程顯示學生名
+                            unitData.student.map((item)=>{
+                               //-- 判斷是否查詢學生 --
+                               if(searchStudent===null){
+                                if(userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && unitData.teacher_id===userData.inform.Tb_index)){
+                                    return (
+                                      <p style={{margin: 0,}}>{item.name}</p>
+                                    )
+                                }
+                               }
+                               else{
+                                 if(searchStudent===item.Tb_index){
+                                    return (
+                                      <p style={{margin: 0,}}>{item.name}</p>
+                                    )
+                                 }
+                               }
+                               
+                            })
+                          }
+                    </div>
+                      
 
-                      <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
-                        { 
-                          // 課程顯示學生名
-                          unitData.student.map((item)=>{
-                              return (
-                                <p style={{margin: 0,}}>{item.name}</p>
-                              )
-                          })
-                        }
-                      </div>
-
- 
                 </Box> 
           </Tooltip>
           :
