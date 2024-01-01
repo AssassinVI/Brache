@@ -102,7 +102,7 @@ function CrudTemplateData({ id, type, sx, handleButtonClick }) {
 
     return (
         <>
-            <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", ...sx }} onClick={(e) => {
+            <Button startIcon={<EditIcon />} variant="contained" sx={{ backgroundColor: "#6DC4C5", ...sx }} onClick={(e) => {
                 e.stopPropagation()
                 if (type === "update") {
                     templateApi.get_course_template_list_one(id, (data) => {
@@ -114,10 +114,7 @@ function CrudTemplateData({ id, type, sx, handleButtonClick }) {
                     setData(true)
                     setOpen(true);
                 }
-
-
             }}>
-                <EditIcon />
                 {type === "update" ? "修改" : "新增"}
             </Button>
             <Dialog open={open} onClose={handleCancel} sx={{
@@ -196,6 +193,7 @@ function CrudTemplateData({ id, type, sx, handleButtonClick }) {
     );
 }
 
+//-- 編輯公版課表 --
 function TemplateReNew({ id}) {
     const [open, setOpen] = useState(false);
     const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
@@ -206,13 +204,11 @@ function TemplateReNew({ id}) {
 
     return (
         <>
-            <Button style={{ display: "flex", gap: "6px" }} variant="contained" sx={{ backgroundColor: "#a87b79", width: "150px" }} onClick={(e) => {
+            <Button startIcon={<DateRangeIcon />}  variant="contained" sx={{ backgroundColor: "#a87b79", }} onClick={(e) => {
                 e.stopPropagation()
-
                 setOpen(true);
-
-            }}>    <DateRangeIcon />
-                公版課表更改
+            }}>    
+                編輯公版課表
             </Button>
             <Dialog open={open}  sx={{
                 "& .MuiPaper-root": { padding: " 10px 0" },
@@ -248,7 +244,7 @@ function TemplateReNew({ id}) {
     );
 }
 
-
+//-- 列表 --
 function TemplateList({ templateData, setTemplateData, handleButtonClick,authorityRange }) {
     const theme = useTheme();
     const colors = tokens(theme.palette.mode);
@@ -306,37 +302,28 @@ function TemplateList({ templateData, setTemplateData, handleButtonClick,authori
                         {/* {authorityRange.p_update && <UpdatedTeacherData id={rows.row.Tb_index}  sx={{ width: "66px" }} />} */}
                         <TemplateReNew id={rows.row.Tb_index}/>
                         {authorityRange.p_update &&
-                           <CrudTemplateData id={rows.row.Tb_index} sx={{ width: "80px" }} type={"update"} handleButtonClick={handleButtonClick} />
+                           <CrudTemplateData id={rows.row.Tb_index}  type={"update"} handleButtonClick={handleButtonClick} />
                         }
                         {authorityRange.p_delete &&
-                          <Box
-                          width="fit-content"
-                          p="6px"
-                          display="flex"
-                          borderRadius="4px"
-                          backgroundColor="#F8AC59"
-                          justifyContent="center"
-                          alignItems="center"
-                          sx={{ cursor: "pointer" }}
-                          onClick={() => {
-                              if (window.confirm(`確定要刪除使用者:"${rows.row.ct_title}"嗎?`)) {
-                                  templateApi.delete_course_list(rows.row.Tb_index, (data) => {
-                                      if (data.data.success) {
-                                          handleButtonClick()
-                                          dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.ct_title}`))
-                                      } else {
-                                          dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.ct_title}`, "error"))
-                                      }
-                                  })
-                              }
-                          }}
-                      >
-                          <DeleteIcon sx={{ color: "#fff" }} />
-                          <Typography color={"#fff"} sx={{ ml: "5px" }}>
-                              刪除
-                          </Typography>
-
-                      </Box>
+                          <Button 
+                            sx={{backgroundColor:'#F8AC59'}}
+                            startIcon={<DeleteIcon/>} 
+                            variant="contained" 
+                            onClick={() => {
+                                if (window.confirm(`確定要刪除使用者:"${rows.row.ct_title}"嗎?`)) {
+                                    templateApi.delete_course_list(rows.row.Tb_index, (data) => {
+                                        if (data.data.success) {
+                                            handleButtonClick()
+                                            dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.ct_title}`))
+                                        } else {
+                                            dispatch(snackBarOpenAction(true, `${data.data.msg}-${rows.row.ct_title}`, "error"))
+                                        }
+                                    })
+                                }
+                            }}
+                          >
+                            刪除
+                          </Button>
                         }
                       
                     </Box>

@@ -1,23 +1,25 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
+import { Box, Button, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, MenuItem, TextField, Typography, useMediaQuery, Tooltip, IconButton } from '@mui/material';
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
-import { getWeekInfoForDate, dataTransformTable, dataTransformTableTemplate, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor } from './getMonday';
+import { getWeekInfoForDate, dataTransformTable, dataTransformTableTemplate, addMinutesToTime, calculateDifferenceIn15Minutes, getContrastColor, formatDateBack, getWeekDates } from './getMonday';
 import DateRangeIcon from '@mui/icons-material/DateRange';
+import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import * as templateApi from "../../axios-api/calendarTemplateData"
 import MultiSelect from '../../lib/multiSelect';
 import * as studentApi from "../../axios-api/studentData"
 import * as teacherApi from "../../axios-api/teacherData"
 import { IsLoading } from "../../components/loading";
-import MenuItem from '@mui/material/MenuItem';
-import { useDispatch } from 'react-redux';
-import { calendarDateAction, snackBarOpenAction } from '../../redux/action';
+import { useDispatch, useSelector } from 'react-redux';
+import { calendarDateAction, calendarTableDataAction, snackBarOpenAction } from '../../redux/action';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SelectTemplate from './selectTemplate';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
+import { get_course_template_list } from '../../axios-api/calendarTemplateData';
+import * as calendarApi from "../../axios-api/calendarData"
 
 function TeacherColor ({data}){
   return(
@@ -36,6 +38,153 @@ function TeacherColor ({data}){
   )
 }
 
+//-- 匯入課表按鈕 --
+function ImportTemplate() {
+  const [data, setData] = useState({})
+  const [open, setOpen] = useState(false)
+  const [templateList, setTemplateList] = useState(null)
+  const [copyNum, setCopyNum] = useState(1)
+  const [ct_title, setCtTitle] = useState(null)
+  const currentDate = useSelector(state => state.calendarReducer.currentDate)
+  const dispatch = useDispatch(null)
+  const handleCancel = () => {
+    setCtTitle(null);
+    setOpen(false)
+    setCopyNum(1);
+  }
+  const handleSubmit = () => {
+    const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day;
+    const endDate = formatDateBack(getWeekDates(startDate)[6]);
+
+    if(ct_title===null){
+      dispatch(snackBarOpenAction(true, '請選擇公版課表', 'error'));
+    }
+    else if (window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週" 的課表中\n匯入'${ct_title}'公版課表\n並複製${copyNum-1}週`)) {
+
+      calendarApi.import_course({
+       // StartDate: `${firstMonday.getFullYear()}-${firstMonday.getMonth()+1}-${firstMonday.getDate()}`,
+        StartDate: startDate,
+        EndDate: endDate,
+        ct_list_id: data.Tb_index,
+        copyNum:copyNum
+      }, (res) => {
+        // console.log(res);
+        const status = res.data.success ? "success" : "error"
+        dispatch(snackBarOpenAction(true, res.data.msg, status))
+        if (res.data.success) {
+          calendarApi.getAll(startDate, endDate).then((data) => {
+            dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+          })
+        }
+      })
+      handleCancel()
+    }
+
+  }
+
+  //-- 刪除匯入課表 --
+  const deletTemplateClass=()=>{
+    const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day;
+    const endDate = formatDateBack(getWeekDates(startDate)[6]);
+
+    if(ct_title===null){
+      dispatch(snackBarOpenAction(true, '請選擇公版課表', 'error'));
+    }
+    else if(window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週" 刪除匯入的'${ct_title}'公版課表\n共刪除${copyNum}週`)){
+      calendarApi.delete_template_course({
+        StartDate: startDate,
+        EndDate: endDate,
+        ct_list_id: data.Tb_index,
+        copyNum:copyNum
+      }, (res)=>{
+          const status = res.data.success ? "success" : "error"
+          dispatch(snackBarOpenAction(true, res.data.msg, status))
+          if (res.data.success) {
+            calendarApi.getAll(startDate, endDate).then((data) => {
+              dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+            })
+          }
+      });
+      handleCancel()
+    }
+    
+    
+  };
+
+
+  useEffect(() => {
+    get_course_template_list().then((data) => {
+      setTemplateList(data.data)
+    })
+  }, [])
+
+
+
+  return (
+    <>
+      <Button startIcon={<ContentCopyIcon/>} variant='contained' color={'success'} onClick={() => {
+        setOpen(true)
+      }}>
+        複製公版課表
+      </Button>
+      <Dialog open={open} onClose={handleCancel}>
+        <Box display={"flex"} justifyContent={"center"} alignItems={"center"} position={"relative"} zIndex={10} width={"100%"} height={"100%"} left={0} top={0}
+          onClick={handleCancel}
+        >
+          <Box width={"fit-content"} p={"25px"}
+            sx={{
+              backgroundColor: "#fff",
+              boxShadow: "0 0 10px 1px rgba(0,0,0,0.3)",
+              width:'350px'
+            }}
+            onClick={(e) => {
+              e.stopPropagation()
+            }}
+          >
+            <DialogTitle sx={{ fontSize: "20px", paddingBottom: "2px" }}>{"複製課表匯入"}</DialogTitle>
+            <DialogTitle sx={{ fontSize: "12px", padding: "0 24px 10px 24px", color: "red" }}>{"複製前請先清空公版課表"}</DialogTitle>
+            <DialogContent sx={{ width: "100%", padding: "20px 24px !important" }} >
+              {templateList &&
+                <Box>
+                  <FormControl fullWidth >
+                    <InputLabel id="demo-simple-select-label">公版課表</InputLabel>
+                    <Select onChange={(e) => {
+                      const selectedTbIndex = e.target.value;
+                      const selectedTemplate = templateList.find(item => item.Tb_index === selectedTbIndex);
+                      setCtTitle(selectedTemplate.ct_title)
+                      setData({
+                        ...data,
+                        Tb_index: e.target.value,
+                      })
+                    }}
+                      labelId="demo-simple-select-label"
+                      id="demo-simple-select"
+                      label="公版課表"
+                      sx={{ width: "80%", maxWidth: "300px", "& .MuiButtonBase-root": { padding: "0 16px" } }}>
+                      {templateList.map((item, i) => (
+                        <MenuItem key={item.Tb_index} value={item.Tb_index} >
+                          {item.ct_title}
+                        </MenuItem>
+                      ))}
+                    </Select>
+                  </FormControl>
+                 
+                </Box>
+                
+              }
+            </DialogContent>
+            <Box display={"flex"} justifyContent={"flex-end"} width={"94%"}>
+              <Button color="error" sx={{margin:'0 5px'}} onClick={deletTemplateClass}>刪除複製課表</Button>
+              <Button variant="contained" color="success" sx={{margin:'0 5px'}} onClick={handleSubmit}>複製課表</Button>
+              <Button sx={{margin:'0 5px'}} onClick={handleCancel}>取消</Button>
+            </Box>
+          </Box>
+        </Box>
+      </Dialog>
+    </>
+  );
+}
+
 const CalendarTop = ({ id }) => {
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -48,6 +197,8 @@ const CalendarTop = ({ id }) => {
   const [MaxWeekNum, setMaxWeekNum] = useState(1);
   //-- 所有週課程資料 --
   const [allWeekTableData, setAllWeekTableData] = useState([]);
+
+
   const scrollRef = useRef(null)
   let scrollNum = 0;
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
@@ -65,35 +216,24 @@ const CalendarTop = ({ id }) => {
     const initDate = getWeekInfoForDate(new Date())
     dispatch(calendarDateAction(initDate))
     templateApi.get_course_template(id, (data) => {
-      
-
       setAllWeekTableData(dataTransformTableTemplate(data.data.data));
-      
     })
+
   }, [])
+
 
   useEffect(()=>{
      if(allWeekTableData!==null){
       
-      console.log(allWeekTableData);
+      // console.log(allWeekTableData);
       if(allWeekTableData[weekNum]===undefined){
         setTableData({});
       }
       else{
         setTableData(allWeekTableData[weekNum]);
       }
-      
      }
   }, [allWeekTableData])
-
-  // useEffect(()=>{
-  //   if(allWeekTableData!==null){
-      
-  //     setTableData(allWeekTableData[weekNum]);
-
-  //     console.log(tableData);
-  //    }
-  // }, [tableData])
 
 
    //權限
@@ -111,36 +251,6 @@ const CalendarTop = ({ id }) => {
            })
        }
    }, [accessData])
-
-
-   //-- 上一週 --
-   function prevWeek() {
-    if(weekNum!==1){
-        let newWeek=weekNum-1;
-        setWeekNum(newWeek);
-        if(allWeekTableData[newWeek]===undefined){
-          let newAllWeekTableData={};
-          newAllWeekTableData[newWeek]={};
-          setAllWeekTableData({...allWeekTableData, ...newAllWeekTableData});
-        }
-        setTableData(allWeekTableData[newWeek]);
-      }
-    }
-
-   //-- 下一週 --
-   function nextWeek() {
-    if(weekNum!==MaxWeekNum){
-        let newWeek=weekNum+1;
-        setWeekNum(newWeek);
-        if(allWeekTableData[newWeek]===undefined){
-          let newAllWeekTableData={};
-          newAllWeekTableData[newWeek]={};
-          setAllWeekTableData({...allWeekTableData, ...newAllWeekTableData});
-        }
-        setTableData(allWeekTableData[newWeek]);
-      }
-    }
-
 
 
   return (
@@ -180,11 +290,15 @@ const CalendarTop = ({ id }) => {
         <>
           <Box className='title' display={"flex"} width={"100%"} justifyContent={"space-between"} gap={"15px"} alignItems={"center"} flexWrap={"wrap"}>
 
-            {
-                // 老師顏色列表
-                teacherAll && <TeacherColor data={teacherAll}/>
-            }
-            <Box className='selectWeek' sx={{display:"flex", alignItems: "center", gap: "10px"}}>
+            <Box flex={'1 1 50%'}>
+              {
+                  // 老師顏色列表
+                  teacherAll && <TeacherColor data={teacherAll}/>
+              }
+            </Box>
+            
+            
+            {/* <Box className='selectWeek' sx={{display:"flex", alignItems: "center", gap: "10px"}}>
               <IconButton onClick={(e)=>{prevWeek();}} aria-label="上一週" title='上一週' sx={{ 
                 opacity: weekNum===1 ? 0: 1 ,
                 visibility: weekNum===1 ? 'hidden': 'visible' ,
@@ -192,17 +306,21 @@ const CalendarTop = ({ id }) => {
                 color:'#fff', 
                 transform:'rotate(180deg)', 
                 "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
-               {/* <h2>第{weekNum}週</h2> */}
                <IconButton onClick={(e)=>{nextWeek();}} aria-label="下一週" title='下一週' sx={{
                 opacity: weekNum===MaxWeekNum ? 0: 1 ,
                 visibility: weekNum===MaxWeekNum ? 'hidden': 'visible' ,
                 backgroundColor:'#1d7dc9', 
                 color:'#fff', 
                 "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
-            </Box>
-            <Box className='tool_box' display={"flex"} justifyContent={"space-between"} gap={"15px"}>
+            </Box> */}
+            <Box className='tool_box' display={"flex"} justifyContent={"space-between"} alignItems={'center'} textAlign={'end'} gap={"25px"} flex={'1 1 30%'}>
+              <Box flex={'1 1 20%'}>
+                {/* 複製公版課表 */}
+                <ImportTemplate/>
+              </Box>
               <Box className="scroll-button" display={isMobile ? "none" : "flex"} justifyContent={"space-between"} alignItems={"center"} sx={
                 {
+                  flex:'1 1',
                   gap: "10px",
                   pointerEvents: "none",
                   "& > div": {
@@ -253,12 +371,14 @@ const CalendarTop = ({ id }) => {
                   <ArrowForwardIcon />
                 </div>
               </Box>
-              { 
-                // 新增按鈕
-                authorityRange.p_insert &&  <LessonPopUp type={"insert"} weekNum={weekNum} ct_list_id={id} studentAll={studentAll} teacherAll={teacherAll} tableData={tableData} setTableData={setTableData} setAllWeekTableData={setAllWeekTableData} authorityRange={authorityRange} />
-              }
+              <Box sx={{flex:'1 1'}}>
+                { 
+                  // 新增按鈕
+                  authorityRange.p_insert &&  <LessonPopUp type={"insert"} weekNum={weekNum} ct_list_id={id} studentAll={studentAll} teacherAll={teacherAll} tableData={tableData} setTableData={setTableData} setAllWeekTableData={setAllWeekTableData} authorityRange={authorityRange} />
+                }
+              </Box>
+              
             </Box>
-
           </Box>
           
           <Calendar ref={scrollRef} weekNum={weekNum} tableData={tableData} studentAll={studentAll} teacherAll={teacherAll} setTableData={setTableData} setAllWeekTableData={setAllWeekTableData} ct_list_id={id} authorityRange={authorityRange}/>
@@ -663,11 +783,10 @@ const LessonPopUp = ({unitData, weekNum, id, name, gap, bg, type, teacherAll, st
             </Box> 
           </Tooltip>
           :
-          <Button variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "100px", gap: "5px" }} onClick={(e) => {
+          <Button startIcon={<EditIcon />} variant="contained" sx={{ backgroundColor: "#6DC4C5", width: "100px", gap: "5px" }} onClick={(e) => {
             e.stopPropagation()
             setOpen(true)
           }}>
-            <EditIcon />
             新增
           </Button >
         }
@@ -867,7 +986,7 @@ const SelectTemplateContainer = ({ tableData, data, setData, initDay = "一" }) 
       </Box>
       <Dialog open={open} onClose={handleCancel} sx={{
         "& .MuiDialog-container > .MuiPaper-root": {
-          padding: isMobile ? "5px" : "40px 40px 5px 40px",
+          padding: isMobile ? "5px" : "0px 40px 0px 40px",
           maxWidth: isMobile ? "100%" : "700px",
           margin: isMobile ? "0" : "32px",
           width: isMobile ? "100%" : "auto"
