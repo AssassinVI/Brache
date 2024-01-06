@@ -203,3 +203,42 @@ export const delete_course = (id, func) => {
         console.error(error);
     }
 };
+
+//-- 複製公版課表 --
+export const copy_template = (copy_id, input_id, func) => {
+    try {
+        axiosInstance({
+            method: "POST",
+            url: templateApi,
+            data: {
+                copy_id: copy_id,
+                input_id: input_id,
+                type: "copy_template",
+            }
+        }).then((res) => {
+            func(res)
+        })
+
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+//-- 刪除複製公版課表 --
+export const delete_copy_template = (input_id, func) => {
+    try {
+        axiosInstance({
+            method: "POST",
+            url: templateApi,
+            data: {
+                input_id: input_id,
+                type: "delete_copy_template",
+            }
+        }).then((res) => {
+            func(res)
+        })
+
+    } catch (error) {
+        console.error(error);
+    }
+};

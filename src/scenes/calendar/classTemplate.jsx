@@ -18,7 +18,6 @@ import EditIcon from '@mui/icons-material/Edit';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import SelectTemplate from './selectTemplate';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
-import { get_course_template_list } from '../../axios-api/calendarTemplateData';
 import * as calendarApi from "../../axios-api/calendarData"
 
 function TeacherColor ({data}){
@@ -39,69 +38,60 @@ function TeacherColor ({data}){
 }
 
 //-- 匯入課表按鈕 --
-function ImportTemplate() {
+function ImportTemplate({id, setAllWeekTableData}) {
+
   const [data, setData] = useState({})
   const [open, setOpen] = useState(false)
   const [templateList, setTemplateList] = useState(null)
+  const [templateOne, setTemplateOne] = useState(null)
   const [copyNum, setCopyNum] = useState(1)
   const [ct_title, setCtTitle] = useState(null)
   const currentDate = useSelector(state => state.calendarReducer.currentDate)
   const dispatch = useDispatch(null)
+
   const handleCancel = () => {
     setCtTitle(null);
     setOpen(false)
     setCopyNum(1);
   }
+
+
   const handleSubmit = () => {
-    const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day;
-    const endDate = formatDateBack(getWeekDates(startDate)[6]);
 
     if(ct_title===null){
       dispatch(snackBarOpenAction(true, '請選擇公版課表', 'error'));
     }
-    else if (window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週" 的課表中\n匯入'${ct_title}'公版課表\n並複製${copyNum-1}週`)) {
-
-      calendarApi.import_course({
-       // StartDate: `${firstMonday.getFullYear()}-${firstMonday.getMonth()+1}-${firstMonday.getDate()}`,
-        StartDate: startDate,
-        EndDate: endDate,
-        ct_list_id: data.Tb_index,
-        copyNum:copyNum
-      }, (res) => {
+    else if (window.confirm(`是否複製 "${ct_title}" 的課表\n匯入"${templateOne.ct_title}"公版課表中?`)) {
+      const copy_id=data.Tb_index
+      const input_id=templateOne.Tb_index
+      templateApi.copy_template(copy_id, input_id, (res) => {
         // console.log(res);
         const status = res.data.success ? "success" : "error"
         dispatch(snackBarOpenAction(true, res.data.msg, status))
+
         if (res.data.success) {
-          calendarApi.getAll(startDate, endDate).then((data) => {
-            dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+          templateApi.get_course_template(id, (data) => {
+            setAllWeekTableData(dataTransformTableTemplate(data.data.data));
           })
         }
       })
       handleCancel()
     }
-
   }
 
-  //-- 刪除匯入課表 --
-  const deletTemplateClass=()=>{
-    const startDate = currentDate.year + "-" + currentDate.month + "-" + currentDate.day;
-    const endDate = formatDateBack(getWeekDates(startDate)[6]);
 
-    if(ct_title===null){
-      dispatch(snackBarOpenAction(true, '請選擇公版課表', 'error'));
-    }
-    else if(window.confirm(`是否要在 "${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週" 刪除匯入的'${ct_title}'公版課表\n共刪除${copyNum}週`)){
-      calendarApi.delete_template_course({
-        StartDate: startDate,
-        EndDate: endDate,
-        ct_list_id: data.Tb_index,
-        copyNum:copyNum
-      }, (res)=>{
+  //-- 刪除複製課表 --
+  const deletTemplateClass=()=>{
+
+    if(window.confirm(`是否刪除複製的公版課表?`)){
+      const input_id=templateOne.Tb_index
+      templateApi.delete_copy_template(input_id, (res)=>{
           const status = res.data.success ? "success" : "error"
           dispatch(snackBarOpenAction(true, res.data.msg, status))
+
           if (res.data.success) {
-            calendarApi.getAll(startDate, endDate).then((data) => {
-              dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+            templateApi.get_course_template(id, (data) => {
+              setAllWeekTableData(dataTransformTableTemplate(data.data.data));
             })
           }
       });
@@ -113,11 +103,15 @@ function ImportTemplate() {
 
 
   useEffect(() => {
-    get_course_template_list().then((data) => {
+    templateApi.get_course_template_list().then((data) => {
       setTemplateList(data.data)
     })
-  }, [])
 
+    templateApi.get_course_template_list_one(id, (data)=>{
+      setTemplateOne(data.data.data[0])
+    })
+
+  }, [])
 
 
   return (
@@ -215,6 +209,7 @@ const CalendarTop = ({ id }) => {
   useEffect(() => {
     const initDate = getWeekInfoForDate(new Date())
     dispatch(calendarDateAction(initDate))
+
     templateApi.get_course_template(id, (data) => {
       setAllWeekTableData(dataTransformTableTemplate(data.data.data));
     })
@@ -233,6 +228,7 @@ const CalendarTop = ({ id }) => {
         setTableData(allWeekTableData[weekNum]);
       }
      }
+     
   }, [allWeekTableData])
 
 
@@ -316,7 +312,7 @@ const CalendarTop = ({ id }) => {
             <Box className='tool_box' display={"flex"} justifyContent={"space-between"} alignItems={'center'} textAlign={'end'} gap={"25px"} flex={'1 1 30%'}>
               <Box flex={'1 1 20%'}>
                 {/* 複製公版課表 */}
-                <ImportTemplate/>
+                <ImportTemplate id={id} setAllWeekTableData={setAllWeekTableData} />
               </Box>
               <Box className="scroll-button" display={isMobile ? "none" : "flex"} justifyContent={"space-between"} alignItems={"center"} sx={
                 {
