@@ -851,6 +851,7 @@ const AdminManagement = () => {
     const [adminType, setAdminType]=useState('all')
     //-- 關鍵字暫存所有資料用 --
     const [keywordAdminData, setKeywordAdminData] = useState(null)
+    const isTest = useSelector(store => store.testReducer)
 
 
     useEffect(() => {
@@ -874,8 +875,8 @@ const AdminManagement = () => {
         console.log(authorityData);
     }, [authorityData])
 
+    //-- 編輯按鈕 --
     const handleButtonClick = () => {
-
         if(adminType==='all'){
             adminApi.getAll().then((res) => {
                 setAdminData(res.data)
@@ -887,7 +888,6 @@ const AdminManagement = () => {
                 setKeywordAdminData(res.data);
             });
         }
-        
     };
 
     //-- 權限查詢 --
@@ -898,6 +898,19 @@ const AdminManagement = () => {
             setKeywordAdminData(res.data);
         });
     };
+
+    //-- 學生資料匯出Excel --
+    const ouputStudentExcel=()=>{
+        const testUrl= isTest.test ? `&test=test` : ``;
+        window.open(`https://bratsche.web-board.tw/ajax/outputStudentExcel.php?admin_per=group2023071815335388${testUrl}`, '_blank');
+    }
+
+    //-- 老師資料匯出Excel --
+    const ouputTeacherExcel=()=>{
+        const testUrl= isTest.test ? `&test=test` : ``;
+        window.open(`https://bratsche.web-board.tw/ajax/outputTeacherExcel.php?admin_per=group2023071815332755${testUrl}`, '_blank');
+    }
+
 
     const dispatch = useDispatch(null)
     const columns = [
@@ -999,7 +1012,14 @@ const AdminManagement = () => {
             <Box m="20px auto 0" width={"95%"} display={"flex"} flexDirection={"column"} >
                 <Header title="管理者管理" subtitle="本頁面條列所有使用者的權限以及基本資料" />
 
-                <Box display={'flex'} justifyContent={'flex-end'}>
+                <Box display={'flex'} justifyContent={'flex-end'} alignItems={'center'} gap={'10px'}>
+
+                    <Box>
+                      <Button variant="contained"  onClick={()=>{ouputStudentExcel()}}  sx={{backgroundColor: "#207c23",}}> 學生資料匯出Excel檔</Button>
+                    </Box>
+                    <Box>
+                      <Button variant="contained"  onClick={()=>{ouputTeacherExcel()}}  sx={{backgroundColor: "#207c23",}}> 老師資料匯出Excel檔</Button>
+                    </Box>
 
                     {/* 關鍵字查詢 */}
                     <KeywordTextField keywordAdminData={keywordAdminData} setAdminData={setAdminData} searchAttr={['name']} />
@@ -1021,10 +1041,9 @@ const AdminManagement = () => {
                             })}
                         </Select>
                     </FormControl>
-
-                    {authorityRange.p_insert && <UpdatedAdminData type={"insert"} handleButtonClick={handleButtonClick} authorityData={authorityData} sx={{ width: "85px", alignSelf: "flex-end" }} />}
-
-                    
+                    <Box>
+                        {authorityRange.p_insert && <UpdatedAdminData type={"insert"} handleButtonClick={handleButtonClick} authorityData={authorityData} sx={{ width: "85px", alignSelf: "flex-end" }} />}
+                    </Box>
                 </Box>
                 
                 
