@@ -20,6 +20,8 @@ import AdminManagement from "./scenes/admin";
 import Login from "./scenes/login";
 import Qrcode from "./scenes/qrcode";
 import Post from "./scenes/qrcode/post";
+import MailSignin from "./scenes/mailSignin";
+import MailPost from "./scenes/mailSignin/post";
 import StudentDataList from "./scenes/student";
 import TeacherDataList from "./scenes/teacher";
 import ClassroomCalendar from "./scenes/calendar";
@@ -56,10 +58,16 @@ function App() {
             <CircularProgress color="inherit" />
         </div>
 
+        
         <Routes>
           <Route path="/" element={<Login />} />
+          {/* Qrcode簽到 */}
           <Route path="/qrcode" element={<Qrcode />} >
             <Route path=":Tb_index" element={<Post />} />
+          </Route>
+          {/* 信箱簽到 */}
+          <Route path="/mailSignin" element={<MailSignin />} >
+            <Route path=":Tb_index" element={<MailPost />} />
           </Route>
           <Route path="*" element={<Main setIsSidebar={setIsSidebar} isSidebar={isSidebar} />} />
         </Routes>
