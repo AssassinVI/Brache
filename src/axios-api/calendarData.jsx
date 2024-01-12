@@ -42,14 +42,15 @@ export const getAll = async (start, end) => {
     }
 };
 
-export const getOne = (id, func) => {
+export const getOne = (id, func, is_c_state=true) => {
     try {
         axiosInstance({
             method: "POST",
             url: calendarApi,
             data: {
                 type: "get_course_one",
-                Tb_index: id
+                Tb_index: id,
+                is_c_state: is_c_state
             }
         }).then((data) => {
             func(data)

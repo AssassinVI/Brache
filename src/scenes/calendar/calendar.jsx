@@ -1187,12 +1187,14 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                   
                      {
                       userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && unitData.teacher_id===userData.inform.Tb_index) ?
-                        <Chip label={isSign ? '未簽' : isAskForLeave ? '請假': isReSignin_time ? '補簽' : ''} 
+                        <Chip label={isSign ? '未' : isAskForLeave ? '假': isReSignin_time ? '補' : ''} 
                             size="small" 
                             sx={{
                               position:'absolute', 
                               top:'-10px', 
                               right:'-3px', 
+                              fontSize:'11px',
+                              padding:'6px 0',
                               backgroundColor: isSign ? '#cb271b' : isAskForLeave ? '#c69e0e' : '#19851d',
                               color: '#fff',
                               display: isSign || isAskForLeave || isReSignin_time ? 'inline-flex':'none'
@@ -1204,15 +1206,23 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                           { 
                             // 課程顯示學生名
                             unitData.student.map((item)=>{
-                               //-- 判斷是否查詢學生 --
+                               
                                if(searchStudent===null){
+                                //-- 老師自己的課顯示學生名 --
                                 if(userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && unitData.teacher_id===userData.inform.Tb_index)){
                                     return (
                                       <p style={{margin: 0,}}>{item.name}</p>
                                     )
                                 }
+                                //-- 顯示課程名 --
+                                else{
+                                  return (
+                                    <p style={{margin: 0, opacity:0.4}}>{name}</p>
+                                  )
+                                }
                                }
                                else{
+                                 //-- 查詢學生 --
                                  if(searchStudent===item.Tb_index){
                                     return (
                                       <p style={{margin: 0,}}>{item.name}</p>

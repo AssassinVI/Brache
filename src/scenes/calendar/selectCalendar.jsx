@@ -2,18 +2,33 @@ import React, { useEffect, useRef, useState } from 'react'
 import { addMinutesToTime, calculateDifferenceIn15Minutes, convertToChineseNumber, formatDateBack, getContrastColor } from './getMonday';
 import { Box, Button, DialogActions, useMediaQuery } from '@mui/material';
 import { SelectableGroup } from 'react-selectable-fast';
+import { useSelector } from 'react-redux';
 import { tokens } from '../../theme';
 import { useTheme } from '@emotion/react';
 import { createSelectable } from "react-selectable-fast";
 
 const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = false, gap }) => {
+  //獲取使用者資訊
+  const userData = useSelector(state => state.accessRangeReducer)
+
   return (
     <Box width={"100%"} height={"100%"} className={`${isSelected ? 'selected' : ''} ${isSelecting ? 'selecting' : ''}`} data-uniqueid={uniqueId} ref={selectableRef} position={"relative"}>
       {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={`${data.t_color}99`} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "none", color: getContrastColor(data.t_color) }}>{
         data.student.map((student)=>{
-          return (
-            <span>{student.name}</span>
-          )
+          // console.log(data);
+
+          //-- 老師自己的課顯示學生名 --
+          if(userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && data.teacher_id===userData.inform.Tb_index)){
+              return (
+                <p style={{margin: 0,}}>{student.name}</p>
+              )
+          }
+          //-- 顯示課程名 --
+          else{
+            return (
+              <p style={{margin: 0, opacity:0.4}}>{data.c_name}</p>
+            )
+          }
         })
       }</Box>}
     </Box>

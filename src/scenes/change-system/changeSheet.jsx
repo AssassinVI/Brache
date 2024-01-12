@@ -171,17 +171,17 @@ function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, 
 }
 
 //-- 顯示選定的課堂 --
-function TargetClass({course_id,teacher=null,setTeacher=()=>{},type=null,beforeData=null}){
+function TargetClass({course_id, teacher=null, setTeacher=()=>{}, type=null, beforeData=null}){
     const [courseData,setCourseData]=useState(null)
     useEffect(()=>{
         //calendarApi
-            getOne(course_id,(data)=>{
-            
+
+            getOne(course_id, (data)=>{
                 if(teacher !==null){
                     setTeacher(data.data.data[0].teacher_id)
                 }
                 setCourseData(data.data.data[0])
-            })
+            }, type!=="history")
         
     },[course_id])
     return(
@@ -621,7 +621,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
           }
 
           
-        if(window.confirm(status === "0" ? "是否要暫存此異動單" : "送出後不可再修改，確認是否送出此異動單")){
+        if(window.confirm(status === "0" ? "是否要暫存此異動單" : "送出後不可再修改，確認是否送出此異動單\n##注意：加課、調課有重疊其他課將會刪除重疊的課##")){
            
             if(data.change_type === "1"){
                 if(data.course_id && data.change_date){
