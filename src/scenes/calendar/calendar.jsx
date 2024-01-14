@@ -31,7 +31,7 @@ import * as teacherApi from "../../axios-api/teacherData"
 import { IsLoading } from "../../components/loading";
 import SelectCalendar from './selectCalendar';
 import { useDispatch, useSelector } from 'react-redux';
-import { calendarDateAction, calendarTableDataAction, snackBarOpenAction } from '../../redux/action';
+import { calendarDateAction, calendarTableDataAction, snackBarOpenAction, notificationListAction } from '../../redux/action';
 import { get_course_template_list } from '../../axios-api/calendarTemplateData';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 import ChangeSheet from "../change-system/changeSheet";
@@ -401,7 +401,7 @@ const CalendarTop = () => {
     const startDate = initDate.year + "-" + initDate.month + "-" + initDate.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     calendarApi.getAll(startDate, endDate).then((data) => {
-      // console.log(data)
+       console.log(data)
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
   }, [])
@@ -1051,6 +1051,9 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
   const ReSigning = ()=>{
     if (window.confirm("確定要補簽此課程嗎?")){
 
+      const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
+      const endDate = formatDateBack(getWeekDates(startDate)[6])
+
       changeApi.insert_course_transfer({
           type: 'insert_course_transfer',
           course_id: data.Tb_index,
@@ -1061,6 +1064,10 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
       },(res)=>{
           if(res.data.success){
               dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+              dispatch(notificationListAction({reflash: true}))
+              calendarApi.getAll(startDate, endDate).then((data) => {
+                dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+              })
               handleCancel()
           }
           else{
@@ -1134,10 +1141,11 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
     let isAskForLeave=false;
     let isReSignin_time=false;
     let TimeOut=false;
+    let isTransfer=false;
     
     
     if(unitData){
-      //=console.log(unitData);
+       console.log(unitData);
       // 将日期时间字符串解析为Date对象
       const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
 
@@ -1157,6 +1165,11 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
       //-- 補簽 --
       else if((unitData.reSignin_time)){
         isReSignin_time=true;
+      }
+
+      //-- 判斷異動單 --
+      if(unitData.course_transfer.Tb_index!==null){
+        isTransfer=true;
       }
     }
 
@@ -1191,8 +1204,9 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                             size="small" 
                             sx={{
                               position:'absolute', 
-                              top:'-10px', 
+                              top:'-5px', 
                               right:'-3px', 
+                              height: '16px',
                               fontSize:'11px',
                               padding:'6px 0',
                               backgroundColor: isSign ? '#cb271b' : isAskForLeave ? '#c69e0e' : '#19851d',
@@ -1201,6 +1215,27 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                               }}/>
                       : ''
                      }
+
+                     {
+                       isTransfer ?
+                        <Chip label={unitData.course_transfer.change_type} 
+                        size="small" 
+                        sx={{
+                          position:'absolute', 
+                          top:'-5px', 
+                          left:'-3px', 
+                          height: '16px',
+                          fontSize:'11px',
+                          padding:'6px 0',
+                          backgroundColor: 'rgb(255 255 255 / 80%)',
+                          color: '#1f5295',
+                          display: 'inline-flex'
+                          }}/>
+                        : ''
+                     }
+                        
+
+
 
                      <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
                           { 
@@ -1501,7 +1536,21 @@ export const TimeSelect = ({ setCurrentDate, maxDate=null, minDate=null }) => {
 export default function ClassOverView() {
   return (
     <div style={{ width: '95%', margin: '20px auto 0' }}>
-      <Header title="課表行事曆" subtitle="昨日之前的課表(含昨日)，不能做新增、修改、刪除的操作!" warm={true} />
+      <Header title="課表行事曆" subtitle="昨日之前的課表(含昨日)，不能做新增、修改、刪除的操作!" warm={true} sx={{marginBottom:'0px'}} />
+      <Box display={'flex'} alignItems={'center'} sx={{
+        '& div':{display:'flex', alignItems:'center', margin:'0 5px'},
+        '& span':{ fontSize:'13px', display: 'inline-flex'}
+      }}> 
+        標籤說明：
+        <Box>未簽 <Chip label={'未'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#cb271b', color: '#fff'}} /></Box>
+        <Box>請假 <Chip label={'假'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#c69e0e', color: '#fff'}} /></Box>
+        <Box>補簽 <Chip label={'補'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#19851d', color: '#fff'}} /></Box>
+        <Box>調課 <Chip label={'調'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
+        <Box>換課 <Chip label={'換'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
+        <Box>補課 <Chip label={'補'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
+        <Box>加課 <Chip label={'加'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
+        <Box>刪課 <Chip label={'刪'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
+      </Box>
       <CalendarTop />
     </div>
   );
