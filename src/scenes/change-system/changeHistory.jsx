@@ -178,17 +178,17 @@ export default function ChangeHistory(){
             }
         },
         {
-            field: "change_date",
+            field: "cc_date",
             headerName: "上課日期",
             flex: 1,
         },
         {
-            field: "change_StartTime",
+            field: "cc_StartTime",
             headerName: "上課時間",
             flex: 1,
         },
         {
-            field: "change_room",
+            field: "cc_room",
             headerName: "上課教室",
             flex: 1,
         },
