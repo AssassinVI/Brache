@@ -18,7 +18,7 @@ import { course_transfer_history } from "../../axios-api/changeSystem";
 import ChangeSheet from "./changeSheet";
 
 
-function FunctionBar({date,setDate,teacher,setTeacher}){
+function FunctionBar({date, setDate, teacher, setTeacher, changeType, setChangeType}){
     const accessRange = useSelector(store => store.accessRangeReducer)
     const [teacherAll,setTeacherAll] = useState(null)
     const dates = new Date()
@@ -32,7 +32,7 @@ function FunctionBar({date,setDate,teacher,setTeacher}){
     useEffect(()=>{
        getAll().then((data) => {
         setTeacherAll(data.data);
-          });
+        });
     },[])
     return(
        <Box display={"flex"} gap={"25px"} flexWrap={"wrap"}>
@@ -62,6 +62,25 @@ function FunctionBar({date,setDate,teacher,setTeacher}){
                     </Select>
                 </FormControl>
             }
+
+            <FormControl>
+                <InputLabel id="demo-simple-select-label">事由</InputLabel>
+                <Select 
+                  onChange={(e)=>{
+                     setChangeType(e.target.value)
+                  }}
+                  label="事由"
+                  value={changeType}
+                  defaultValue={'all'}
+                  sx={{ width: "120px" }}>
+                    <MenuItem key={'all'} value={'all'}>全部</MenuItem>
+                    <MenuItem key={'1'} value={1}>調課</MenuItem>
+                    <MenuItem key={'2'} value={2}>換課</MenuItem>
+                    <MenuItem key={'3'} value={3}>補簽</MenuItem>
+                    <MenuItem key={'4'} value={4}>加課</MenuItem>
+                    <MenuItem key={'5'} value={5}>刪課</MenuItem>
+                </Select>
+            </FormControl>
 
             <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale={'zh-cn'}>
             <DemoContainer components={['DatePicker']}>
@@ -139,6 +158,7 @@ export default function ChangeHistory(){
     const [date,setDate] = useState(null)
     const [teacher,setTeacher] =useState(null)
     const [listData,setListData] = useState(null)
+    const [changeType, setChangeType]= useState('all')
 
     const columns = [
         {
@@ -217,8 +237,9 @@ export default function ChangeHistory(){
                     admin_id:teacher,
                     StartDate:date?.StartDate ? date.StartDate :today,
                     EndDate:date?.EndDate ? date.EndDate : today,
+                    changeType:changeType
                 },(res)=>{
-                    console.log(res)
+                    // console.log(res)
                     setListData(res.data.data)
                 })
           }else{
@@ -226,19 +247,20 @@ export default function ChangeHistory(){
                     admin_id:userData.inform.Tb_index,
                     StartDate:date?.StartDate ? date.StartDate :today,
                     EndDate:date?.EndDate ? date.EndDate : today,
+                    changeType:changeType
                 },(res)=>{
-                    console.log(res)
+                    // console.log(res)
                     setListData(res.data.data)
                 })
           }
          }
-      }, [userData,date,teacher])
+      }, [userData, date, teacher, changeType])
 
 
     return(
         <Box m={"25px 0"} sx={{ width: '95%', margin: '20px auto 0' }}>
             <Header title={`歷史異動單`} subtitle={`可瀏覽已通過申請的異動單`} />
-            <FunctionBar date={date} setDate={setDate} teacher={teacher} setTeacher={setTeacher} />
+            <FunctionBar date={date} setDate={setDate} teacher={teacher} setTeacher={setTeacher} changeType={changeType} setChangeType={setChangeType} />
              <Box
             m="20px 0 0 0"
             width="100%"

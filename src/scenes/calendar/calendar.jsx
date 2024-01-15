@@ -1537,7 +1537,7 @@ export default function ClassOverView() {
   return (
     <div style={{ width: '95%', margin: '20px auto 0' }}>
       <Header title="課表行事曆" subtitle="昨日之前的課表(含昨日)，不能做新增、修改、刪除的操作!" warm={true} sx={{marginBottom:'0px'}} />
-      <Box display={'flex'} alignItems={'center'} sx={{
+      <Box display={'flex'} alignItems={'center'} flexWrap={'wrap'} sx={{
         '& div':{display:'flex', alignItems:'center', margin:'0 5px'},
         '& span':{ fontSize:'13px', display: 'inline-flex'}
       }}> 

@@ -165,7 +165,7 @@ export const update_course_transfer = async (data,func) => {
     }
 };
 
-export const course_transfer_history = async (data,func) => {
+export const course_transfer_history = async (data, func) => {
     try {
       axiosInstance({
             method: 'post',
