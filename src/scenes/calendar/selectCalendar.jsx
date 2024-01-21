@@ -1,6 +1,6 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { addMinutesToTime, calculateDifferenceIn15Minutes, convertToChineseNumber, formatDateBack, getContrastColor } from './getMonday';
-import { Box, Button, DialogActions, useMediaQuery } from '@mui/material';
+import { Box, Button, DialogActions, useMediaQuery, Chip } from '@mui/material';
 import { SelectableGroup } from 'react-selectable-fast';
 import { useSelector } from 'react-redux';
 import { tokens } from '../../theme';
@@ -13,10 +13,26 @@ const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = f
 
   return (
     <Box width={"100%"} height={"100%"} className={`${isSelected ? 'selected' : ''} ${isSelecting ? 'selecting' : ''}`} data-uniqueid={uniqueId} ref={selectableRef} position={"relative"}>
-      {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={`${data.t_color}99`} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "none", color: getContrastColor(data.t_color) }}>{
+
+      {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={`${data.t_color}99`} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "none", color: getContrastColor(data.t_color) }}>
+        
+        <Chip label={'假'} 
+            size="small" 
+            sx={{
+              position:'absolute', 
+              top:'-5px', 
+              right:'-3px', 
+              height: '16px',
+              fontSize:'11px',
+              padding:'6px 0',
+              backgroundColor: '#c69e0e',
+              color: '#fff',
+              display: data.askForLeave_time!==null ? 'inline-flex' : 'none'
+              }}/>
+        
+        {
         data.student.map((student)=>{
           // console.log(data);
-
           //-- 老師自己的課顯示學生名 --
           if(userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && data.teacher_id===userData.inform.Tb_index)){
               return (
@@ -34,7 +50,10 @@ const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = f
     </Box>
   )
 }
+
+
 const CreateSelectable = createSelectable(SelectArea);
+
 const LessonUnit = ({ data, uniqueId }) => {
   let gap;
   if (data) {

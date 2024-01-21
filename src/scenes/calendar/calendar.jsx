@@ -401,7 +401,7 @@ const CalendarTop = () => {
     const startDate = initDate.year + "-" + initDate.month + "-" + initDate.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     calendarApi.getAll(startDate, endDate).then((data) => {
-       console.log(data)
+      //  console.log(data)
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
   }, [])
@@ -1145,7 +1145,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
     
     
     if(unitData){
-       console.log(unitData);
+      //  console.log(unitData);
       // 将日期时间字符串解析为Date对象
       const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
 
