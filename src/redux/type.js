@@ -7,6 +7,7 @@ const informType = "informData"
 const clearType = "clearAllRedux"
 const calendarDateType = "switchCalendarDate"
 const calednarTableDataType = "switchCalednarTableData"
+const askForLeaveCourseType = "askForLeaveCourse"
 const isTestType = 'isTestType';
 const notificationListType = 'notificationList';
 // 這裡採node的方式做export/import
@@ -18,6 +19,7 @@ module.exports = {
     clearType,
     calendarDateType,
     calednarTableDataType,
+    askForLeaveCourseType,
     informType,
     isTestType,
     notificationListType

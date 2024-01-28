@@ -31,7 +31,7 @@ import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 import { string } from "yup";
 
 //-- 顯示指定日期的課堂 --
-function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, type =null}){
+function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, type =null, isOtherClass = true}){
     const [listData,setListData] = useState(null)
     const userData = useSelector(state => state.accessRangeReducer)
     const newDate = new Date(date)
@@ -44,6 +44,7 @@ function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, 
             changeApi.select_course({
                 c_date:`${newDate.getFullYear()}-${newDate.getMonth()+1}-${newDate.getDate()}`,
                 teacher_id: teacher ? teacher : userData.inform.Tb_index,
+                isOtherClass: isOtherClass
             },(data)=>{
                  
 
@@ -887,7 +888,8 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                     
                                     {classDate2 &&
                                     <OpenSelectClass 
-                                        //teacher={teacher} 
+                                         //teacher={teacher} 
+                                         isOtherClass={false}
                                          date={classDate2} setClassDate={setClassDate2} setData={setData} data={data} type={"換課"}/>}
                                 </Box>
                                 {data.change_course_id &&<TargetClass course_id={data.change_course_id} teacher={teacher} setTeacher={setTeacher}/>}

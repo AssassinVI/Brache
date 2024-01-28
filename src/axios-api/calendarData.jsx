@@ -178,6 +178,7 @@ export const delete_template_course = (data, func) => {
 };
 
 
+//-- 課程請假 --
 export const askForLeave = (data, func) => {
     try {
         axiosInstance({
@@ -186,6 +187,27 @@ export const askForLeave = (data, func) => {
             data: {
                 ...data,
                 type: "askForLeave",
+            },
+        }).then((data)=>{
+            func(data)
+        });
+        
+        return data
+    } catch (error) {
+        console.error(error);
+    }
+};
+
+
+//-- 撈出被覆蓋的請假課程 --
+export const get_cover_askForLeave = (data, func) => {
+    try {
+        axiosInstance({
+            method: 'POST',
+            url: calendarApi,
+            data: {
+                ...data,
+                type: "cover_askForLeave",
             },
         }).then((data)=>{
             func(data)

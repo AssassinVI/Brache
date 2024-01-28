@@ -1,8 +1,9 @@
-import { calendarDateType, calednarTableDataType } from "../type";
+import { calendarDateType, calednarTableDataType, askForLeaveCourseType } from "../type";
 
 const initialState = {
     currentDate: null,
-    tableData: null
+    tableData: null,
+    askForLeaveCourse: null
 }
 
 export const calendarReducer = (state = initialState, action) => {
@@ -16,6 +17,11 @@ export const calendarReducer = (state = initialState, action) => {
             return {
                 ...state,
                 tableData: action.tableData, // 注意這裡使用 inform
+            };
+        case askForLeaveCourseType:
+            return {
+                ...state,
+                askForLeaveCourse: action.askForLeaveCourse,
             };
         default:
             return state;

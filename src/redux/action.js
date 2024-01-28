@@ -1,4 +1,17 @@
-import { snackbarOpen, menuIn, systemTree, adminType, clearType, calendarDateType, calednarTableDataType, informType, isTestType, notificationListType } from "./type"
+import { 
+    snackbarOpen, 
+    menuIn, 
+    systemTree, 
+    adminType, 
+    clearType, 
+    calendarDateType, 
+    calednarTableDataType, 
+    askForLeaveCourseType, 
+    informType, 
+    isTestType, 
+    notificationListType 
+} from "./type"
+
 export const snackBarOpenAction = (bolean, str, severity) => {
     return {
         type: snackbarOpen,
@@ -55,6 +68,13 @@ export const calendarTableDataAction = (data) => {
     return {
         type: calednarTableDataType,
         tableData: data,
+    }
+}
+
+export const askForLeaveCourseAction = (data) => {
+    return {
+        type: askForLeaveCourseType,
+        askForLeaveCourse: data,
     }
 }
 

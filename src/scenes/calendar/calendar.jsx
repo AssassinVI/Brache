@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState, useRef, forwardRef } from 'react';
 import Header from '../../components/Header';
-import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, InputLabel, Select, TextField, Typography, useMediaQuery, Tooltip, IconButton, MenuItem, Autocomplete } from '@mui/material';
+import { Box, Button, Chip, Dialog, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, Select, Switch, TextField, Typography, useMediaQuery, Tooltip, IconButton, MenuItem, Autocomplete } from '@mui/material';
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import EditIcon from '@mui/icons-material/Edit';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
@@ -31,7 +31,7 @@ import * as teacherApi from "../../axios-api/teacherData"
 import { IsLoading } from "../../components/loading";
 import SelectCalendar from './selectCalendar';
 import { useDispatch, useSelector } from 'react-redux';
-import { calendarDateAction, calendarTableDataAction, snackBarOpenAction, notificationListAction } from '../../redux/action';
+import { calendarDateAction, calendarTableDataAction, snackBarOpenAction, notificationListAction, askForLeaveCourseAction } from '../../redux/action';
 import { get_course_template_list } from '../../axios-api/calendarTemplateData';
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
 import ChangeSheet from "../change-system/changeSheet";
@@ -79,6 +79,7 @@ function SelectDate({setScrollNum}) {
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
 
+    
     //-- 捲到指定位置 --
     let getday=new Date(data.selectDate);
         getday=getday.getDay()==0 || getday.getDay()>6 ? 6 : getday.getDay()-1;
@@ -342,6 +343,10 @@ const CalendarTop = () => {
   let [scrollNum, setScrollNum] = useState(0);
   //儲存異動單list資料
   const [listData, setListData] = useState(null)
+  //-- 顯示請假課程 --
+  const [isAskForLeave_course, setIsAskForLeave_course] = useState(false)
+  // const [askForLeave_course, setAskForLeave_course] = useState(null)
+  const askForLeaveCourse = useSelector(state => state.calendarReducer.askForLeaveCourse)
 
   //-- 捲動到指定日期 --
   useEffect(()=>{
@@ -353,12 +358,10 @@ const CalendarTop = () => {
         }
       )
     }
-
   }, [scrollNum])
 
   //-- 查詢學生 --
   useEffect(()=>{
-
     if(currentDate!==null){
       const prevWeekMonday=getDateOfMondayInWeek(currentDate.year , currentDate.month , currentDate.weekNumber);
       const monday_weekNumber={
@@ -382,6 +385,38 @@ const CalendarTop = () => {
     
   }, [searchStudent])
 
+
+  //-- 顯示請假課程 --
+  useEffect(()=>{
+
+    if(isAskForLeave_course && currentDate!==null){
+      const WeekMonday=getDateOfMondayInWeek(currentDate.year , currentDate.month , currentDate.weekNumber);
+      const monday_weekNumber={
+          year: WeekMonday.getFullYear(),
+          month: WeekMonday.getMonth()+1,
+          day: WeekMonday.getDate(),
+          weekNumber: currentDate.weekNumber
+      }
+
+      const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
+      const endDate = formatDateBack(getWeekDates(startDate)[6]);
+      calendarApi.get_cover_askForLeave({
+         s_date: startDate,
+         e_date: endDate
+        }, 
+        (data) => {
+          //  console.log(askForLeaveCourse)
+           dispatch(askForLeaveCourseAction(dataTransformTable(data.data.data)))
+          // setAskForLeave_course(dataTransformTable(data.data.data));
+        })
+    }
+    else{
+      dispatch(askForLeaveCourseAction(null))
+    }
+  }, [isAskForLeave_course])
+
+
+  //-- 撈學生老師資料 --
   useEffect(() => {
     studentApi.getAll().then((data) => {
       setStudentAll(data.data);
@@ -395,13 +430,14 @@ const CalendarTop = () => {
     });
   }, [])
 
+  //-- 初始課程資料 --
   useEffect(() => {
     const initDate = getWeekInfoForDate(new Date())
     dispatch(calendarDateAction(initDate))
     const startDate = initDate.year + "-" + initDate.month + "-" + initDate.day
     const endDate = formatDateBack(getWeekDates(startDate)[6])
     calendarApi.getAll(startDate, endDate).then((data) => {
-      //  console.log(data)
+      //console.log(data.data)
       dispatch(calendarTableDataAction(dataTransformTable(data.data)))
     })
   }, [])
@@ -478,7 +514,6 @@ const CalendarTop = () => {
       }
     }
   
-
     //-- Today --
     const go_today=()=>{
       const monday_weekNumber = getWeekInfoForDate(new Date());
@@ -494,6 +529,7 @@ const CalendarTop = () => {
           getday=getday.getDay()==0 || getday.getDay()>6 ? 6 : getday.getDay()-1;
       setScrollNum(getday)
     }
+
   
 
   return (
@@ -636,7 +672,28 @@ const CalendarTop = () => {
           </Box>
           <Box sx={{display:'flex', justifyContent:'space-between', flexDirection:{lg:'row', xs:'column'}, gap:{xs:'20px'}, paddingTop:'15px'}}>
             {teacherAll && <TeacherColor data={teacherAll}/>}
-            <Box>
+            <Box display={'flex'} gap={'20px'} alignItems={'flex-end'}>
+              <Box>
+                <FormControlLabel control={
+                  <Switch
+                   checked={isAskForLeave_course}
+                   onChange={(e)=>{setIsAskForLeave_course(e.target.checked)}}
+                   sx={{
+                    '& .MuiSwitch-switchBase':{
+                      color: '#eeeeee',
+                    },
+                    '& .MuiSwitch-switchBase.Mui-checked': {
+                      color: '#c69e0e',
+                      '&:hover': {
+                        backgroundColor: '#c69e0e45',
+                      },
+                    },
+                    '& .MuiSwitch-switchBase.Mui-checked + .MuiSwitch-track': {
+                      backgroundColor: '#c69e0e',
+                    },
+                  }} />
+                } label="顯示被取代的請假課程" />
+              </Box>
                <Autocomplete
                 {...autocompleteStudentAll}
                 id="controlled-demo"
@@ -653,7 +710,15 @@ const CalendarTop = () => {
             </Box>
           </Box>
           
-          <Calendar ref={scrollRef} tableData={tableData} currentDate={currentDate} studentAll={studentAll} teacherAll={teacherAll} searchStudent={searchStudent} />
+          <Calendar 
+            ref={scrollRef} 
+            tableData={tableData} 
+            currentDate={currentDate} 
+            studentAll={studentAll} 
+            teacherAll={teacherAll} 
+            searchStudent={searchStudent} 
+            askForLeaveCourse={askForLeaveCourse} 
+          />
         </>
         : <IsLoading />
       }
@@ -670,7 +735,7 @@ const CalendarTop = () => {
  * @param studentAll 所有學生
  * @param teacherAll 所有老師
  */
-const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll, searchStudent=null }, ref) => {
+const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll, searchStudent=null, askForLeaveCourse=null }, ref) => {
 
   const theme = useTheme();
   const colors = tokens(theme.palette.mode);
@@ -879,8 +944,17 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll, s
                                       count = 0
                                     }
                                   }
+                                  
                                   return (
-                                    <LessonUnit teacherAll={teacherAll} studentAll={studentAll} count={count} uniqueId={uniqueId} data={tableData?.[formatDateBack(date)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} searchStudent={searchStudent} />
+                                    <LessonUnit 
+                                      data={tableData?.[formatDateBack(date)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} 
+                                      count={count} 
+                                      teacherAll={teacherAll} 
+                                      studentAll={studentAll} 
+                                      searchStudent={searchStudent} 
+                                      askForLeaveCourse_one={askForLeaveCourse?.[formatDateBack(date)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]}
+                                      uniqueId={uniqueId} 
+                                    />
                                   )
                                 })
                               }
@@ -911,21 +985,54 @@ const Calendar = forwardRef(({ tableData, currentDate, studentAll, teacherAll, s
  * @param studentAll 所有老師
  * @returns 顯示課程在日曆上
  */
-const LessonUnit = ({ data, count, teacherAll, studentAll, searchStudent=null }) => {
-  let gap;
-  let bg_color;
+const LessonUnit = ({ data, count, teacherAll, studentAll, searchStudent=null, askForLeaveCourse_one=null }) => {
+  let gap, bg_color, askForLeave_gap, askForLeave_bg_color;
+
   if (data) {
     const start = data.StartTime;
     const end = data.EndTime;
     gap = calculateDifferenceIn15Minutes(start, end)
-   
     bg_color=data.t_color;
-   
   }
+
+  if (askForLeaveCourse_one) {
+    const start = askForLeaveCourse_one.StartTime;
+    const end = askForLeaveCourse_one.EndTime;
+    askForLeave_gap = calculateDifferenceIn15Minutes(start, end)
+    askForLeave_bg_color=askForLeaveCourse_one.t_color;
+    
+  }
+
 
   return (
     <Box key={data && data.Tb_index} flexBasis="25%" width={"100%"}  >
-      {(data && count > 0) ? <LessonPopUp unitData={data} teacherAll={teacherAll} studentAll={studentAll} id={data.Tb_index} name={data.c_name} gap={gap} bg={bg_color} type={"update"} searchStudent={searchStudent} /> : null}
+      {(data && count > 0) ? 
+      <LessonPopUp 
+        unitData={data} 
+        teacherAll={teacherAll} 
+        studentAll={studentAll} 
+        id={data.Tb_index} 
+        name={data.c_name} 
+        gap={gap} 
+        bg={bg_color} 
+        type={"update"} 
+        searchStudent={searchStudent} 
+      /> : null}
+
+      {(askForLeaveCourse_one && count > 0) ? 
+      <LessonPopUp 
+        unitData={askForLeaveCourse_one} 
+        teacherAll={teacherAll} 
+        studentAll={studentAll} 
+        id={askForLeaveCourse_one.Tb_index} 
+        name={askForLeaveCourse_one.c_name} 
+        gap={askForLeave_gap} 
+        bg={askForLeave_bg_color} 
+        type={"update"} 
+        searchStudent={searchStudent} 
+        isAskForLeaveCourse={true}
+      /> : null}
+
     </Box>
   )
 }
@@ -943,9 +1050,10 @@ const LessonUnit = ({ data, count, teacherAll, studentAll, searchStudent=null })
  * @param type 新增修改刪除分類
  * @param teacherAll 所有學生
  * @param studentAll 所有老師
+ * @param isAskForLeaveCourse 判斷是否顯示請假課程(被覆蓋的)
  * @returns 
  */
-const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll, searchStudent=null }) => {
+const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll, searchStudent=null, isAskForLeaveCourse=false }) => {
   const [open, setOpen] = useState(false)
   const [data, setData] = useState({})
   const [currentDate, setCurrentDate] = useState(null)
@@ -1124,8 +1232,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                p_update: result?.p_update === "1" ? true : false,
            })
        }
-
-       
    }, [accessData])
 
 
@@ -1168,9 +1274,11 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
       }
 
       //-- 判斷異動單 --
-      if(unitData.course_transfer.Tb_index!==null){
+      if(unitData.course_transfer && unitData.course_transfer.Tb_index!==null){
         isTransfer=true;
       }
+
+      
     }
 
     return (
@@ -1187,11 +1295,13 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
           } arrow placement="top" >
 
                 {/* 課程底色方塊 */}
-                <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} onClick={(e) => {
+                <Box className='lesson-unit' height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={bg} boxShadow={" 0 0 0 1px #000"} sx={{ pointerEvents: "auto", zIndex: 99 }} 
+                border={isAskForLeaveCourse ? '4px solid #ffc800':''}
+                onClick={(e) => {
                   e.stopPropagation()
                     // console.log(unitData);
                     calendarApi.getOne(id, (data) => {
-                      if(userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && data.data.data[0].teacher_id===userData.inform.Tb_index)){
+                      if((userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && data.data.data[0].teacher_id===userData.inform.Tb_index)) && !isAskForLeaveCourse){
                         setData(data.data.data[0])
                         setOpen(true)
                       }
@@ -1218,7 +1328,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
 
                      {
                        isTransfer ?
-                        <Chip label={unitData.course_transfer.change_type} 
+                        <Chip label={unitData.course_transfer?.change_type} 
                         size="small" 
                         sx={{
                           position:'absolute', 
@@ -1234,8 +1344,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                         : ''
                      }
                         
-
-
 
                      <div style={{  color: getContrastColor(bg), fontWeight: "500", pointerEvents: "none" }}>
                           { 
@@ -1268,7 +1376,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                             })
                           }
                     </div>
-                      
 
                 </Box> 
           </Tooltip>
