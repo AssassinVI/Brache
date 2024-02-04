@@ -1210,6 +1210,36 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
     }
   }
 
+  //-- 超時請假 --
+  const askForLeaveTransfer= ()=>{
+    if(window.confirm("確定要為此課程請假嗎?\n##此為超時請假會產生異動單，需請管理者審核##")){
+      const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
+      const endDate = formatDateBack(getWeekDates(startDate)[6])
+
+      changeApi.insert_course_transfer({
+          type: 'insert_course_transfer',
+          course_id: data.Tb_index,
+          admin_id: userData.inform.Tb_index,
+          c_remark: '超時請假',
+          change_type:6,
+          change_status:1
+      },(res)=>{
+          if(res.data.success){
+              dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+              dispatch(notificationListAction({reflash: true}))
+              calendarApi.getAll(startDate, endDate).then((data) => {
+                dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+              })
+              handleCancel()
+          }
+          else{
+              dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
+          }
+      })
+    }
+  }
+
+
   useEffect(() => {
     if (currentDate) {
       calendarApi.getAll(formatDateBack(currentDate), formatDateBack(currentDate)).then((data) => {
@@ -1251,7 +1281,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
     
     
     if(unitData){
-      //  console.log(unitData);
+      // console.log(unitData);
       // 将日期时间字符串解析为Date对象
       const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
 
@@ -1555,6 +1585,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                     <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>
                   }
                   <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
+                  <Button onClick={()=>{askForLeaveTransfer()}} variant="contained" sx={{backgroundColor:'#d9a710', display: isSign ? 'inline-flex':'none'}}>{'超時請假'}</Button>
                   {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"adjustCourse"} course_id={data.Tb_index} setListData={setListData}/>}
                   {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"changeCourse"} course_id={data.Tb_index} setListData={setListData}/>}
                   <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display: type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? 'none':'inline-flex'}}>{'請假'}</Button>
@@ -1654,9 +1685,10 @@ export default function ClassOverView() {
         <Box>補簽 <Chip label={'補'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#19851d', color: '#fff'}} /></Box>
         <Box>調課 <Chip label={'調'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
         <Box>換課 <Chip label={'換'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
-        <Box>補課 <Chip label={'補'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
+        {/* <Box>補課 <Chip label={'補'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box> */}
         <Box>加課 <Chip label={'加'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
         <Box>刪課 <Chip label={'刪'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
+        <Box>超時請假 <Chip label={'假'} size='small' sx={{ height: '16px', padding:'6px 0', backgroundColor: '#dddc', color: '#1f5295'}} /></Box>
       </Box>
       <CalendarTop />
     </div>

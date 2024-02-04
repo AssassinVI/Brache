@@ -743,6 +743,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                     <MenuItem value={"2"} >{"換課"}</MenuItem>
                                     <MenuItem value={"3"} >{"補簽"}</MenuItem>
                                     <MenuItem value={"5"} >{"刪課"}</MenuItem>
+                                    <MenuItem value={"6"} >{"超時請假"}</MenuItem>
                                 </Select>
                           </FormControl>
                         </DialogContent>
@@ -897,9 +898,9 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                         }
                         
                         {/* 補簽 */}
-                        {data.change_type === "3" &&
+                        {data.change_type === "3" || data.change_type === "6" ?
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
-                            <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>補簽課堂</InputLabel>
+                            <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>{data.change_type === "3" ? '補簽課堂' : '請假課堂'}</InputLabel>
                             {crud !== "view" &&  crud !== "history" && crud !== "needApproval" &&
                                 <Box display={"flex"} gap={"5px"} alignItems={"center"}>
                                     <p style={{ color: "red", fontSize: "13px", letterSpacing: "0.1em", margin: "0px 5px 6px 0" }}>(課堂日期透過右邊查詢)--{'>'}</p>
@@ -914,6 +915,8 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                               classDate &&<OpenSelectClass  date={classDate} setClassDate={setClassDate} setData={setData} data={data} type={"補簽"}/>
                             }
                             </DialogContent>
+                            :
+                            ''
                         }
 
                         {/* 加課 */}

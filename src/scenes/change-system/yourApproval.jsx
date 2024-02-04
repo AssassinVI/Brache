@@ -69,6 +69,7 @@ export default function YourApproval({listData=[],setListData}){
                         {rows.row.change_type === "3" && '補簽'}
                         {rows.row.change_type === "4" && '加課'}
                         {rows.row.change_type === "5" && '刪課'}
+                        {rows.row.change_type === "6" && <p>超時請假</p>}
                     </Box>
                 )
             }

@@ -126,7 +126,7 @@ export const select_course = async (data,func) => {
 
 
 
-
+//-- 新增異動單 --
 export const insert_course_transfer = async (data,func) => {
     try {
       axiosInstance({
@@ -146,6 +146,7 @@ export const insert_course_transfer = async (data,func) => {
     }
 };
 
+//-- 更新異動單 --
 export const update_course_transfer = async (data,func) => {
     try {
       axiosInstance({
@@ -165,6 +166,7 @@ export const update_course_transfer = async (data,func) => {
     }
 };
 
+//-- 異動單歷史紀錄 --
 export const course_transfer_history = async (data, func) => {
     try {
       axiosInstance({

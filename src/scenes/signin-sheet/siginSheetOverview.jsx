@@ -189,8 +189,10 @@ function List({ listData }) {
                                 <p className="student">學生</p>
                             </Box>
                             {rows.row.classes.map((item) => {
+                                // console.log(item);
                                 const date = `${item.c_date.split("-")[1]}月${item.c_date.split("-")[2]}日`;
                                 const StartTime_s= new Date(`${item.c_date} ${item.StartTime}`).getTime();
+                                const EndTime_s= new Date(`${item.c_date} ${item.EndTime}`).getTime();
                                 const t_time_s= new Date(item.t_signin_time).getTime();
                                 const s_time_s= new Date(item.s_signin_time).getTime();
                                 const delay_t_time=StartTime_s-t_time_s;
@@ -201,10 +203,12 @@ function List({ listData }) {
                                 const t_time= item.t_signin_time==null ? '': item.t_signin_time.split(" ")[1];
                                 const t_leave_time= item.t_askForLeave_time==null ? '': item.t_askForLeave_time.split(" ")[1];
                                 const t_reSignin_time= item.t_reSignin_time==null ? '': item.t_reSignin_time.split(" ")[1];
+                                const t_leave_time_s= new Date(item.t_askForLeave_time).getTime();
 
                                 const s_time= item.s_signin_time==null ? '': item.s_signin_time.split(" ")[1];
                                 const s_leave_time= item.s_askForLeave_time==null ? '': item.s_askForLeave_time.split(" ")[1];
                                 const s_reSignin_time= item.s_reSignin_time==null ? '': item.s_reSignin_time.split(" ")[1];
+                                const s_leave_time_s= new Date(item.s_askForLeave_time).getTime();
                                 return (
                                     <Box sx={{
                                         width: "200px",
@@ -271,7 +275,8 @@ function List({ listData }) {
                                                     {item.t_signin_time ? <div className="round"></div> : <div className="x"></div>}
                                                     {item.t_signin_time ? <p>{t_time}{show_delay_t}</p> 
                                                      : 
-                                                     item.t_askForLeave_time ? <p>{`請假 ${t_leave_time}`}</p>
+                                                     item.t_askForLeave_time ? 
+                                                     t_leave_time_s <= EndTime_s ? <p>{`請假 ${t_leave_time}`}</p> : <p>{`超時請假 ${item.t_askForLeave_time}`}</p>
                                                      :
                                                      item.t_reSignin_time ? <p>{`補簽 ${t_reSignin_time}`}</p>
                                                      : ''}
@@ -291,7 +296,8 @@ function List({ listData }) {
                                                     {item.s_signin_time ? <div className="round"></div> : <div className="x"></div>}
                                                     {item.s_signin_time ? <p>{s_time}{show_delay_s}</p> 
                                                      :
-                                                     item.s_askForLeave_time ? <p>{`請假 ${s_leave_time}`}</p>
+                                                     item.s_askForLeave_time ? 
+                                                     s_leave_time_s <= EndTime_s ? <p>{`請假 ${s_leave_time}`}</p> : <p>{`超時請假 ${item.s_askForLeave_time}`}</p>
                                                      :
                                                      item.s_reSignin_time ? <p>{`補簽 ${s_reSignin_time}`}</p>
                                                      : ''
