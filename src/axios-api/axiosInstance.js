@@ -17,7 +17,7 @@ axiosInstance.interceptors.request.use(
         config.headers['Authorization'] = `Bearer ${sessionStorage["jwt"]}`;
         config.headers['Refresh-Token'] = localStorage["refresh_jwt"];
         //-- 開啟測試資料庫用 --
-        // config.headers['Test'] = 'test';
+        config.headers['Test'] = 'test';
 
 
         return config;

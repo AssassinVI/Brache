@@ -1,5 +1,6 @@
 import React from "react";
 import SelectCalendar from "../calendar/selectCalendar";
+import TransferCalendar from "../calendar/transferCalendar";
 import { Box, Button, Dialog, DialogActions, DialogContent, DialogTitle, FormControl, FormControlLabel, InputLabel, MenuItem, TextField, useMediaQuery, Typography } from "@mui/material";
 import dayjs from 'dayjs';
 import 'dayjs/locale/zh-cn';
@@ -464,6 +465,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
     const [teacherAll, setTeacherAll] = useState([]);
 
     const [currentDate, setCurrentDate] = useState(null)
+    const [tableData,setTableData] = useState(null)
 
     //-- 日期(今日、昨日) --
     const date=new Date();
@@ -528,8 +530,6 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
             })
         }
     }, [open])
-  
-
 
       useEffect(()=>{
         setData({
@@ -568,6 +568,17 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
 
 
       },[data.change_type])
+
+      useEffect(() => {
+        if (currentDate) {
+            
+            //獲取calendar的資料
+            getCourseAll(formatDateBack(currentDate), formatDateBack(currentDate)).then((data) => {
+            setTableData(dataTransformTable(data.data));
+          })
+          console.log(currentDate);
+        }
+      }, [currentDate])
   
      //-- 送出表單 --
      const handleSubmit = (status)=>{
@@ -1132,23 +1143,44 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
         
                         {crud === "needApproval" && 
                                 <Box display={"flex"} flexDirection={isMobile ? "column" : "row"} gap={"10px"} sx={{position:"absolute",left:"25px",bottom:"20px","& button":{fontSize:"15px"}}}>
-                                    <Box display={"flex"} gap={"5px"}>
-                                        <Button variant="contained"  sx={{ backgroundColor: "#6DC4C5"}} onClick={()=>{
+                                    <Box >
+                                        <Button variant="contained" size="small"  sx={{ backgroundColor: "#6DC4C5", marginRight:'5px'}} onClick={()=>{
                                             if(window.confirm("簽核後無法再取消，是否要簽核此異動單?")){
                                                 handleSign("100")
                                             }
                                         }}>
                                                 簽核
                                         </Button>
-                                        <Button variant="contained"  sx={{ backgroundColor: "#c87B79"}} onClick={()=>{
+                                        <Button variant="contained" size="small"  sx={{ backgroundColor: "#c87B79", marginRight:'5px'}} onClick={()=>{
                                             if(window.confirm("駁回後無法再取消，是否要駁回此異動單?")){
                                                 handleSign("9")
                                             }
                                         }}>
                                                 駁回
                                         </Button>
+                                        <Button variant="contained" size="small" sx={{ backgroundColor: "#2a6ba3", marginRight:'5px', display: data.change_type==4 ? 'none':''}} onClick={()=>{
+                                            setCurrentDate(new Date(2024, (3)-1, 4));
+                                        }}>
+                                                查看課表
+                                        </Button>
+
+                                        {/* 查看課表 */}
+                                        {currentDate &&
+                                            <Dialog open={currentDate} onClose={() => setCurrentDate(null)} sx={{
+                                            "& .MuiPaper-root": isMobile ? {
+                                                maxWidth: "100%",
+                                                width: "100%",
+                                                margin: 0
+                                            } : {
+                                                maxWidth: "700px",
+                                                padding: "25px"
+                                            }
+                                            }}>
+                                            {tableData ? <TransferCalendar tableData={tableData} currentDate={currentDate} data={data} setData={setData} setCurrentDate={setCurrentDate}></TransferCalendar> : <IsLoading />}
+                                            </Dialog>
+                                        }
                                     </Box>
-                                <DialogContent sx={{padding:0,width:"250px"}}>
+                                <DialogContent sx={{padding:0,width:"100px"}}>
                                     <TextField
                                         autoFocus
                                         margin="dense"
