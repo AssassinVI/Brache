@@ -125,7 +125,7 @@ export function formatDateBack(inputDateStr) {
 }
 
 export function convertToChineseNumber(number) {
-    const chineseNumbers = ['零', '一', '二', '三', '四', '五', '六', '日', '八', '九'];
+    const chineseNumbers = ['日', '一', '二', '三', '四', '五', '六', '日', '八', '九'];
 
     if (number >= 0 && number <= 9) {
         return chineseNumbers[number];

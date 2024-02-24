@@ -576,7 +576,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
             getCourseAll(formatDateBack(currentDate), formatDateBack(currentDate)).then((data) => {
             setTableData(dataTransformTable(data.data));
           })
-          console.log(currentDate);
+        //console.log(currentDate);
         }
       }, [currentDate])
   
@@ -586,6 +586,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
           //status === 1 = > 送出
           const userId = userData.inform.Tb_index;
           const handleAjax = (status)=>{
+            
             if(crud ==="insert" || crud ==="adjustCourse" || crud ==="changeCourse"){
                 
                 changeApi.insert_course_transfer({
@@ -649,7 +650,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                     dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
                 }
             }
-            else if(data.change_type === "3" || data.change_type === "5"){
+            else if(data.change_type === "3" || data.change_type === "5" || data.change_type === "6"){
                 if(data.course_id ){
                     handleAjax(status)
                 }else{
@@ -908,7 +909,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                             </DialogContent>
                         }
                         
-                        {/* 補簽 */}
+                        {/* 補簽 && 超時請假 */}
                         {data.change_type === "3" || data.change_type === "6" ?
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
                             <InputLabel id="demo-simple-select-label"sx={{marginBottom:"5px"}}>{data.change_type === "3" ? '補簽課堂' : '請假課堂'}</InputLabel>
@@ -1158,7 +1159,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         }}>
                                                 駁回
                                         </Button>
-                                        <Button variant="contained" size="small" sx={{ backgroundColor: "#2a6ba3", marginRight:'5px', display: data.change_type==4 ? 'none':''}} onClick={()=>{
+                                        <Button variant="contained" size="small" sx={{ backgroundColor: "#2a6ba3", marginRight:'5px'}} onClick={()=>{
                                             setCurrentDate(new Date(2024, (3)-1, 4));
                                         }}>
                                                 查看課表
@@ -1176,7 +1177,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                                 padding: "25px"
                                             }
                                             }}>
-                                            {tableData ? <TransferCalendar tableData={tableData} currentDate={currentDate} data={data} setData={setData} setCurrentDate={setCurrentDate}></TransferCalendar> : <IsLoading />}
+                                            {tableData ? <TransferCalendar currentDate={currentDate} setCurrentDate={setCurrentDate} data={data}></TransferCalendar> : <IsLoading />}
                                             </Dialog>
                                         }
                                     </Box>

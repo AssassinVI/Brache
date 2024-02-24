@@ -1,11 +1,12 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { addMinutesToTime, calculateDifferenceIn15Minutes, convertToChineseNumber, formatDateBack, getContrastColor } from './getMonday';
+import { addMinutesToTime, calculateDifferenceIn15Minutes, convertToChineseNumber, formatDateBack, getContrastColor, dataTransformTable } from './getMonday';
 import { Box, Button, DialogActions, useMediaQuery, Chip } from '@mui/material';
 import { SelectableGroup } from 'react-selectable-fast';
 import { useSelector } from 'react-redux';
 import { tokens } from '../../theme';
 import { useTheme } from '@emotion/react';
 import { createSelectable } from "react-selectable-fast";
+import * as courseApi from "../../axios-api/calendarData";
 
 const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = false, gap }) => {
   //獲取使用者資訊
@@ -68,15 +69,24 @@ const LessonUnit = ({ data, uniqueId }) => {
   )
 }
 
-const SelectCalendar = ({ tableData, currentDate = new Date(), data, setData, setCurrentDate }) => {
+const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
+
+  const [tableDataNEW, setTableDataNEW] = useState(null)
+  const [transferDate, setTransferDate] = useState(null)
+  const [transferChDate, setTransferChDate] = useState(null)
 
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
 
-  const month = currentDate.getMonth() + 1;
+  // const month = currentDate.getMonth() + 1;
+  // const date = currentDate.getDate()
+  // const day = currentDate.getDay()
+  const [month, setMonth] = useState(null)
+  const [date, setDate] = useState(null)
+  const [day, setDay] = useState(null)
 
-  const date = currentDate.getDate()
-
-  const day = currentDate.getDay()
+  const [chMonth, setChMonth] = useState(null)
+  const [chDate, setChDate] = useState(null)
+  const [chDay, setChDay] = useState(null)
 
   const theme = useTheme();
 
@@ -133,6 +143,56 @@ const SelectCalendar = ({ tableData, currentDate = new Date(), data, setData, se
   //   }
   // }, [selectedElements])
 
+  useEffect(()=>{
+    //-- 將日期帶入 --
+    //-- 加課只有change_date --
+     let tDate=data.change_type==="4" ? data.change_date.split('-') : data.before_date.split('-');
+     setTransferDate(new Date(tDate[0], parseInt(tDate[1])-1, tDate[2]))
+
+     console.log(data)
+
+     if(data.change_type==="1"){
+       let tDate=data.change_date.split('-');
+       setTransferChDate(new Date(tDate[0], parseInt(tDate[1])-1, tDate[2]))
+     }
+     //-- 換課要撈換課資料 --
+     else if(data.change_type==="2"){
+      courseApi.getOne(data.change_course_id, (data)=>{
+        console.log(data.data.data[0].c_date);
+        let tDate=data.data.data[0].c_date.split('-');
+        setTransferChDate(new Date(tDate[0], parseInt(tDate[1])-1, tDate[2]))
+      })
+     }
+  
+  }, [])
+
+  //-- 異動前日期 --
+  useEffect(()=>{
+    if(transferDate!==null){
+      setMonth(transferDate.getMonth() + 1)
+      setDate(transferDate.getDate())
+      setDay(transferDate.getDay())
+      //獲取calendar的資料
+      courseApi.getCourseAll(formatDateBack(transferDate), formatDateBack(transferDate)).then((data) => {
+        setTableDataNEW(dataTransformTable(data.data));
+      })
+    }
+    console.log(transferDate)
+  }, [ transferDate])
+
+  //-- 異動後日期 --
+  useEffect(()=>{
+    if(transferChDate!==null){
+      setChMonth(transferChDate.getMonth() + 1)
+      setChDate(transferChDate.getDate())
+      setChDay(transferChDate.getDay())
+    }
+  }, [transferChDate])
+
+  useEffect(()=>{
+    console.log(tableDataNEW)
+  }, [ tableDataNEW])
+
   useEffect(() => {
     selectedGroupsRef.current.forEach((groupRef) => {
       if (groupRef) {
@@ -158,41 +218,45 @@ const SelectCalendar = ({ tableData, currentDate = new Date(), data, setData, se
     setSelectionStart(true)
   };
 
-  const handleSubmit = () => {
-    const sortedSelectableItems = selectedElements.slice().sort((item1, item2) => {
-      const [date1, time1] = item1.props.uniqueId.split('/');
-      const [date2, time2] = item2.props.uniqueId.split('/');
+  // const handleSubmit = () => {
+  //   const sortedSelectableItems = selectedElements.slice().sort((item1, item2) => {
+  //     const [date1, time1] = item1.props.uniqueId.split('/');
+  //     const [date2, time2] = item2.props.uniqueId.split('/');
 
-      if (date1 !== date2) {
-        // 先按日期排序
-        return new Date(date1) - new Date(date2);
-      } else {
-        // 如果日期相同，再按開始時間排序
-        const [start1] = time1.split('-');
-        const [start2] = time2.split('-');
-        return start1.localeCompare(start2);
-      }
-    });
-    const endTime = addMinutesToTime(sortedSelectableItems[sortedSelectableItems.length - 1].props.uniqueId.split("/")[0].split(" ")[1], 15);
-    const startTime = sortedSelectableItems[0].props.uniqueId.split("/")[0].split(" ")[1];
-    const class_type = sortedSelectableItems[0].props.uniqueId.split("/")[1];
-    const year_date_day = sortedSelectableItems[0].props.uniqueId.split("/")[0].split(" ")[0];
-    setData({
-      ...data,
-      StartTime: startTime,
-      EndTime: endTime,
-      room_name: class_type,
-      c_date: year_date_day
-    })
-    handleCancel()
-  }
+  //     if (date1 !== date2) {
+  //       // 先按日期排序
+  //       return new Date(date1) - new Date(date2);
+  //     } else {
+  //       // 如果日期相同，再按開始時間排序
+  //       const [start1] = time1.split('-');
+  //       const [start2] = time2.split('-');
+  //       return start1.localeCompare(start2);
+  //     }
+  //   });
+  //   const endTime = addMinutesToTime(sortedSelectableItems[sortedSelectableItems.length - 1].props.uniqueId.split("/")[0].split(" ")[1], 15);
+  //   const startTime = sortedSelectableItems[0].props.uniqueId.split("/")[0].split(" ")[1];
+  //   const class_type = sortedSelectableItems[0].props.uniqueId.split("/")[1];
+  //   const year_date_day = sortedSelectableItems[0].props.uniqueId.split("/")[0].split(" ")[0];
+  //   setData({
+  //     ...data,
+  //     StartTime: startTime,
+  //     EndTime: endTime,
+  //     room_name: class_type,
+  //     c_date: year_date_day
+  //   })
+  //   handleCancel()
+  // }
+
   const handleCancel = () => {
-    setCurrentDate(null)
+     setCurrentDate(null)
   }
+
   return (
     <>
      <Box>
-        <h3>異動前課表</h3>
+        <h3>
+         {data.change_type==="1" || data.change_type==="2" ? "異動前課表":"異動的課表"}
+        </h3>
         <Box className='calendar' display={"flex"} m={"20px 0 0"} sx={{
           width: "100%",
           height: "100vh",
@@ -322,60 +386,68 @@ const SelectCalendar = ({ tableData, currentDate = new Date(), data, setData, se
           <Box className='calendar-content' display={"flex"} overflow={"hidden"} >
             <Box className='day-of-the-week' minWidth={isMobile ? "100%" : "520px"} >
               <Box className='calendar-date'>
-                {currentDate && <h6>{`${month}月${date}日(星期${convertToChineseNumber(day)})`}</h6>}
+                {transferDate && <h6>{`${month}月${date}日(星期${convertToChineseNumber(day)})`}</h6>}
               </Box>
               <Box display={"flex"} className='calendar-square' >
                 {classes.map((class_type) => {
                   let count = 0
                   return (
-                    <SelectableGroup
-                      disabled={true}
-                      allowClickWithoutSelected={false}
-                      key={class_type} // 設置唯一的key
-                      resetOnStart={true}
-                      onSelectionFinish={(selectedItems) => {
-                        handleSelectionFinish(selectedItems)
-                      }}
-                      duringSelection={handleSelectionStart}
-                      ref={(ref) => addGroupRef(ref)}
-                      style={{ width: `calc(100% / 8)` }}
-                      className={`calendar-y-axis`}>
-
-                      <Box display={"flex"} justifyContent={"center"} alignItems={"center"} width={"100%"} className='class-name' >
-                        <p>{class_type}</p>
-                      </Box>
-                      {lessonTime.map((time, i) => {
-                        return (
-                          <Box key={time.end + time.start} className='lesson-box' display={"flex"} flexDirection={"column"} width={"100%"} height={`calc((100% - 40px) / ${lessonTime.length})`}
-                            sx={{
-                              backgroundColor: i % 2 === 0 ? colors.primary[400] : "#fff"
-                            }}
-                          >
-                            {tableData.length !== 0 &&
-                              [...Array(4)].map((_, i) => {
-                                const uniqueId = `${currentDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}`
-
-                                if (tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]) {
-                                  const start = tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].StartTime;
-                                  const end = tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].EndTime;
-                                  count = calculateDifferenceIn15Minutes(start, end)
-                                } else {
-                                  if (count > 0) {
-                                    --count
-                                  } else {
-                                    count = 0
-                                  }
-                                }
-                                return (
-                                  <LessonUnit count={count} uniqueId={uniqueId} data={tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
-                                )
-                              })
-                            }
+                    <>
+                      {
+                        transferDate && 
+                        <SelectableGroup
+                          disabled={true}
+                          allowClickWithoutSelected={false}
+                          key={class_type} // 設置唯一的key
+                          resetOnStart={true}
+                          onSelectionFinish={(selectedItems) => {
+                            handleSelectionFinish(selectedItems)
+                          }}
+                          duringSelection={handleSelectionStart}
+                          ref={(ref) => addGroupRef(ref)}
+                          style={{ width: `calc(100% / 8)` }}
+                          className={`calendar-y-axis`}>
+    
+                          <Box display={"flex"} justifyContent={"center"} alignItems={"center"} width={"100%"} className='class-name' >
+                            <p>{class_type}</p>
                           </Box>
-                        )
-                      })}
-                    </SelectableGroup>
+                          {lessonTime.map((time, i) => {
+                            return (
+                              <Box key={time.end + time.start} className='lesson-box' display={"flex"} flexDirection={"column"} width={"100%"} height={`calc((100% - 40px) / ${lessonTime.length})`}
+                                sx={{
+                                  backgroundColor: i % 2 === 0 ? colors.primary[400] : "#fff"
+                                }}
+                              >
+                                {tableDataNEW !== null &&
+                                  [...Array(4)].map((_, i) => {
+                                    const uniqueId = `${transferDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}`
+    
+                                    if (tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]) {
+                                      const start = tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].StartTime;
+                                      const end = tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].EndTime;
+                                      count = calculateDifferenceIn15Minutes(start, end)
+                                    } else {
+                                      if (count > 0) {
+                                        --count
+                                      } else {
+                                        count = 0
+                                      }
+                                    }
+                                    return (
+                                      <LessonUnit count={count} uniqueId={uniqueId} data={tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
+                                    )
+                                  })
+                                }
+                              </Box>
+                            )
+                          })}
+                        </SelectableGroup>
+                      }
+                    </>
+                    
+
                   )
+
                 })}
 
               </Box>
@@ -383,197 +455,204 @@ const SelectCalendar = ({ tableData, currentDate = new Date(), data, setData, se
           </Box>
 
         </Box>
-        <h3>異動後課表</h3>
-        <Box className='calendar' display={"flex"} m={"20px 0 0"} sx={{
-          width: "100%",
-          height: "100vh",
-          minHeight: "1020px",
-          border: "1px solid #000",
-          "& .calendar-time": {
-            display: "flex",
-            flexDirection: "column",
-            width: "4%",
-            minWidth: isMobile ? "40px" : "80px",
-            borderRight: "1px solid #000",
-            "& > :nth-of-type(1)": {
-              display: "flex",
-              alignItems: "center",
-              padding: "0 5%",
-              flexWrap: "wrap",
-              "& p": {
-                margin: 0,
-                flex: "0 0 100%",
-                "&:nth-of-type(1)": {
-                  textAlign: "end"
-                },
-              },
-            },
-            "& .hour-box": {
-              "& > :not(:last-child)": {
-                borderBottom: "1px solid #000"
-              }
-            }
-          },
-          "& .calendar-content": {
-            flexGrow: 1,
-            "& .day-of-the-week": {
-              display: "flex",
-              flexDirection: "column",
-              width: isMobile ? "100%" : "calc(100%/7)",
-              "&:not(:last-child)": {
-                borderRight: "1px solid #000"
-              },
-              "& .calendar-date": {
-                display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                height: "40px",
-                borderBottom: "1px solid #000",
-                "& h6": {
-                  fontSize: "16px",
-                  margin: 0,
-                  fontWeight: "400"
-                }
-              },
-              "& .calendar-square": {
-                flexGrow: 1,
-                "& .calendar-y-axis": {
-                  "& .selected": {
-                    backgroundColor: "#2970bc",
 
-                  },
-                  "& .selecting": {
-                    backgroundColor: "#7bb6f5",
-
-                  },
-                  "&:not(:last-child)": {
-                    borderRight: "1px solid #000"
-                  },
-                  "& .class-name": {
-                    height: "40px",
-                    borderBottom: "1px solid #000",
-
+        {
+          transferChDate && 
+          <>
+             <h3>異動後課表</h3>
+              <Box className='calendar' display={"flex"} m={"20px 0 0"} sx={{
+                width: "100%",
+                height: "100vh",
+                minHeight: "1020px",
+                border: "1px solid #000",
+                "& .calendar-time": {
+                  display: "flex",
+                  flexDirection: "column",
+                  width: "4%",
+                  minWidth: isMobile ? "40px" : "80px",
+                  borderRight: "1px solid #000",
+                  "& > :nth-of-type(1)": {
+                    display: "flex",
+                    alignItems: "center",
+                    padding: "0 5%",
+                    flexWrap: "wrap",
                     "& p": {
                       margin: 0,
-
-                    }
-                  },
-                  "& .lesson-box": {
-                    "&:not(:last-child)": {
-                      borderBottom: "1px solid #000"
+                      flex: "0 0 100%",
+                      "&:nth-of-type(1)": {
+                        textAlign: "end"
+                      },
                     },
-                    "&> div": {
-                      position: "relative",
-                      borderBottom: "1px solid #ccc",
-
-                      "& .lesson-unit": {
-                        display: "flex",
-                        justifyContent: "center",
-                        alignItems: "center",
-                        position: "absolute",
-                        left: 0,
-                        top: 0,
-                        width: "100%",
-
-                        zIndex: "99",
-                        cursor: "pointer",
-
-                      }
+                  },
+                  "& .hour-box": {
+                    "& > :not(:last-child)": {
+                      borderBottom: "1px solid #000"
                     }
                   }
                 },
+                "& .calendar-content": {
+                  flexGrow: 1,
+                  "& .day-of-the-week": {
+                    display: "flex",
+                    flexDirection: "column",
+                    width: isMobile ? "100%" : "calc(100%/7)",
+                    "&:not(:last-child)": {
+                      borderRight: "1px solid #000"
+                    },
+                    "& .calendar-date": {
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      height: "40px",
+                      borderBottom: "1px solid #000",
+                      "& h6": {
+                        fontSize: "16px",
+                        margin: 0,
+                        fontWeight: "400"
+                      }
+                    },
+                    "& .calendar-square": {
+                      flexGrow: 1,
+                      "& .calendar-y-axis": {
+                        "& .selected": {
+                          backgroundColor: "#2970bc",
 
-              }
-            }
+                        },
+                        "& .selecting": {
+                          backgroundColor: "#7bb6f5",
 
-          }
+                        },
+                        "&:not(:last-child)": {
+                          borderRight: "1px solid #000"
+                        },
+                        "& .class-name": {
+                          height: "40px",
+                          borderBottom: "1px solid #000",
 
-        }}>
-          <Box className='calendar-time'>
-            <Box width={"100%"} height={"80px"} borderBottom={"1px solid #000"}>
-              <p>日期</p>
-              <p>時間</p>
-            </Box>
-            <Box flexGrow={1} className='hour-box'>
-              {lessonTime.map((item, i) => {
-                return (
-                  <Box key={item.start + item.end} className='hour' display={"flex"} justifyContent={"center"} alignItems={"center"} width={"100%"} height={`calc((100%) /  ${lessonTime.length})`}
-                    sx={{
-                      backgroundColor: i % 2 === 0 ? colors.primary[400] : "#fff"
-                    }}
-                  >
-                    <p style={{ margin: 0 }}>{`${item.start}-${item.end}`}</p>
-                  </Box>
-                )
-              })}
+                          "& p": {
+                            margin: 0,
 
-            </Box>
-          </Box>
+                          }
+                        },
+                        "& .lesson-box": {
+                          "&:not(:last-child)": {
+                            borderBottom: "1px solid #000"
+                          },
+                          "&> div": {
+                            position: "relative",
+                            borderBottom: "1px solid #ccc",
 
-          <Box className='calendar-content' display={"flex"} overflow={"hidden"} >
-            <Box className='day-of-the-week' minWidth={isMobile ? "100%" : "520px"} >
-              <Box className='calendar-date'>
-                {currentDate && <h6>{`${month}月${date}日(星期${convertToChineseNumber(day)})`}</h6>}
-              </Box>
-              <Box display={"flex"} className='calendar-square' >
-                {classes.map((class_type) => {
-                  let count = 0
-                  return (
-                    <SelectableGroup
-                      disabled={true}
-                      allowClickWithoutSelected={false}
-                      key={class_type} // 設置唯一的key
-                      resetOnStart={true}
-                      onSelectionFinish={(selectedItems) => {
-                        handleSelectionFinish(selectedItems)
-                      }}
-                      duringSelection={handleSelectionStart}
-                      ref={(ref) => addGroupRef(ref)}
-                      style={{ width: `calc(100% / 8)` }}
-                      className={`calendar-y-axis`}>
+                            "& .lesson-unit": {
+                              display: "flex",
+                              justifyContent: "center",
+                              alignItems: "center",
+                              position: "absolute",
+                              left: 0,
+                              top: 0,
+                              width: "100%",
 
-                      <Box display={"flex"} justifyContent={"center"} alignItems={"center"} width={"100%"} className='class-name' >
-                        <p>{class_type}</p>
-                      </Box>
-                      {lessonTime.map((time, i) => {
-                        return (
-                          <Box key={time.end + time.start} className='lesson-box' display={"flex"} flexDirection={"column"} width={"100%"} height={`calc((100% - 40px) / ${lessonTime.length})`}
-                            sx={{
-                              backgroundColor: i % 2 === 0 ? colors.primary[400] : "#fff"
-                            }}
-                          >
-                            {tableData.length !== 0 &&
-                              [...Array(4)].map((_, i) => {
-                                const uniqueId = `${currentDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}`
+                              zIndex: "99",
+                              cursor: "pointer",
 
-                                if (tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]) {
-                                  const start = tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].StartTime;
-                                  const end = tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].EndTime;
-                                  count = calculateDifferenceIn15Minutes(start, end)
-                                } else {
-                                  if (count > 0) {
-                                    --count
-                                  } else {
-                                    count = 0
-                                  }
-                                }
-                                return (
-                                  <LessonUnit count={count} uniqueId={uniqueId} data={tableData?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
-                                )
-                              })
                             }
-                          </Box>
+                          }
+                        }
+                      },
+
+                    }
+                  }
+
+                }
+
+              }}>
+                <Box className='calendar-time'>
+                  <Box width={"100%"} height={"80px"} borderBottom={"1px solid #000"}>
+                    <p>日期</p>
+                    <p>時間</p>
+                  </Box>
+                  <Box flexGrow={1} className='hour-box'>
+                    {lessonTime.map((item, i) => {
+                      return (
+                        <Box key={item.start + item.end} className='hour' display={"flex"} justifyContent={"center"} alignItems={"center"} width={"100%"} height={`calc((100%) /  ${lessonTime.length})`}
+                          sx={{
+                            backgroundColor: i % 2 === 0 ? colors.primary[400] : "#fff"
+                          }}
+                        >
+                          <p style={{ margin: 0 }}>{`${item.start}-${item.end}`}</p>
+                        </Box>
+                      )
+                    })}
+
+                  </Box>
+                </Box>
+
+                <Box className='calendar-content' display={"flex"} overflow={"hidden"} >
+                  <Box className='day-of-the-week' minWidth={isMobile ? "100%" : "520px"} >
+                    <Box className='calendar-date'>
+                      {transferChDate && <h6>{`${chMonth}月${chDate}日(星期${convertToChineseNumber(chDay)})`}</h6>}
+                    </Box>
+                    <Box display={"flex"} className='calendar-square' >
+                      {classes.map((class_type) => {
+                        let count = 0
+                        return (
+                          <SelectableGroup
+                            disabled={true}
+                            allowClickWithoutSelected={false}
+                            key={class_type} // 設置唯一的key
+                            resetOnStart={true}
+                            onSelectionFinish={(selectedItems) => {
+                              handleSelectionFinish(selectedItems)
+                            }}
+                            duringSelection={handleSelectionStart}
+                            ref={(ref) => addGroupRef(ref)}
+                            style={{ width: `calc(100% / 8)` }}
+                            className={`calendar-y-axis`}>
+
+                            <Box display={"flex"} justifyContent={"center"} alignItems={"center"} width={"100%"} className='class-name' >
+                              <p>{class_type}</p>
+                            </Box>
+                            {lessonTime.map((time, i) => {
+                              return (
+                                <Box key={time.end + time.start} className='lesson-box' display={"flex"} flexDirection={"column"} width={"100%"} height={`calc((100% - 40px) / ${lessonTime.length})`}
+                                  sx={{
+                                    backgroundColor: i % 2 === 0 ? colors.primary[400] : "#fff"
+                                  }}
+                                >
+                                  {tableDataNEW !== null &&
+                                    [...Array(4)].map((_, i) => {
+                                      const uniqueId = `${currentDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}`
+
+                                      if (tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]) {
+                                        const start = tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].StartTime;
+                                        const end = tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].EndTime;
+                                        count = calculateDifferenceIn15Minutes(start, end)
+                                      } else {
+                                        if (count > 0) {
+                                          --count
+                                        } else {
+                                          count = 0
+                                        }
+                                      }
+                                      return (
+                                        <LessonUnit count={count} uniqueId={uniqueId} data={tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
+                                      )
+                                    })
+                                  }
+                                </Box>
+                              )
+                            })}
+                          </SelectableGroup>
                         )
                       })}
-                    </SelectableGroup>
-                  )
-                })}
+
+                    </Box>
+                  </Box>
+                </Box>
 
               </Box>
-            </Box>
-          </Box>
-
-        </Box>
+          </>
+        }
+        
      </Box>
       
       <DialogActions sx={{ paddingRight: 0, "& button": { padding: "3px 8px", fontSize: "14px" } }}>
