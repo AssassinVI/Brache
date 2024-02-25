@@ -8,6 +8,7 @@ import { useTheme } from '@emotion/react';
 import { createSelectable } from "react-selectable-fast";
 import * as courseApi from "../../axios-api/calendarData";
 
+//-- 顯示課程 --
 const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = false, gap }) => {
   //獲取使用者資訊
   const userData = useSelector(state => state.accessRangeReducer)
@@ -52,18 +53,80 @@ const SelectArea = ({ selectableRef, isSelected, isSelecting, uniqueId, data = f
   )
 }
 
+//-- 異動單課程 --
+const TransferArea = ({ uniqueId, data = false, gap }) => {
+
+  return (
+    <Box width={"100%"} height={"100%"} data-uniqueid={uniqueId}  position={"absolute"}>
+
+      {data && <Box className='lesson-unit' position={"absolute"} left={0} top={0} height={`calc(${100 * gap}% + ${gap + (gap / 4) - 1}px)`} bgcolor={`${data.t_color}99`} boxShadow={" 0 0 0 1px #000"} sx={{zIndex: "110 !important", pointerEvents: "none", color: getContrastColor(data.t_color) }}>
+        
+        <Chip label={'異動'} 
+            size="small" 
+            sx={{
+              position:'absolute', 
+              top:'-5px', 
+              right:'-3px', 
+              height: '16px',
+              fontSize:'11px',
+              padding:'6px 0',
+              backgroundColor: '#a31313',
+              color: '#fff',
+              display: 'inline-flex'
+              }}/>
+        
+        {
+        data.student.map((student)=>{
+          // console.log(data);
+          return (
+            <p style={{margin: 0,}}>{student.name}</p>
+          )
+        })
+      }</Box>}
+    </Box>
+  )
+}
+
 const CreateSelectable = createSelectable(SelectArea);
 
-const LessonUnit = ({ data, uniqueId }) => {
-  let gap;
+//-- 課程單元 --
+const LessonUnit = ({transferData=null, changeCourse=null, data, uniqueId, tType }) => {
+  let gap, tData, tGap, tStart, tEnd, tRoom, uniqueId_arr;
   if (data) {
     const start = data.StartTime;
     const end = data.EndTime;
     gap = calculateDifferenceIn15Minutes(start, end)
+    // console.log(data, uniqueId);
   }
+
+  if(transferData){
+        uniqueId_arr=uniqueId.split(' ')
+        uniqueId_arr=uniqueId_arr[1].split('/')
+        
+    if(tType==="before"){
+      tRoom=transferData.change_type==="4" ? transferData.change_room_name : transferData.before_room_name;
+      tStart = transferData.change_type==="4" ? transferData.change_StartTime : transferData.before_StartTime;
+      tEnd = transferData.change_type==="4" ? transferData.change_EndTime :  transferData.before_EndTime;
+    }
+    else{
+      tRoom= changeCourse!==null ? changeCourse.room_name : transferData.change_room_name;
+      tStart = changeCourse!==null ? changeCourse.StartTime : transferData.change_StartTime;
+      tEnd = changeCourse!==null ? changeCourse.EndTime : transferData.change_EndTime;
+    }
+    
+    tGap = calculateDifferenceIn15Minutes(tStart, tEnd)
+
+    tData={
+      t_color: '#cccccc',
+      student: transferData.student,
+    }
+  }
+    
+  
 
   return (
     <Box key={data && data.Tb_index} flexBasis="25%" width={"100%"}  >
+      {transferData && tStart===uniqueId_arr[0] && tRoom===uniqueId_arr[1] ? <TransferArea uniqueId={uniqueId} data={tData} gap={tGap} /> : ''}
       {<CreateSelectable uniqueId={uniqueId} data={data} gap={gap} />}
     </Box>
   )
@@ -72,8 +135,10 @@ const LessonUnit = ({ data, uniqueId }) => {
 const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
 
   const [tableDataNEW, setTableDataNEW] = useState(null)
+  const [tableDataChNEW, setTableDataChNEW] = useState(null)
   const [transferDate, setTransferDate] = useState(null)
   const [transferChDate, setTransferChDate] = useState(null)
+  const [changeCourse, setChangeCourse] = useState(null)
 
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
 
@@ -101,6 +166,17 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
     "206",
     "1F",
     "備"
+  ]
+
+  const classesId = [
+    "201",
+    "202",
+    "203",
+    "204",
+    "205",
+    "206",
+    "1",
+    "99"
   ]
 
   const lessonTime = [
@@ -158,9 +234,9 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
      //-- 換課要撈換課資料 --
      else if(data.change_type==="2"){
       courseApi.getOne(data.change_course_id, (data)=>{
-        console.log(data.data.data[0].c_date);
         let tDate=data.data.data[0].c_date.split('-');
         setTransferChDate(new Date(tDate[0], parseInt(tDate[1])-1, tDate[2]))
+        setChangeCourse(data.data.data[0]);
       })
      }
   
@@ -177,7 +253,6 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
         setTableDataNEW(dataTransformTable(data.data));
       })
     }
-    console.log(transferDate)
   }, [ transferDate])
 
   //-- 異動後日期 --
@@ -186,12 +261,16 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
       setChMonth(transferChDate.getMonth() + 1)
       setChDate(transferChDate.getDate())
       setChDay(transferChDate.getDay())
+      //獲取calendar的資料
+      courseApi.getCourseAll(formatDateBack(transferChDate), formatDateBack(transferChDate)).then((data) => {
+        setTableDataChNEW(dataTransformTable(data.data));
+      })
     }
   }, [transferChDate])
 
-  useEffect(()=>{
-    console.log(tableDataNEW)
-  }, [ tableDataNEW])
+  // useEffect(()=>{
+  //   console.log(tableDataNEW)
+  // }, [ tableDataNEW])
 
   useEffect(() => {
     selectedGroupsRef.current.forEach((groupRef) => {
@@ -389,7 +468,7 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
                 {transferDate && <h6>{`${month}月${date}日(星期${convertToChineseNumber(day)})`}</h6>}
               </Box>
               <Box display={"flex"} className='calendar-square' >
-                {classes.map((class_type) => {
+                {classes.map((class_type, index) => {
                   let count = 0
                   return (
                     <>
@@ -420,7 +499,7 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
                               >
                                 {tableDataNEW !== null &&
                                   [...Array(4)].map((_, i) => {
-                                    const uniqueId = `${transferDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}`
+                                    const uniqueId = `${transferDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}/${classesId[index]}`
     
                                     if (tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]) {
                                       const start = tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].StartTime;
@@ -434,7 +513,7 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
                                       }
                                     }
                                     return (
-                                      <LessonUnit count={count} uniqueId={uniqueId} data={tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
+                                        <LessonUnit tType={'before'} transferData={data} changeCourse={changeCourse} count={count} uniqueId={uniqueId} data={tableDataNEW?.[formatDateBack(transferDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
                                     )
                                   })
                                 }
@@ -592,7 +671,7 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
                       {transferChDate && <h6>{`${chMonth}月${chDate}日(星期${convertToChineseNumber(chDay)})`}</h6>}
                     </Box>
                     <Box display={"flex"} className='calendar-square' >
-                      {classes.map((class_type) => {
+                      {classes.map((class_type, index) => {
                         let count = 0
                         return (
                           <SelectableGroup
@@ -618,13 +697,13 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
                                     backgroundColor: i % 2 === 0 ? colors.primary[400] : "#fff"
                                   }}
                                 >
-                                  {tableDataNEW !== null &&
+                                  {tableDataChNEW !== null &&
                                     [...Array(4)].map((_, i) => {
-                                      const uniqueId = `${currentDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}`
+                                      const uniqueId = `${transferChDate.getFullYear()}-${month}-${date} ${addMinutesToTime(time.start, (i) * 15)}/${class_type}/${classesId[index]}`
 
-                                      if (tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]) {
-                                        const start = tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].StartTime;
-                                        const end = tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].EndTime;
+                                      if (tableDataChNEW?.[formatDateBack(transferChDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]) {
+                                        const start = tableDataChNEW?.[formatDateBack(transferChDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].StartTime;
+                                        const end = tableDataChNEW?.[formatDateBack(transferChDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)].EndTime;
                                         count = calculateDifferenceIn15Minutes(start, end)
                                       } else {
                                         if (count > 0) {
@@ -634,7 +713,7 @@ const SelectCalendar = ({ currentDate = new Date(), setCurrentDate, data }) => {
                                         }
                                       }
                                       return (
-                                        <LessonUnit count={count} uniqueId={uniqueId} data={tableDataNEW?.[formatDateBack(currentDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
+                                        <LessonUnit tType={'after'} transferData={data} changeCourse={changeCourse} count={count} uniqueId={uniqueId} data={tableDataChNEW?.[formatDateBack(transferChDate)]?.[class_type]?.[addMinutesToTime(time.start, (i) * 15)]} />
                                       )
                                     })
                                   }
