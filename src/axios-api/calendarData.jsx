@@ -218,3 +218,24 @@ export const get_cover_askForLeave = (data, func) => {
         console.error(error);
     }
 };
+
+
+//-- 簽到 --
+export const signIn=(data, func)=>{
+    try {
+        axiosInstance({
+            method: 'POST',
+            url: calendarApi,
+            data: {
+                ...data,
+                type: "signIn",
+            },
+        }).then((data)=>{
+            func(data)
+        });
+        
+        return data
+    } catch (error) {
+        console.error(error);
+    }
+}

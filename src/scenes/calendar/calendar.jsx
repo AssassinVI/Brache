@@ -1240,6 +1240,29 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
   }
 
 
+  //-- 簽到 --
+  const signNow=()=>{
+    if(window.confirm("確定要為此課程簽到嗎?")){
+      const startDate = currentDateRedux.year + "-" + currentDateRedux.month + "-" + currentDateRedux.day
+      const endDate = formatDateBack(getWeekDates(startDate)[6])
+      calendarApi.signIn({
+        course_id: data.Tb_index,
+      }, (res)=>{
+        if(res.data.success){
+          dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+          calendarApi.getAll(startDate, endDate).then((data) => {
+            dispatch(calendarTableDataAction(dataTransformTable(data.data)))
+          })
+          handleCancel()
+        }
+        else{
+            dispatch(snackBarOpenAction(true, `${res.data.msg}`, 'error'))
+        }
+      })
+    }
+  }
+
+
   useEffect(() => {
     if (currentDate) {
       calendarApi.getAll(formatDateBack(currentDate), formatDateBack(currentDate)).then((data) => {
@@ -1278,15 +1301,22 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
     let isReSignin_time=false;
     let TimeOut=false;
     let isTransfer=false;
+    let signTime=false; // -- 簽到時間 --
     
     
     if(unitData){
       // console.log(unitData);
       // 将日期时间字符串解析为Date对象
+      const StartTime = new Date(unitData.c_date +"T"+ unitData.StartTime);
       const EndTime = new Date(unitData.c_date +"T"+ unitData.EndTime);
+      
 
       // 获取时间戳
+      const classTimeStampStart = StartTime.getTime();
       const classTimeStamp = EndTime.getTime();
+      const minuteTimeStamp=1000*60; //-- 1分鐘毫秒 --
+
+      signTime=classTimeStampStart-(minuteTimeStamp*15) <= Date.now() && classTimeStamp >= Date.now();
 
       TimeOut=Date.now() > classTimeStamp;
 
@@ -1589,7 +1619,8 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                   {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"adjustCourse"} course_id={data.Tb_index} setListData={setListData}/>}
                   {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"changeCourse"} course_id={data.Tb_index} setListData={setListData}/>}
                   <Button onClick={()=>{askForLeave()}} variant="contained" sx={{backgroundColor:'#d9a710', display: type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? 'none':'inline-flex'}}>{'請假'}</Button>
-                  
+                  <Button onClick={()=>{signNow()}} variant="contained" sx={{backgroundColor:'#1e9151', display: signTime ? 'inline-flex':'none'}}>{'簽到'}</Button>
+
                 </Box>
                 <Box>
                   {authorityRange.p_update && <Button onClick={handleSubmit}>{type === "update" ? "修改" : "新增"}</Button>}
