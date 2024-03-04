@@ -72,9 +72,10 @@ function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, 
                 fontSize: "16px"
             },
             "& .MuiDialog-container > .MuiPaper-root": {
-                padding: " 10px 25px",
+                padding: " 10px 10px",
                 width: "100%",
                 maxWidth: "650px",
+                margin: "30px 15px"
             },
             "& ul":{
                 width:"100%",
@@ -132,11 +133,13 @@ function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, 
             <ul>
                 <li>
                     <div className="box">學生</div>
+                    <div className="box">老師</div>
                     <div className="box">教室</div>
                     <div className="box">上課</div>
                     <div className="box radio">選擇</div>
                 </li>
          {listData.map((item)=>{
+            // console.log(item);
             return(
             <li key={item.Tb_index}>
                 <div className="box"><p>{
@@ -144,6 +147,7 @@ function OpenSelectClass({teacher=null, date=null, setClassDate, data, setData, 
                         return ( <span style={{margin:'0 5px'}}>{student.name}</span> )
                     })    
                 }</p></div>
+                <div className="box"><p>{item.t_name}</p></div>
                 <div className="box"><p>{item.room_name}</p></div>
                 <div className="box"><p>{item.StartTime}</p></div>
                 <div className="box radio">

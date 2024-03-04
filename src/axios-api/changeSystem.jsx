@@ -118,7 +118,6 @@ export const select_course = async (data,func) => {
             func(data)
         })
 
-  
     } catch (error) {
         console.error(error);
     }
