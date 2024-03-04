@@ -849,7 +849,8 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                     <TimePicker 
                                         label="課堂開始時間" 
                                         value={dayjs(`${data.change_date}T${data.change_StartTime}`)} 
-                                        timeSteps={{  minutes: 15,  }}
+                                        timeSteps={{  minutes: 15  }}
+                                        minutesStep={15}
                                         minTime={dayjs().set('hour', 5)}
                                         views={['hours', 'minutes']}
                                         readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
@@ -871,7 +872,8 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                     <TimePicker 
                                         label="課堂結束時間" 
                                         value={dayjs(`${data.change_date}T${data.change_EndTime}`)} 
-                                        timeSteps={{  minutes: 15,  }}
+                                        timeSteps={{  minutes: 15 }}
+                                        minutesStep={15}
                                         minTime={dayjs().set('hour', 5)}
                                         readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
                                         onChange={(time)=>{
@@ -1049,6 +1051,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         label="課堂開始時間" 
                                         value={dayjs(`${data.change_date}T${data.change_StartTime}`)} 
                                         timeSteps={{  minutes: 15,  }}
+                                        minutesStep={15}
                                         minTime={dayjs().set('hour', 5)}
                                         views={['hours', 'minutes']}
                                         readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
@@ -1071,6 +1074,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         label="課堂結束時間" 
                                         value={dayjs(`${data.change_date}T${data.change_EndTime}`)} 
                                         timeSteps={{  minutes: 15,  }}
+                                        minutesStep={15}
                                         minTime={dayjs().set('hour', 5)}
                                         readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
                                         onChange={(time)=>{
