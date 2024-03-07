@@ -451,8 +451,8 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
     const [open,setOpen] = useState(false)
     //獲取使用者資訊
     const userData = useSelector(state => state.accessRangeReducer)
-      //主要後續傳後端的data
-      const [data,setData] = useState({})
+    //主要後續傳後端的data
+    const [data,setData] = useState({})
     //異動課堂
     const [classDate,setClassDate] = useState(null)
     //互換課堂
@@ -461,6 +461,9 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
   
     //欲調課的位置
     const [newClass,setNewClass] = useState({})
+
+    //開始結束時間判斷
+    const [timeError, setTimeError]=useState(false);
 
     //簽核留言位置
     const [message,setMessage] = useState(null)
@@ -639,35 +642,43 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
 
           
         if(window.confirm(status === "0" ? "是否要暫存此異動單" : "送出後不可再修改，確認是否送出此異動單\n##注意：加課、調課有重疊其他課將會刪除重疊的課##")){
-           
-            if(data.change_type === "1"){
-                if(data.course_id && data.change_date){
-                    handleAjax(status)
-                }else{
-                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
-                }
+
+            if(timeError){
+                dispatch(snackBarOpenAction(true, "時間錯誤，請確認課堂開始時間、結束時間是否有誤", 'error'))
             }
-            else if(data.change_type === "2"){
-                if(data.course_id && data.change_course_id){
-                    handleAjax(status)
-                }else{
-                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+            else{
+
+                if(data.change_type === "1"){
+                    if(data.course_id && data.change_date && data.change_StartTime && data.change_EndTime){
+                        handleAjax(status)
+                    }else{
+                        dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+                    }
                 }
-            }
-            else if(data.change_type === "3" || data.change_type === "5" || data.change_type === "6"){
-                if(data.course_id ){
-                    handleAjax(status)
-                }else{
-                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+                else if(data.change_type === "2"){
+                    if(data.course_id && data.change_course_id){
+                        handleAjax(status)
+                    }else{
+                        dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+                    }
                 }
-            }
-            else if(data.change_type === "4"){
-                if(data.change_teacher_id && data.change_date && data.student){
-                    handleAjax(status)
-                }else{
-                    dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+                else if(data.change_type === "3" || data.change_type === "5" || data.change_type === "6"){
+                    if(data.course_id ){
+                        handleAjax(status)
+                    }else{
+                        dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+                    }
                 }
+                else if(data.change_type === "4"){
+                    if(data.change_teacher_id && data.change_date && data.student && data.change_StartTime && data.change_EndTime){
+                        handleAjax(status)
+                    }else{
+                        dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
+                    }
+                }
+
             }
+            
         }
      }
      
@@ -690,6 +701,15 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                     handleCancel()
             }
             })
+     }
+
+     //-- 課程時間判斷 --
+     const validateTimeRange = (start, end)=>{
+        if (start && end && start >= end) {
+            setTimeError(true);
+        } else {
+            setTimeError(false);
+        }
      }
 
      
@@ -802,7 +822,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                             format="YYYY/MM/DD"
                                             minDate={dayjs(today)}
                                             value={dayjs( data.change_date)}
-                                            readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                            readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "changeCourse"}
                                             onChange={(newDate)=>{
                                                 let formatDate=`${newDate.$y}-${parseInt(newDate.$M)+1}-${newDate.$D}`;
                                                 setData({
@@ -829,7 +849,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         })
                                     }}
                                     label="教室"
-                                    inputProps={{ readOnly: crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}}
+                                    inputProps={{ readOnly: crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "changeCourse"}}
                                     >
                                     <MenuItem value={201}>201</MenuItem>
                                     <MenuItem value={202}>202</MenuItem>
@@ -853,9 +873,10 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         minutesStep={15}
                                         minTime={dayjs().set('hour', 5)}
                                         views={['hours', 'minutes']}
-                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "changeCourse"}
                                         onChange={(time)=>{
                                             let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            validateTimeRange(formatTime, data.change_EndTime)
                                             setData({
                                                 ...data,
                                                 change_StartTime: formatTime
@@ -874,10 +895,11 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         value={dayjs(`${data.change_date}T${data.change_EndTime}`)} 
                                         timeSteps={{  minutes: 15 }}
                                         minutesStep={15}
-                                        minTime={dayjs().set('hour', 5)}
-                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
+                                        minTime={dayjs().set('hour', 5 )}
+                                        readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "changeCourse"}
                                         onChange={(time)=>{
                                             let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            validateTimeRange(data.change_StartTime, formatTime)
                                             setData({
                                                 ...data,
                                                 change_EndTime: formatTime
@@ -1057,6 +1079,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
                                         onChange={(time)=>{
                                             let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            validateTimeRange(formatTime, data.change_EndTime)
                                             setData({
                                                 ...data,
                                                 change_StartTime: formatTime
@@ -1079,6 +1102,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                         readOnly={crud  === "view" ||  crud === "history" || crud === "needApproval" || crud  === "adjustCourse" || crud  === "changeCourse"}
                                         onChange={(time)=>{
                                             let formatTime=`${String(time.$H).padStart(2,"0")}:${String(time.$m).padStart(2,"0")}`;
+                                            validateTimeRange(data.change_StartTime, formatTime)
                                             setData({
                                                 ...data,
                                                 change_EndTime: formatTime
