@@ -1611,7 +1611,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                 
                 <Box sx={{display:'flex', gap:'10px', }}>
 
-                  {authorityRange.p_delete&& type === "update" && !TimeOut && 
+                  {authorityRange.p_delete&& type === "update" && 
                     <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>
                   }
                   <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
