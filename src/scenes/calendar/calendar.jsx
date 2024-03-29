@@ -1351,6 +1351,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
               <p style={{margin:0, fontSize:'15px'}}>上課日期：{unitData.c_date}</p>
               <p style={{margin:0, fontSize:'15px'}}>上課時間：{unitData.StartTime}</p>
               <p style={{margin:0, fontSize:'15px'}}>下課時間：{unitData.EndTime}</p>
+              <p style={{margin:0, fontSize:'15px', display: unitData.course_transfer_end.c_remark===null || unitData.course_transfer_end.c_remark===' ' ? 'none':'inline-block'}}>備註：{unitData.course_transfer_end.c_remark}</p>
             </React.Fragment>
           } arrow placement="top" >
 

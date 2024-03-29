@@ -258,6 +258,9 @@ function List({ listData }) {
                                                     },
                                                     "& .x": {
                                                         backgroundColor: "#c87B79",
+                                                    },
+                                                    "& .x.re": {
+                                                        backgroundColor: "#aec51b",
                                                     }
                                                 }
                                             }
@@ -272,7 +275,9 @@ function List({ listData }) {
                                                             lineHeight:'1'
                                                         }
                                                     }}>
-                                                    {item.t_signin_time ? <div className="round"></div> : <div className="x"></div>}
+                                                    {item.t_signin_time ? <div className="round"></div> 
+                                                    : 
+                                                    item.t_reSignin_time ? <div className="x re"></div> : <div className="x"></div>}
                                                     {item.t_signin_time ? <p>{t_time}{show_delay_t}</p> 
                                                      : 
                                                      item.t_askForLeave_time ? 
@@ -293,7 +298,9 @@ function List({ listData }) {
                                                     }
                                                  }}
                                                 >
-                                                    {item.s_signin_time ? <div className="round"></div> : <div className="x"></div>}
+                                                    {item.s_signin_time ? <div className="round"></div> 
+                                                    : 
+                                                    item.t_reSignin_time ? <div className="x re"></div> : <div className="x"></div>}
                                                     {item.s_signin_time ? <p>{s_time}{show_delay_s}</p> 
                                                      :
                                                      item.s_askForLeave_time ? 
