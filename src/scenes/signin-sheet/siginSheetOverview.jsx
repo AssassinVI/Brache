@@ -359,11 +359,18 @@ function List({ listData }) {
                     },
                     "& .x": {
                         backgroundColor: "#c87B79",
+                    },
+                    "& .x.re": {
+                        backgroundColor: "#aec51b",
                     }
                 }}>
                     <Box >
                         <div className="round"></div>
                         <p>已簽到</p>
+                    </Box>
+                    <Box >
+                        <div className="x re"></div>
+                        <p>補簽</p>
                     </Box>
                     <Box >
                         <div className="x"></div>

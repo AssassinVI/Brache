@@ -337,6 +337,7 @@ const CalendarTop = () => {
   const [teacherAll, setTeacherAll] = useState([]);
   const [autocompleteStudentAll, setAutocompleteStudentAll] = useState([]);
   const [searchStudent,setSearchStudent] =useState(null)
+  const [prevMaxWeeks, setPrevMaxWeeks]=useState(0);
   const [maxWeeks, setMaxWeeks]=useState(0);
   const scrollRef = useRef(null)
   const isMobile = useMediaQuery('(max-width:1000px)'); // 媒体查询判断是否为手机屏幕
@@ -460,21 +461,47 @@ const CalendarTop = () => {
         }
     }, [accessData])
 
+    //-- 獲取最大周 --
+    useEffect(()=>{
+    
+      if(currentDate){
+        setPrevMaxWeeks(countMondaysInMonth(currentDate.month===1 ? currentDate.year-1 : currentDate.year, currentDate.month===1 ? 12 : currentDate.month-1));
+        setMaxWeeks(countMondaysInMonth(currentDate.year, currentDate.month));
+      }
+    }, [currentDate])
+
 
     //-- 上一週 --
     function prevWeek() {
-      if(currentDate.weekNumber!==1){
+
+      // console.log('Max',maxWeeks, 'Num',currentDate.weekNumber+1, 'prevNum', prevMaxWeeks);
+      // if(currentDate.weekNumber!==1){}
         
         const prevWeekMonday=getDateOfMondayInWeek(currentDate.year , currentDate.month , currentDate.weekNumber-1);
+
+        //-- 新的年 --
+        let newYear=currentDate.weekNumber === 1 && prevWeekMonday.getMonth()+1 === 1 ? prevWeekMonday.getFullYear()-1 : prevWeekMonday.getFullYear();
+        //-- 新的月 --
+        let newMonth
+        if(prevWeekMonday.getMonth()+1 === 1){
+          newMonth=currentDate.weekNumber === 1 ? 12 : prevWeekMonday.getMonth()+1
+        }
+        else{
+          newMonth=currentDate.weekNumber === 1 ? prevWeekMonday.getMonth() : prevWeekMonday.getMonth()+1
+        }
+        //-- 新的日 --
+        let newWeekNumber=currentDate.weekNumber === 1 ? prevMaxWeeks : currentDate.weekNumber-1
+
         const monday_weekNumber={
-            year: prevWeekMonday.getFullYear(),
-            month: prevWeekMonday.getMonth()+1,
+            year: newYear,
+            month: newMonth,
             day: prevWeekMonday.getDate(),
-            weekNumber: currentDate.weekNumber-1
+            weekNumber: newWeekNumber
         }
 
         const prevStartDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
         const prevEndDate = formatDateBack(getWeekDates(prevStartDate)[6]);
+
 
         //-- 送到redux calendarDateAction --
         dispatch(calendarDateAction(monday_weekNumber));
@@ -483,22 +510,34 @@ const CalendarTop = () => {
         calendarApi.getAll(prevStartDate, prevEndDate).then((data) => {
           dispatch(calendarTableDataAction(dataTransformTable(data.data)))
         })
-      }
+      
     }
 
     //-- 下一週 --
     function nextWeek() {
 
-      setMaxWeeks(countMondaysInMonth(currentDate.year, currentDate.month));
-
-      if(currentDate.weekNumber < maxWeeks){
+      //setMaxWeeks(countMondaysInMonth(currentDate.year, currentDate.month));
+      // if(currentDate.weekNumber < maxWeeks){}
 
         const nextWeekMonday=getDateOfMondayInWeek(currentDate.year , currentDate.month , currentDate.weekNumber+1);
+        //-- 新的年 --
+        let newYear=currentDate.weekNumber === maxWeeks && nextWeekMonday.getMonth()+1 === 12 ? nextWeekMonday.getFullYear()+1 : nextWeekMonday.getFullYear();
+        //-- 新的月 --
+        let newMonth
+        if(nextWeekMonday.getMonth()+1 === 12){
+          newMonth=currentDate.weekNumber === maxWeeks ? 1 : nextWeekMonday.getMonth()+1
+        }
+        else{
+          newMonth=currentDate.weekNumber === maxWeeks ? nextWeekMonday.getMonth()+2 : nextWeekMonday.getMonth()+1
+        }
+        //-- 新的日 --
+        let newWeekNumber=currentDate.weekNumber === maxWeeks ? 1 : currentDate.weekNumber+1
+
         const monday_weekNumber={
-            year: nextWeekMonday.getFullYear(),
-            month: nextWeekMonday.getMonth()+1,
+            year: newYear,
+            month: newMonth,
             day: nextWeekMonday.getDate(),
-            weekNumber: currentDate.weekNumber+1
+            weekNumber: newWeekNumber
         }
 
         const nextStartDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
@@ -511,7 +550,6 @@ const CalendarTop = () => {
         calendarApi.getAll(nextStartDate, nextEndDate).then((data) => {
           dispatch(calendarTableDataAction(dataTransformTable(data.data)))
         })
-      }
     }
   
     //-- Today --
@@ -585,17 +623,18 @@ const CalendarTop = () => {
             <Box display={"flex"} alignItems={"center"}>
 
               <IconButton onClick={(e)=>{prevWeek();}} aria-label="上一週" sx={{ 
-                opacity: currentDate.weekNumber===1 ? 0: 1 ,
-                visibility: currentDate.weekNumber===1 ? 'hidden': 'visible' ,
+                // opacity: currentDate.weekNumber===1 ? 0: 1 ,
+                // visibility: currentDate.weekNumber===1 ? 'hidden': 'visible' ,
                 backgroundColor:'#1d7dc9', 
                 color:'#fff', 
                 transform:'rotate(180deg)', 
                 "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
+
               <h4 style={{margin:'0 8px'}}>{`${currentDate.year}年${currentDate.month}月第${currentDate.weekNumber}週學生課表`}</h4>
 
               <IconButton onClick={(e)=>{nextWeek();}} aria-label="下一週" sx={{
-                opacity: currentDate.weekNumber===maxWeeks ? 0: 1 ,
-                visibility: currentDate.weekNumber===maxWeeks ? 'hidden': 'visible' ,
+                // opacity: currentDate.weekNumber===maxWeeks ? 0: 1 ,
+                // visibility: currentDate.weekNumber===maxWeeks ? 'hidden': 'visible' ,
                 backgroundColor:'#1d7dc9', 
                 color:'#fff', 
                 "&:hover":{backgroundColor:'#15629e',}}}><ArrowForwardIcon /></IconButton>
