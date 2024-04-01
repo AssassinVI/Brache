@@ -26,6 +26,7 @@ import { getWeekInfoForDate,
 import * as calendarApi from "../../axios-api/calendarData"
 import * as changeApi from "../../axios-api/changeSystem"
 import MultiSelect from '../../lib/multiSelect';
+import StudentSelect from '../../lib/studentSelect';
 import * as studentApi from "../../axios-api/studentData"
 import * as teacherApi from "../../axios-api/teacherData"
 import { IsLoading } from "../../components/loading";
@@ -745,7 +746,6 @@ const CalendarTop = () => {
                 id="controlled-demo"
                 // disableClearable
                 onChange={(event, newValue) => {
-
                   setSearchStudent(newValue===null ? null: newValue.Tb_index);
                 }}
                 renderInput={(params) => (
@@ -1116,8 +1116,6 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
   //儲存異動單list資料
   const [listData, setListData] = useState(null)
 
-
-  
   //-- 關閉視窗 --
   const handleCancel = () => {
     setOpen(false)
@@ -1557,7 +1555,8 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                 />
               </DialogContent>
               <DialogContent sx={{padding: "10px !important"}}>
-                {((studentAll && data.student) || type === "insert") && <MultiSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>}
+                {/* {((studentAll && data.student) || type === "insert") && <MultiSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>} */}
+                {((studentAll && data.student) || type === "insert") && <StudentSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>}
               </DialogContent>
               <DialogContent sx={{padding: "10px !important", display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", "& .input": { flex: "0 0 45%", "& label": { color: "#000" }, "& input": { WebkitTextFillColor: "#000" } } }}>
                 <Box flex={"0 0 100%"}>
