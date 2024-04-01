@@ -45,11 +45,14 @@ function SelectDate({setScrollNum}) {
 
   //-- 選擇日期 --
   const handleChange = (e) => {
+    
     // const selectDate=new Date(getDateOfMondayInWeek(`${e.$y}-${e.$M+1}-${e.$D}`));
-    const selectDate=new Date(`${e.$y}-${e.$M+1}-${e.$D}`);
+    //-- 為了相容Apple手機、平板需加.replace(/-/g, "/") --
+    const selectDate=new Date(`${e.$y}-${e.$M+1}-${e.$D}`.replace(/-/g, "/"));
     const monday_weekNumber = getWeekInfoForDate(selectDate);
     const startDate = monday_weekNumber.year + "-" + monday_weekNumber.month + "-" + monday_weekNumber.day;
     const endDate = formatDateBack(getWeekDates(startDate)[6]);
+    
     setData({
       monday_weekNumber: monday_weekNumber,
       selectDate: `${e.$y}-${e.$M+1}-${e.$D}`,
@@ -61,7 +64,7 @@ function SelectDate({setScrollNum}) {
     //   selectDate: `${e.$y}-${e.$M+1}-${e.$D}`,
     //   startDate: startDate,
     //   endDate: endDate,
-    // });
+    // });    
   }
 
   const handleCancel = () => {
@@ -81,8 +84,10 @@ function SelectDate({setScrollNum}) {
 
     
     //-- 捲到指定位置 --
-    let getday=new Date(data.selectDate);
+    //-- 為了相容Apple手機、平板需加.replace(/-/g, "/") --
+    let getday=new Date(data.selectDate.replace(/-/g, "/"));
         getday=getday.getDay()==0 || getday.getDay()>6 ? 6 : getday.getDay()-1;
+
     setScrollNum(getday)
 
     handleCancel()
@@ -351,6 +356,8 @@ const CalendarTop = () => {
 
   //-- 捲動到指定日期 --
   useEffect(()=>{
+
+    // alert(scrollNum)
     if(scrollRef.current!=null){
       scrollRef.current.scrollTo(
         {
@@ -698,7 +705,7 @@ const CalendarTop = () => {
               </Box>
               <Box sx={{display:'flex', alignItems:'center', gap: "10px",}}>
                 {/* 選擇日期 */}
-                <SelectDate currentDate={currentDate} setScrollNum={setScrollNum} />
+                <SelectDate  setScrollNum={setScrollNum} />
 
                 {/* 新增異動單 */}
                 {adminData?.inform?.position_type!=='3' ? <ChangeSheet crud={"insert"} setListData={setListData}/> : ''}
