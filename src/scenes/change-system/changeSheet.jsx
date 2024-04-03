@@ -22,6 +22,7 @@ import { getOne } from "../../axios-api/calendarData";
 import * as teacherApi from "../../axios-api/teacherData";
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MultiSelect from '../../lib/multiSelect';
+import StudentSelect from '../../lib/studentSelect';
 import * as studentApi from "../../axios-api/studentData"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousSharpIcon from '@mui/icons-material/DangerousSharp';
@@ -1007,7 +1008,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                                     }}
                                     />
                                 <Box sx={{marginTop:'10px'}}>
-                                    {studentAll &&  <MultiSelect studentAll={studentAll} data={data} setData={setData} type={crud} author={authorityRange.p_update} />}
+                                    {studentAll &&  <StudentSelect studentAll={studentAll} data={data} setData={setData} type={crud} author={authorityRange.p_update} />}
                                 </Box>
                                 <Box flex={"0 0 100%"} sx={{marginTop:'10px'}}>
                                     <Typography variant="h5" component="h6">課堂時間及教室</Typography>
