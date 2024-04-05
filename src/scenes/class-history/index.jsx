@@ -5,7 +5,7 @@ import 'dayjs/locale/zh-cn';
 import { LocalizationProvider, DatePicker } from '@mui/x-date-pickers'
 import { DemoContainer } from '@mui/x-date-pickers/internals/demo';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { Box, TextField, useMediaQuery, Autocomplete } from '@mui/material'
+import { Box, Button, TextField, useMediaQuery, Autocomplete } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 import { get_student_course_history_one } from '../../axios-api/studentData'
 import { useTheme } from '@emotion/react'
@@ -18,6 +18,7 @@ import CloseIcon from '@mui/icons-material/Close';
 
 function FunctionBar({date,setDate,student,setStudent}){
     const accessRange = useSelector(store => store.accessRangeReducer)
+    const isTest = useSelector(store => store.testReducer)
     const [studentAll,setStudentAll] = useState(null)
     const [studentOne,setStudentOne] = useState(null)
     const dates = new Date()
@@ -34,12 +35,12 @@ function FunctionBar({date,setDate,student,setStudent}){
                 options: data.data,
                 getOptionLabel: (option) => option.name,
             });
-            console.log(data.data);
+            // console.log(data.data);
           });
        
     },[])
     return(
-       <Box display={"flex"} gap={"25px"} flexWrap={"wrap"}>
+       <Box display={"flex"} gap={"25px"} width={"fit-content"} alignItems={"center"} flexWrap={"wrap"}>
           {accessRange?.inform?.name !== "學生" && studentAll &&
                 
                 <Autocomplete
@@ -88,6 +89,18 @@ function FunctionBar({date,setDate,student,setStudent}){
                 />
             </DemoContainer>
             </LocalizationProvider>
+
+            <Button variant="contained" sx={{backgroundColor:'#207c23'}} 
+             onClick={()=>{
+                const testUrl= isTest.test ? `&test=test` : ``;
+                let StartDate=dayjs(date?.StartDate ? date.StartDate : todayArr.join("-"))
+                    StartDate=`${StartDate.$y}-${StartDate.$M+1}-${StartDate.$D}`
+                let EndDate=dayjs(date?.EndDate ? date.EndDate : todayArr.join("-"))
+                    EndDate=`${EndDate.$y}-${EndDate.$M+1}-${EndDate.$D}`
+                console.log(student, StartDate, EndDate);
+                window.open(`https://bratsche.web-board.tw/ajax/outputClassHistoryExcel.php?Tb_index=${student}&StartDate=${StartDate}&EndDate=${EndDate}${testUrl}`, '_blank')
+             }}
+            > 匯出Excel檔</Button>
 
        </Box>
     )
