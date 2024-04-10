@@ -172,7 +172,7 @@ function List({ listData }) {
             headerName: "簽到狀況",
             flex: 1,
             renderCell: (rows) => {
-                                return (
+                return (
                     <Box width={"100%"} overflow={isMobile ? "scroll" : "none"}>
                         <Box display={"flex"}  gap={"25px"} width="100%" minWidth={`${rows.row.classes.length * 25 + rows.row.classes.length * 100 + 50}px`}>
                             <Box alignSelf={"flex-end"} sx={{
@@ -186,11 +186,13 @@ function List({ listData }) {
                                 marginRight: "-10px",
                             }}>
                                 <p className="teacher">老師</p>
-                                <p className="student">學生</p>
+                                {/* <p className="student">學生</p> */}
                             </Box>
                             {rows.row.classes.map((item) => {
-                                // console.log(item);
-                                const date = `${item.c_date.split("-")[1]}月${item.c_date.split("-")[2]}日`;
+                                 console.log(item);
+                                const week=['日','一','二','三','四','五','六'];
+                                const weekNum=new Date(item.c_date).getDay();
+                                const date = `${item.c_date.split("-")[1]}月${item.c_date.split("-")[2]}日(${week[weekNum]})`;
                                 const StartTime_s= new Date(`${item.c_date} ${item.StartTime}`).getTime();
                                 const EndTime_s= new Date(`${item.c_date} ${item.EndTime}`).getTime();
                                 const t_time_s= new Date(item.t_signin_time).getTime();
@@ -199,6 +201,9 @@ function List({ listData }) {
                                 const delay_s_time=StartTime_s-s_time_s;
                                 const show_delay_t=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_t_time/60000))}分${Math.abs((delay_t_time/1000)%60)}秒)` : '';
                                 const show_delay_s=delay_t_time<0 ? `(晚${Math.floor(Math.abs(delay_s_time/60000))}分${Math.abs((delay_s_time/1000)%60)}秒)` : '';
+
+                                //-- 時長 --
+                                const timeLine=(EndTime_s-StartTime_s)/60/1000;
 
                                 const t_time= item.t_signin_time==null ? '': item.t_signin_time.split(" ")[1];
                                 const t_leave_time= item.t_askForLeave_time==null ? '': item.t_askForLeave_time.split(" ")[1];
@@ -215,6 +220,7 @@ function List({ listData }) {
                                         padding: "0 12px",
                                         "& .date": {
                                             width: "100%",
+                                            paddingTop: "8px",
                                             "&  p": {
                                                 fontSize: "15px",
                                                 textAlign: "center"
@@ -232,14 +238,15 @@ function List({ listData }) {
                                     }}>
                                         <Box className="date">
                                             <p>{date}</p>
-                                            <Box display={"flex"} justifyContent={"center"}  width={"100%"} sx={{
+                                            <Box display={"flex"} justifyContent={"center"} alignItems={"center"} flexDirection={"column"} width={"100%"} sx={{
                                                 margin: "3px 0",
                                                 "& p": {
-                                                    width: "50%",
+                                                    width: "auto",
                                                     textAlign: "center",
                                                 }
                                             }}>
-                                                <p>簽到</p>
+                                                <p>{item.c_name}</p>
+                                                <p>時長：{timeLine}分鐘</p>
                                             </Box>
                                         </Box>
                                         <Box sx={{
@@ -288,7 +295,7 @@ function List({ listData }) {
                                                      : ''}
                                                 </Box>
                                             </Box>
-                                            <Box className="checkOut" display={"flex"} gap={"10px"} justifyContent={"center"} >
+                                            {/* <Box className="checkOut" display={"flex"} gap={"10px"} justifyContent={"center"} >
                                                 <Box alignItems={"center"}
                                                  sx={{
                                                     '& .round, & .x':{
@@ -311,7 +318,7 @@ function List({ listData }) {
                                                      : ''
                                                     }
                                                 </Box>
-                                            </Box>
+                                            </Box> */}
                                         </Box>
                                     </Box>
                                 )
