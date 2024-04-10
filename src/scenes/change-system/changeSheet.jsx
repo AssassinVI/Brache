@@ -30,6 +30,7 @@ import ArrowLeftSharpIcon from '@mui/icons-material/ArrowLeftSharp';
 import ReceiptLongIcon from '@mui/icons-material/ReceiptLong';
 import { snackBarOpenAction, notificationListAction } from "../../redux/action";
 import useAuthorityRange from '../../custom-hook/useAuthorityRange';
+import {debounce} from '../../lib/debounce'
 import { string } from "yup";
 
 //-- 顯示指定日期的課堂 --
@@ -684,25 +685,31 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
      }
      
      //-- 簽核 --
-     const handleSign = (status)=>{
-            const userId =userData.inform.Tb_index
-            changeApi.signIn_course_transfer({
-                record_type:status,
-                admin_id:userId,
-                c_remark:message || " ",
-                course_ch_id:data.Tb_index
-            },(res)=>{
-                if(res.data.success){
-                    dispatch(snackBarOpenAction(true, `${res.data.msg}`))
-                    changeApi.get_course_transfer(userId,(res)=>{
-                        setListData(res.data.data)
-                    })
-                    //-- 更新通知 --
-                    dispatch(notificationListAction({reflash: true}))
-                    handleCancel()
+     //-- 防抖方法 --
+     const submitFun= debounce((status)=>{
+
+        const userId =userData.inform.Tb_index
+        changeApi.signIn_course_transfer({
+            record_type:status,
+            admin_id:userId,
+            c_remark:message || " ",
+            course_ch_id:data.Tb_index
+        },(res)=>{
+            if(res.data.success){
+                dispatch(snackBarOpenAction(true, `${res.data.msg}`))
+                changeApi.get_course_transfer(userId,(res)=>{
+                    setListData(res.data.data)
+                })
+                //-- 更新通知 --
+                dispatch(notificationListAction({reflash: true}))
+                handleCancel()
             }
-            })
-     }
+        })
+    }, 500)
+
+    const handleSign = (status)=>{
+        submitFun(status);
+    }
 
      //-- 課程時間判斷 --
      const validateTimeRange = (start, end)=>{

@@ -8,6 +8,7 @@ import { useDispatch, useSelector } from 'react-redux';
 import { snackBarOpenAction, notificationListAction } from '../../redux/action';
 import ChangeSheet from "./changeSheet";
 import * as changeApi from "../../axios-api/changeSystem"
+import {debounce} from '../../lib/debounce'
 
 export default function YourApproval({listData=[],setListData}){
     const theme = useTheme();
@@ -89,7 +90,8 @@ export default function YourApproval({listData=[],setListData}){
     ];
 
     //-- 批次簽核 --
-    const batchApproval= ()=>{
+    //-- 防抖方法 --
+    const submitFun = debounce(()=>{
         let result = prompt("是否要簽核所勾選的異動單嗎?\n下欄填寫備註：", '');
         if(result!==null){
             if(selectCt.length>0){
@@ -134,6 +136,10 @@ export default function YourApproval({listData=[],setListData}){
                 dispatch(snackBarOpenAction(true, `請勾選需要簽核的異動單!`, 'error'))
             }
         }
+    }, 500)
+
+    const batchApproval= ()=>{
+        submitFun();
     }
 
     const responsiveColumns = isMobile

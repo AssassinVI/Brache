@@ -212,6 +212,7 @@ function List({ listData }) {
                                 return (
                                     <Box sx={{
                                         width: "200px",
+                                        padding: "0 12px",
                                         "& .date": {
                                             width: "100%",
                                             "&  p": {
@@ -392,11 +393,17 @@ function List({ listData }) {
                     "&::-webkit-scrollbar": {
                         display: "none"
                     },
+                    
                     "& .MuiDataGrid-root": {
                         border: "none",
                     },
                     "& .MuiDataGrid-cell": {
+                        overflowX: "auto !important",
                         borderBottom: "none",
+                    },
+                    "& .MuiDataGrid-cell>.MuiBox-root": {
+                        overflow: "hidden",
+                        overflowX: "scroll"
                     },
                     "& .name-column--cell": {
                         color: colors.greenAccent[300],
