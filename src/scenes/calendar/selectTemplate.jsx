@@ -120,19 +120,14 @@ const SelectTemplate = ({ tableData, initWeekDay = 0, data, setData, handleCance
 
     const handleSubmit = () => {
         const sortedSelectableItems = selectedElements.slice().sort((item1, item2) => {
-            const [date1, time1] = item1.props.uniqueId.split('/');
-            const [date2, time2] = item2.props.uniqueId.split('/');
-
-            if (date1 !== date2) {
-                // 先按日期排序
-                return new Date(date1) - new Date(date2);
-            } else {
-                // 如果日期相同，再按開始時間排序
-                const [start1] = time1.split('-');
-                const [start2] = time2.split('-');
-                return start1.localeCompare(start2);
-            }
+            const date1=item1.props.uniqueId.split(' ');
+            const [time1, room1]=date1[1].split('/');
+            const date2=item2.props.uniqueId.split(' ');
+            const [time2, room2]=date2[1].split('/');
+            
+            return time1.localeCompare(time2);
         });
+
         const endTime = addMinutesToTime(sortedSelectableItems[sortedSelectableItems.length - 1].props.uniqueId.split("/")[0].split(" ")[1], 15);
         const startTime = sortedSelectableItems[0].props.uniqueId.split("/")[0].split(" ")[1];
         const class_type = sortedSelectableItems[0].props.uniqueId.split("/")[1];
