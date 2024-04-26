@@ -10,7 +10,7 @@ import 'dayjs/locale/zh-cn';
 import { LocalizationProvider } from '@mui/x-date-pickers';
 import { DateCalendar } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
+// import { AdapterMoment } from '@mui/x-date-pickers/AdapterMoment'
 import { useTheme } from '@emotion/react';
 import { tokens } from '../../theme';
 import { getWeekInfoForDate, 
@@ -25,8 +25,9 @@ import { getWeekInfoForDate,
          getDateOfMondayInWeek } from './getMonday';
 import * as calendarApi from "../../axios-api/calendarData"
 import * as changeApi from "../../axios-api/changeSystem"
-import MultiSelect from '../../lib/multiSelect';
+// import MultiSelect from '../../lib/multiSelect';
 import StudentSelect from '../../lib/studentSelect';
+import TeacherSelect from '../../lib/teacherSelect';
 import * as studentApi from "../../axios-api/studentData"
 import * as teacherApi from "../../axios-api/teacherData"
 import { IsLoading } from "../../components/loading";
@@ -1414,6 +1415,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                 }}>
                   
                      {
+                      // 右上角小標籤
                       userData.inform.admin_per!=="group2023071815332755" || (userData.inform.admin_per==="group2023071815332755" && unitData.teacher_id===userData.inform.Tb_index) ?
                         <Chip label={isSign ? '未' : isAskForLeave ? '假': isReSignin_time ? '補' : ''} 
                             size="small" 
@@ -1432,6 +1434,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                      }
 
                      {
+                       //-- 判斷有無異動單，無異動單顯示課程名稱單字 --
                        isTransfer ?
                         <Chip label={unitData.course_transfer?.change_type} 
                         size="small" 
@@ -1446,7 +1449,25 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                           color: '#1f5295',
                           display: 'inline-flex'
                           }}/>
-                        : ''
+
+                        : 
+
+                        <Chip label={unitData.c_name.slice(0,1)} 
+                        size="small" 
+                        sx={{
+                          position:'absolute', 
+                          top:'-5px', 
+                          left:'-3px', 
+                          height: '16px',
+                          fontSize:'11px',
+                          padding:'4px 0',
+                          backgroundColor: 'rgb(255 255 255 / 80%)',
+                          color: '#1f5295',
+                          display: 'inline-flex',
+                           '& .MuiChip-labelSmall':{
+                             padding:'0 4px',
+                           }
+                          }}/>
                      }
                         
 
@@ -1513,25 +1534,8 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
               <DialogContent sx={{ width: "100%", padding: "10px !important" }} >
                 {teacherAll &&
                   <FormControl fullWidth >
-                    <InputLabel id="demo-simple-select-label">老師</InputLabel>
-                    <Select onChange={(e) => {
-                      setData({
-                        ...data,
-                        teacher_id: e.target.value,
-                      })
-                    }}
-                    disabled={!authorityRange.p_update}
-                      value={data.teacher_id}
-                      labelId="demo-simple-select-label"
-                      id="demo-simple-select"
-                      label="老師"
-                      sx={{ width: "80%", maxWidth: "300px", "& .MuiButtonBase-root": { padding: "0 16px" } }}>
-                      {teacherAll.map((item, i) => (
-                        <MenuItem key={item.Tb_index} value={item.Tb_index} >
-                          {item.name}
-                        </MenuItem>
-                      ))}
-                    </Select>
+                    {/* 老師下拉選單 */}
+                    {((teacherAll && data.teacher_id) || type === "insert") && <TeacherSelect teacherAll={teacherAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>}
                   </FormControl>
                 }
               </DialogContent>
@@ -1556,6 +1560,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
               </DialogContent>
               <DialogContent sx={{padding: "10px !important"}}>
                 {/* {((studentAll && data.student) || type === "insert") && <MultiSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>} */}
+                {/* 學生下拉選單 */}
                 {((studentAll && data.student) || type === "insert") && <StudentSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>}
               </DialogContent>
               <DialogContent sx={{padding: "10px !important", display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", "& .input": { flex: "0 0 45%", "& label": { color: "#000" }, "& input": { WebkitTextFillColor: "#000" } } }}>
@@ -1641,7 +1646,25 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                   disabled
                   className='input'
                 />
+              </DialogContent>
 
+              <DialogContent sx={{padding: "10px !important"}}>
+                <TextField
+                  margin="dense"
+                  id="c_remark"
+                  label="備註"
+                  type="text"
+                  fullWidth
+                  variant="standard"
+                  onChange={(e) => {
+                    setData({
+                      ...data,
+                      c_remark: e.target.value
+                    })
+                  }}
+                  value={data.c_remark}
+                  disabled={!authorityRange.p_update}
+                />
               </DialogContent>
 
               <DialogContent sx={{ 

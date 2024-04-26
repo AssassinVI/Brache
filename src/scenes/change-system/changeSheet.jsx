@@ -23,6 +23,7 @@ import * as teacherApi from "../../axios-api/teacherData";
 import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import MultiSelect from '../../lib/multiSelect';
 import StudentSelect from '../../lib/studentSelect';
+import TeacherSelect from '../../lib/teacherSelect';
 import * as studentApi from "../../axios-api/studentData"
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import DangerousSharpIcon from '@mui/icons-material/DangerousSharp';
@@ -973,25 +974,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                             <DialogContent sx={{padding:0,margin:"10px 0"}}>
 
                                 {teacherAll && <FormControl fullWidth sx={{marginTop:'10px'}}> 
-                                    <InputLabel id="demo-simple-select-label">老師</InputLabel>
-                                    <Select onChange={(e) => {
-                                            setData({
-                                                ...data,
-                                                change_teacher_id: e.target.value,
-                                            })
-                                        }}
-                                        inputProps={{ readOnly: !authorityRange.p_update || crud  === "view" ||  crud === "history" || crud === "needApproval" || userData.inform.admin_per==="group2023071815332755"}}
-                                        value={data.change_teacher_id==undefined ? userData.inform.Tb_index : data.change_teacher_id}
-                                        labelId="demo-simple-select-label"
-                                        id="demo-simple-select"
-                                        label="老師"
-                                        sx={{ width: "80%", maxWidth: "300px", "& .MuiButtonBase-root": { padding: "0 16px" } }}>
-                                        {teacherAll.map((item, i) => (
-                                            <MenuItem key={item.Tb_index} value={item.Tb_index} >
-                                            {item.name}
-                                            </MenuItem>
-                                        ))}
-                                    </Select>
+                                    <TeacherSelect teacherAll={teacherAll} data={data} setData={setData} setName={'change_teacher_id'} type={crud} author={authorityRange.p_update} />
                                 </FormControl>}
 
                                 

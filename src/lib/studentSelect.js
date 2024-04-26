@@ -3,32 +3,21 @@ import {Autocomplete, Box, TextField} from '@mui/material';
 import { useState, useEffect } from 'react';
 
 export default function StudentSelect({ studentAll, data, setData, type, author }) {
-   const [autocompleteStudentAll, setAutocompleteStudentAll] = useState([]);
+  //  const [autocompleteStudentAll, setAutocompleteStudentAll] = useState([]);
 
-
-  useEffect(()=>{
-    
-    setAutocompleteStudentAll({
-        options: studentAll,
-        getOptionLabel: (option) => option.name,
-    });
-
-    console.log(data);
-  }, [])
-  
-  // studentApi.getAll().then((data) => {
-  //   setAutocompleteStudentAll({
-  //       options: data.data,
-  //       getOptionLabel: (option) => option.name,
-  //   });
-  // });
+  console.log(type)
 
   return(
-    <Box>
+    <Box sx={{
+      '& .MuiInputBase-input': {
+        fontSize: '18px'
+      }
+    }}>
       <Autocomplete
         options={studentAll}
         getOptionLabel={(option) => option.name}
         id="controlled-demo"
+        readOnly={type=='needApproval' ? true:false}
         // disableClearable
         onChange={(event, newValue) => {
           // setSearchStudent(newValue===null ? null: newValue.Tb_index);
@@ -36,7 +25,6 @@ export default function StudentSelect({ studentAll, data, setData, type, author 
             ...data,
             student: [newValue],
           });
-
         }}
         renderInput={(params) => (
             <TextField {...params} label="查詢學生" variant="standard" />

@@ -8,7 +8,9 @@ import { getWeekInfoForDate, dataTransformTable, dataTransformTableTemplate, add
 import DateRangeIcon from '@mui/icons-material/DateRange';
 import ContentCopyIcon from '@mui/icons-material/ContentCopy';
 import * as templateApi from "../../axios-api/calendarTemplateData"
-import MultiSelect from '../../lib/multiSelect';
+// import MultiSelect from '../../lib/multiSelect';
+import StudentSelect from '../../lib/studentSelect';
+import TeacherSelect from '../../lib/teacherSelect';
 import * as studentApi from "../../axios-api/studentData"
 import * as teacherApi from "../../axios-api/teacherData"
 import { IsLoading } from "../../components/loading";
@@ -803,7 +805,7 @@ const LessonPopUp = ({unitData, weekNum, id, name, gap, bg, type, teacherAll, st
               <DialogContent sx={{ width: "100%", padding: "20px 24px !important" }} >
                 {teacherAll &&
                   <FormControl fullWidth >
-                    <InputLabel id="demo-simple-select-label">老師</InputLabel>
+                    {/* <InputLabel id="demo-simple-select-label">老師</InputLabel>
                     <Select onChange={(e) => {
                       setData({
                         ...data,
@@ -821,7 +823,9 @@ const LessonPopUp = ({unitData, weekNum, id, name, gap, bg, type, teacherAll, st
                           {item.name}
                         </MenuItem>
                       ))}
-                    </Select>
+                    </Select> */}
+                    {/* 老師下拉選單 */}
+                    <TeacherSelect teacherAll={teacherAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>
                   </FormControl>
                 }
               </DialogContent>
@@ -845,7 +849,7 @@ const LessonPopUp = ({unitData, weekNum, id, name, gap, bg, type, teacherAll, st
                 />
               </DialogContent>
               <DialogContent>
-                {((studentAll && data.student) || type === "insert") && <MultiSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange?.p_update}/>}
+                {((studentAll && data.student) || type === "insert") && <StudentSelect studentAll={studentAll} data={data} setData={setData} type={type} author={authorityRange.p_update}/>}
               </DialogContent>
               <DialogContent sx={{ display: "flex", alignItems: "center", gap: "15px", flexWrap: "wrap", "& .input": { flex: "0 0 45%", "& label": { color: "#000" }, "& input": { WebkitTextFillColor: "#000" } } }}>
                 <Box flex={"0 0 100%"}>
