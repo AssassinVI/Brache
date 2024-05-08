@@ -673,7 +673,7 @@ export default function ChangeSheet({sheetId, crud, course_id=null, setListData}
                     }
                 }
                 else if(data.change_type === "4"){
-                    if(data.change_teacher_id && data.change_date && data.student && data.change_StartTime && data.change_EndTime){
+                    if(data.change_teacher_id && data.change_date && data.change_c_name && data.student && data.change_StartTime && data.change_EndTime){
                         handleAjax(status)
                     }else{
                         dispatch(snackBarOpenAction(true, "資料未完整，無法送出", 'error'))
