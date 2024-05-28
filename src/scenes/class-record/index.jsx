@@ -230,7 +230,7 @@ function RecordSheet({studentData, record=null}){
           }
         }}>
         <h2 className='record-title'>本周功課及注意事項</h2>
-        {!(recordData.admin_id || recordData.teacher_id) && userData.inform.name === "老師"&& authorityRange.p_update && <RemarkUpdated data={recordData} setRecordData={setRecordData}/>}
+        {!(recordData.admin_id || recordData.teacher_id) && (userData.inform.name === "老師" || userData.inform.name === "系統管理員")&& authorityRange.p_update && <RemarkUpdated data={recordData} setRecordData={setRecordData}/>}
         </Box>
         <p className='remark-area'>{recordData.remark? recordData.remark : "老師尚未填寫注意事項"}</p>
         <Box width={"100%"} position={"relative"} sx={{
