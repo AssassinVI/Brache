@@ -1347,6 +1347,13 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
     let TimeOut=false;
     let isTransfer=false;
     let signTime=false; // -- 簽到時間 --
+
+
+    //-- 限制補簽時間 --
+    const targetDate1 = new Date(data.c_date);
+    const currentDate1 = new Date();
+    const differenceInTime = currentDate1 - targetDate1;
+    const differenceInDays = differenceInTime / (1000 * 60 * 60 * 24);
     
     
     if(unitData){
@@ -1683,7 +1690,7 @@ const LessonPopUp = ({unitData, id, name, gap, bg, type, teacherAll, studentAll,
                   {authorityRange.p_delete&& type === "update" && 
                     <Button onClick={handleDelete} sx={{ backgroundColor: "#d85847", color: "#fff", "&:hover": { backgroundColor: "#ad4638" } }}>刪除</Button>
                   }
-                  <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign ? 'inline-flex':'none'}}>{'補簽'}</Button>
+                  <Button onClick={()=>{ReSigning()}} variant="contained" sx={{backgroundColor:'#1f5295', display: isSign && differenceInDays<=7 ? 'inline-flex':'none'}}>{'補簽'}</Button>
                   <Button onClick={()=>{askForLeaveTransfer()}} variant="contained" sx={{backgroundColor:'#d9a710', display: isSign ? 'inline-flex':'none'}}>{'超時請假'}</Button>
                   {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"adjustCourse"} course_id={data.Tb_index} setListData={setListData}/>}
                   {type ==='insert' || TimeOut || isAskForLeave || isReSignin_time ? '':<ChangeSheet crud={"changeCourse"} course_id={data.Tb_index} setListData={setListData}/>}
